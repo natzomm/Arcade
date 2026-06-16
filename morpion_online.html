@@ -516,6 +516,7 @@ let roomUnsub = null;
 let inviteUnsub = null;
 let pendingInvite = null;
 let room = null;
+let autoNextRoundTimer = null;
 
 let board = ["","","","","","","","",""];
 let current = "X";
@@ -671,6 +672,17 @@ function applyRoom(){
     }
 
     if(room.status === "playing"){
+        if(room.gameOver){
+            if(room.winner === "draw"){
+                document.getElementById("status").innerText = "🤝 Égalité ! Nouvelle manche...";
+            }else if(room.winner === "X"){
+                document.getElementById("status").innerText = "❌ gagne ! Nouvelle manche...";
+            }else if(room.winner === "O"){
+                document.getElementById("status").innerText = "⭕ gagne ! Nouvelle manche...";
+            }
+            return;
+        }
+
         const mySymbol = getMySymbol();
 
         if(room.turnUid === user.uid){
@@ -985,6 +997,37 @@ async function play(index){
 }
 window.play = play;
 
+async function autoStartNextRound(){
+    if(!roomId) return;
+
+    const roomRef = doc(db, "morpionRooms", roomId);
+    const snap = await getDoc(roomRef);
+
+    if(!snap.exists()) return;
+
+    const r = snap.data();
+
+    if(r.status !== "playing") return;
+    if(!r.gameOver) return;
+
+    const xStarts = Math.random() < 0.5;
+    const xUid = xStarts ? r.hostUid : r.guestUid;
+    const oUid = xStarts ? r.guestUid : r.hostUid;
+
+    await updateDoc(roomRef, {
+        board:["","","","","","","","",""],
+        current:"X",
+        xUid,
+        oUid,
+        turnUid:xUid,
+        gameOver:false,
+        winner:"",
+        round:(r.round || 1) + 1
+    });
+
+    closeEnd();
+}
+
 async function finishRound(result, finalBoard){
     const updates = {
         board:finalBoard,
@@ -1034,6 +1077,19 @@ async function finishRound(result, finalBoard){
     }else{
         const text = result.winner === "draw" ? "🤝 Manche égalité !" : (result.winner === "X" ? "❌ gagne la manche !" : "⭕ gagne la manche !");
         showEnd(text);
+
+        clearTimeout(autoNextRoundTimer);
+
+        // Seul l'hôte relance la grille pour éviter que les deux joueurs relancent en même temps.
+        if(room.hostUid === user.uid){
+            autoNextRoundTimer = setTimeout(() => {
+                autoStartNextRound();
+            }, 2000);
+        }else{
+            autoNextRoundTimer = setTimeout(() => {
+                closeEnd();
+            }, 2000);
+        }
     }
 }
 
