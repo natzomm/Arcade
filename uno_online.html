@@ -241,6 +241,80 @@ h1{font-size:42px}
     h1{font-size:34px}
     .card{width:88px;height:132px;font-size:32px}
 }
+
+#myHand{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:18px;
+}
+.playCard{
+    width:78px;
+    height:115px;
+    border-radius:15px;
+    border:3px solid white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:25px;
+    font-weight:bold;
+    box-shadow:0 10px 22px rgba(0,0,0,0.35);
+    cursor:pointer;
+    transition:0.18s;
+}
+.playCard:hover{transform:translateY(-8px) scale(1.05)}
+.playCard.selected{
+    outline:4px solid #facc15;
+    transform:translateY(-10px) scale(1.05);
+}
+.card.red,.playCard.red{background:#dc2626;color:white}
+.card.blue,.playCard.blue{background:#2563eb;color:white}
+.card.green,.playCard.green{background:#16a34a;color:white}
+.card.yellow,.playCard.yellow{background:#eab308;color:#422006}
+.card.wild,.playCard.wild{background:linear-gradient(135deg,#dc2626,#2563eb,#16a34a,#eab308);color:white}
+#actionBar{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:15px;
+}
+#actionBar button{
+    padding:12px 18px;
+    font-size:16px;
+}
+#colorPicker{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.85);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:70;
+}
+#colorCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:25px;
+    text-align:center;
+}
+.colorBtn{
+    width:80px;
+    height:80px;
+    margin:8px;
+    border:3px solid white;
+    font-size:18px;
+    color:white;
+}
+.colorBtn.yellow{color:#422006}
+@media(max-width:800px){
+    .playCard{width:64px;height:98px;font-size:21px}
+}
+
 </style>
 </head>
 
@@ -282,9 +356,17 @@ h1{font-size:42px}
         <div id="playersPreview"></div>
 
         <div id="deckArea">
-            <div class="card back">UNO</div>
+            <div class="card back" onclick="drawCard()">PIOCHE</div>
             <div class="card wild" id="centerCard">?</div>
         </div>
+
+        <div id="actionBar">
+            <button class="actionBtn blueBtn" onclick="drawCard()">📥 Piocher</button>
+            <button class="actionBtn yellowBtn" onclick="playSelectedCards()">▶️ Jouer sélection</button>
+            <button class="actionBtn" onclick="sayUno()">🔔 UNO</button>
+        </div>
+
+        <div id="myHand"></div>
 
         <div class="info" id="gameInfo">
             En attente d'un salon...
@@ -302,6 +384,16 @@ h1{font-size:42px}
             <button class="actionBtn" onclick="acceptInvite()">Accepter</button>
             <button class="actionBtn redBtn" onclick="refuseInvite()">Refuser</button>
         </div>
+    </div>
+</div>
+
+<div id="colorPicker">
+    <div id="colorCard">
+        <h2>Choisis une couleur</h2>
+        <button class="colorBtn red" onclick="chooseColor('red')">Rouge</button>
+        <button class="colorBtn blue" onclick="chooseColor('blue')">Bleu</button>
+        <button class="colorBtn green" onclick="chooseColor('green')">Vert</button>
+        <button class="colorBtn yellow" onclick="chooseColor('yellow')">Jaune</button>
     </div>
 </div>
 
@@ -344,6 +436,8 @@ let room = null;
 let roomUnsub = null;
 let inviteUnsub = null;
 let pendingInvite = null;
+let selectedCards = [];
+let pendingWildCards = [];
 
 function goHome(){
     window.location.href = "index.html";
@@ -453,12 +547,15 @@ function applyRoom(){
         const p = players[i];
 
         if(p){
+            const handCount = room.hands && room.hands[p.uid] ? room.hands[p.uid].length : (p.cards || 0);
+
             slots.innerHTML += `
                 <div class="playerSlot filled">
                     <strong>${p.pseudo}</strong>
                     ${p.host ? "<span class='hostBadge'> 👑 Hôte</span>" : ""}
                     <br>
-                    ${room.status === "playing" ? "🃏 " + (p.cards || 0) + " cartes" : "En attente"}
+                    ${room.status === "playing" ? "🃏 " + handCount + " cartes" : "En attente"}
+                    ${room.currentPlayerUid === p.uid ? "<br>👉 À son tour" : ""}
                     ${isHost && !p.host && room.status === "waiting" ? `<br><button class="kickBtn" onclick="kickPlayer('${p.uid}')">Expulser</button>` : ""}
                 </div>
             `;
@@ -471,13 +568,19 @@ function applyRoom(){
     preview.innerHTML = "";
 
     players.forEach(p=>{
+        const handCount = room.hands && room.hands[p.uid] ? room.hands[p.uid].length : (p.cards || 0);
+
         preview.innerHTML += `
             <div class="playerPreview">
                 <strong>${p.pseudo}</strong><br>
-                ${room.status === "playing" ? "🃏 " + (p.cards || 0) + " cartes" : "Prêt"}
+                ${room.status === "playing" ? "🃏 " + handCount + " cartes" : "Prêt"}
+                ${room.currentPlayerUid === p.uid ? "<br>👉 Tour actuel" : ""}
             </div>
         `;
     });
+
+    renderCenterCard();
+    renderMyHand();
 
     if(room.status === "waiting"){
         document.getElementById("status").innerText =
@@ -486,9 +589,24 @@ function applyRoom(){
     }
 
     if(room.status === "playing"){
-        document.getElementById("status").innerText = "Partie lancée ! Prochaine étape : les vraies cartes.";
-        document.getElementById("gameInfo").innerText = "Pour l'instant, le salon fonctionne. Ensuite on ajoute les mains, la pioche et les règles.";
-        document.getElementById("centerCard").innerText = "UNO";
+        const currentPlayer = players.find(p=>p.uid === room.currentPlayerUid);
+        const pending = room.pendingDraw || 0;
+        let extra = pending > 0 ? " | Pioche cumulée : +" + pending : "";
+
+        if(room.currentPlayerUid === user.uid){
+            document.getElementById("status").innerText = "À toi de jouer !" + extra;
+        }else{
+            document.getElementById("status").innerText = "Tour de " + (currentPlayer ? currentPlayer.pseudo : "...");
+        }
+
+        document.getElementById("gameInfo").innerText =
+        "Tu peux poser une carte compatible, ou plusieurs cartes du même chiffre/symbole.";
+    }
+
+    if(room.status === "ended"){
+        const winner = players.find(p=>p.uid === room.winnerUid);
+        document.getElementById("status").innerText = "🏆 " + (winner ? winner.pseudo : "Un joueur") + " gagne la partie !";
+        document.getElementById("gameInfo").innerText = "La partie est terminée. L'hôte peut créer un nouveau salon.";
     }
 }
 
@@ -572,6 +690,8 @@ async function inviteFriend(friendUid, friendPseudo){
         game:"uno",
         text:(userData.pseudo || "Joueur") + " t'invite à jouer au UNO.",
         read:false,
+        fromUid:user.uid,
+        fromPseudo:userData.pseudo || "Joueur",
         createdAt:serverTimestamp()
     });
 
@@ -688,6 +808,46 @@ async function kickPlayer(uid){
 }
 window.kickPlayer = kickPlayer;
 
+function createDeck(){
+    const colors = ["red","blue","green","yellow"];
+    const deck = [];
+
+    colors.forEach(color=>{
+        deck.push({color,value:"0",id:crypto.randomUUID()});
+
+        for(let n=1;n<=9;n++){
+            deck.push({color,value:String(n),id:crypto.randomUUID()});
+            deck.push({color,value:String(n),id:crypto.randomUUID()});
+        }
+
+        ["+2","skip","reverse"].forEach(v=>{
+            deck.push({color,value:v,id:crypto.randomUUID()});
+            deck.push({color,value:v,id:crypto.randomUUID()});
+        });
+    });
+
+    for(let i=0;i<4;i++){
+        deck.push({color:"wild",value:"wild",id:crypto.randomUUID()});
+        deck.push({color:"wild",value:"+4",id:crypto.randomUUID()});
+    }
+
+    return shuffle(deck);
+}
+
+function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+}
+
+function getFirstTopCard(deck){
+    let index = deck.findIndex(c => c.color !== "wild" && !["+2","skip","reverse"].includes(c.value));
+    if(index === -1) index = 0;
+    return deck.splice(index,1)[0];
+}
+
 async function startGame(){
     if(!room){
         alert("Crée un salon UNO.");
@@ -706,25 +866,280 @@ async function startGame(){
         return;
     }
 
+    let deck = createDeck();
+    const hands = {};
+
+    players.forEach(p=>{
+        hands[p.uid] = deck.splice(0,7);
+    });
+
+    const topCard = getFirstTopCard(deck);
+    const randomPlayer = players[Math.floor(Math.random()*players.length)];
+
     const updatedPlayers = players.map(p => ({
         ...p,
-        cards:7
+        cards:hands[p.uid].length
     }));
-
-    const randomPlayer = updatedPlayers[Math.floor(Math.random()*updatedPlayers.length)];
 
     await updateDoc(doc(db,"unoRooms",roomId),{
         status:"playing",
         players:updatedPlayers,
+        hands,
+        deck,
+        discardPile:[topCard],
+        topCard,
+        chosenColor:topCard.color,
         currentPlayerUid:randomPlayer.uid,
         direction:1,
-        topCard:{
-            color:"red",
-            value:"5"
-        }
+        pendingDraw:0,
+        winnerUid:""
     });
 }
 window.startGame = startGame;
+
+function cardText(card){
+    if(!card) return "?";
+    if(card.value === "skip") return "🚫";
+    if(card.value === "reverse") return "🔄";
+    if(card.value === "wild") return "🎨";
+    return card.value;
+}
+
+function colorEmoji(color){
+    if(color === "red") return "🟥";
+    if(color === "blue") return "🟦";
+    if(color === "green") return "🟩";
+    if(color === "yellow") return "🟨";
+    return "⬛";
+}
+
+function renderCenterCard(){
+    const center = document.getElementById("centerCard");
+    if(!center) return;
+
+    const top = room && room.topCard ? room.topCard : null;
+
+    center.className = "card " + (top ? top.color : "wild");
+    center.innerText = top ? cardText(top) : "?";
+
+    if(top && top.color === "wild" && room.chosenColor){
+        center.innerText = colorEmoji(room.chosenColor) + " " + cardText(top);
+    }
+}
+
+function renderMyHand(){
+    const handBox = document.getElementById("myHand");
+    if(!handBox) return;
+
+    handBox.innerHTML = "";
+
+    if(!room || room.status !== "playing" || !room.hands || !room.hands[user.uid]){
+        handBox.innerHTML = "<div class='info'>Tes cartes apparaîtront ici quand la partie commence.</div>";
+        return;
+    }
+
+    const hand = room.hands[user.uid];
+
+    hand.forEach(card=>{
+        const selected = selectedCards.includes(card.id);
+
+        handBox.innerHTML += `
+            <div class="playCard ${card.color} ${selected ? "selected" : ""}" onclick="toggleCard('${card.id}')">
+                ${cardText(card)}
+            </div>
+        `;
+    });
+}
+
+window.toggleCard = function(cardId){
+    if(!room || room.currentPlayerUid !== user.uid) return;
+
+    if(selectedCards.includes(cardId)){
+        selectedCards = selectedCards.filter(id=>id!==cardId);
+    }else{
+        selectedCards.push(cardId);
+    }
+
+    renderMyHand();
+};
+
+function isPlayable(card){
+    if(!room || !room.topCard) return true;
+
+    if(card.color === "wild") return true;
+
+    const activeColor = room.chosenColor || room.topCard.color;
+
+    return card.color === activeColor || card.value === room.topCard.value;
+}
+
+function selectedCardsValid(cards){
+    if(cards.length === 0) return false;
+    if(!isPlayable(cards[0])) return false;
+
+    return cards.every(c => c.value === cards[0].value);
+}
+
+function getNextPlayerUid(players, currentUid, direction, skipAmount = 1){
+    const index = players.findIndex(p=>p.uid === currentUid);
+    const len = players.length;
+    let nextIndex = index;
+
+    for(let i=0;i<skipAmount;i++){
+        nextIndex = (nextIndex + direction + len) % len;
+    }
+
+    return players[nextIndex].uid;
+}
+
+window.playSelectedCards = async function(){
+    if(!room || room.status !== "playing") return;
+
+    if(room.currentPlayerUid !== user.uid){
+        alert("Ce n'est pas ton tour.");
+        return;
+    }
+
+    const hand = room.hands[user.uid] || [];
+    const cards = selectedCards.map(id=>hand.find(c=>c.id===id)).filter(Boolean);
+
+    if(!selectedCardsValid(cards)){
+        alert("Tu ne peux pas jouer cette sélection.");
+        return;
+    }
+
+    const hasWild = cards.some(c=>c.color === "wild");
+
+    if(hasWild){
+        pendingWildCards = cards;
+        document.getElementById("colorPicker").style.display = "flex";
+        return;
+    }
+
+    await playCardsWithColor(cards, cards[cards.length-1].color);
+};
+
+window.chooseColor = async function(color){
+    document.getElementById("colorPicker").style.display = "none";
+    await playCardsWithColor(pendingWildCards, color);
+    pendingWildCards = [];
+};
+
+async function playCardsWithColor(cards, chosenColor){
+    if(cards.length === 0) return;
+
+    const players = room.players || [];
+    const hands = {...room.hands};
+    let myHand = [...hands[user.uid]];
+
+    const ids = cards.map(c=>c.id);
+    myHand = myHand.filter(c=>!ids.includes(c.id));
+    hands[user.uid] = myHand;
+
+    let direction = room.direction || 1;
+    let pendingDraw = room.pendingDraw || 0;
+    let skipAmount = 1;
+
+    const value = cards[0].value;
+
+    if(value === "reverse"){
+        direction *= -1;
+        if(players.length === 2) skipAmount = 2;
+    }
+
+    if(value === "skip"){
+        skipAmount = 2;
+    }
+
+    if(value === "+2"){
+        pendingDraw += 2 * cards.length;
+    }
+
+    if(value === "+4"){
+        pendingDraw += 4 * cards.length;
+    }
+
+    const lastCard = cards[cards.length-1];
+    const discardPile = [...(room.discardPile || []), ...cards];
+
+    let nextUid = getNextPlayerUid(players, user.uid, direction, skipAmount);
+
+    const updatedPlayers = players.map(p=>({
+        ...p,
+        cards:hands[p.uid] ? hands[p.uid].length : 0
+    }));
+
+    const updates = {
+        hands,
+        players:updatedPlayers,
+        discardPile,
+        topCard:lastCard,
+        chosenColor,
+        direction,
+        pendingDraw,
+        currentPlayerUid:nextUid
+    };
+
+    if(myHand.length === 0){
+        updates.status = "ended";
+        updates.winnerUid = user.uid;
+    }
+
+    selectedCards = [];
+    await updateDoc(doc(db,"unoRooms",roomId), updates);
+}
+
+window.drawCard = async function(){
+    if(!room || room.status !== "playing") return;
+
+    if(room.currentPlayerUid !== user.uid){
+        alert("Ce n'est pas ton tour.");
+        return;
+    }
+
+    const players = room.players || [];
+    const hands = {...room.hands};
+    let deck = [...(room.deck || [])];
+    let myHand = [...(hands[user.uid] || [])];
+
+    if(deck.length === 0){
+        alert("La pioche est vide pour l'instant.");
+        return;
+    }
+
+    const amount = room.pendingDraw && room.pendingDraw > 0 ? room.pendingDraw : 1;
+    const drawn = deck.splice(0, amount);
+
+    myHand.push(...drawn);
+    hands[user.uid] = myHand;
+
+    const nextUid = getNextPlayerUid(players, user.uid, room.direction || 1, 1);
+
+    const updatedPlayers = players.map(p=>({
+        ...p,
+        cards:hands[p.uid] ? hands[p.uid].length : 0
+    }));
+
+    selectedCards = [];
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        deck,
+        hands,
+        players:updatedPlayers,
+        pendingDraw:0,
+        currentPlayerUid:nextUid
+    });
+};
+
+window.sayUno = function(){
+    if(!room || !room.hands || !room.hands[user.uid]) return;
+
+    if(room.hands[user.uid].length === 1){
+        alert("🔔 UNO !");
+    }else{
+        alert("Tu peux dire UNO seulement quand il te reste 1 carte.");
+    }
+};
 
 async function leaveRoom(){
     if(!roomId){

@@ -1737,7 +1737,7 @@ window.showToastNotification = function(notif){
 
     lastToastData = notif;
 
-    title.innerText = notif.type === "friendRequest" ? "👥 Demande d'ami" : notif.type === "message" ? "💬 Nouveau message" : "🔔 Notification";
+    title.innerText = notif.type === "friendRequest" ? "👥 Demande d'ami" : notif.type === "message" ? "💬 Nouveau message" : notif.type === "gameInvite" ? "🎮 Invitation de jeu" : "🔔 Notification";
     text.innerText = notif.text;
 
     toast.classList.add("show");
@@ -1763,7 +1763,8 @@ window.openToastTarget = function(){
     openNotification(
         lastToastData.type,
         lastToastData.fromUid || "",
-        lastToastData.fromPseudo || ""
+        lastToastData.fromPseudo || "",
+        lastToastData.game || ""
     );
 };
 
@@ -1841,13 +1842,14 @@ window.listenNotifications = function(){
 
         items.slice(0,30).forEach(n=>{
             const date = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null;
-            const icon = n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : "🔔 Notification";
+            const icon = n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : n.type === "gameInvite" ? "🎮 Invitation" : "🔔 Notification";
 
             const fromUid = n.fromUid || "";
             const fromPseudo = n.fromPseudo || "";
+            const game = n.game || "";
 
             list.innerHTML += `
-                <div class="notifItem" onclick="openNotification('${n.type}','${fromUid}','${fromPseudo}')">
+                <div class="notifItem" onclick="openNotification('${n.type}','${fromUid}','${fromPseudo}','${game}')">
                     <strong>${icon}</strong>${n.read ? "" : " <span class='unreadDot'>●</span>"}<br>
                     ${n.text}
                     <div class="notifTime">${timeAgo(date)}</div>
@@ -1895,23 +1897,36 @@ window.markNotificationsRead = async function(){
 
 
 
-window.openNotification = function(type, fromUid = "", fromPseudo = ""){
-    closeAllPanels("account");
-    document.getElementById("accountPanel").classList.add("open");
+window.openNotification = function(type, fromUid = "", fromPseudo = "", game = ""){
+    closeAllPanels();
 
     if(type === "friendRequest"){
+        document.getElementById("accountPanel").classList.add("open");
         showSettingsPage("requests");
-    }else if(type === "message"){
+    }
+
+    else if(type === "message"){
+        document.getElementById("accountPanel").classList.add("open");
         showSettingsPage("chat");
 
-        if(fromUid && fromPseudo && typeof openConversation === "function"){
+        if(fromUid && fromPseudo){
             openConversation(fromUid, fromPseudo);
         }
-    }else{
+    }
+
+    else if(type === "gameInvite"){
+        if(game === "uno"){
+            window.location.href = "uno_online.html";
+        }else{
+            window.location.href = "morpion_online.html";
+        }
+    }
+
+    else{
+        document.getElementById("accountPanel").classList.add("open");
         showSettingsPage("account");
     }
 };
-
 window.openChatFromFriend = function(friendUid, friendPseudo){
     document.getElementById("accountPanel").classList.add("open");
     showSettingsPage("chat");
