@@ -973,18 +973,10 @@ function openPenalty(){
     window.location.href = "penalty.html";
 }
 
-function closeAllPanels(except){
-    if(except !== "menu"){
-        document.getElementById("sideMenu").classList.remove("open");
-    }
-
-    if(except !== "account"){
-        document.getElementById("accountPanel").classList.remove("open");
-    }
-
-    if(except !== "notif"){
-        document.getElementById("notifPanel").classList.remove("open");
-    }
+function closeAllPanels(){
+    document.getElementById("sideMenu").classList.remove("open");
+    document.getElementById("accountPanel").classList.remove("open");
+    document.getElementById("notifPanel").classList.remove("open");
 }
 
 function toggleMenu(){
@@ -1005,13 +997,14 @@ function goToGame(page){
 
 function toggleAccountPanel(){
     const panel = document.getElementById("accountPanel");
-    const willOpen = !panel.classList.contains("open");
 
-    closeAllPanels("account");
-
-    if(willOpen){
-        panel.classList.add("open");
+    if(panel.classList.contains("open")){
+        panel.classList.remove("open");
+        return;
     }
+
+    closeAllPanels();
+    panel.classList.add("open");
 }
 
 function toggleNotifPanel(){
