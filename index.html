@@ -874,11 +874,11 @@ button:hover{
             <div class="desc">Tire, marque et bats le gardien !</div>
         </div>
 
-       <div class="card" onclick="openMorpion()">
-    <div class="icon">❌</div>
-    <div class="title">Morpion</div>
-    <div class="desc">Joue en local ou en ligne avec tes amis !</div>
-</div>
+        <div class="card" onclick="goToGame('morpion.html')">
+            <div class="icon">❌</div>
+            <div class="title">Morpion</div>
+            <div class="desc">Joue à 2 ou contre le bot !</div>
+        </div>
 
         <div class="card" onclick="goToGame('rps.html')">
             <div class="icon">✊</div>
@@ -963,19 +963,6 @@ function savePseudo(){
     input.value = p;
 }
 
-function openMorpion(){
-    savePseudo();
-
-    const mode = localStorage.getItem("playMode");
-
-    if(mode === "online"){
-        window.location.href = "morpion_online.html";
-    }else{
-        window.location.href = "morpion.html";
-    }
-}
-
-
 function openTarget(){
     savePseudo();
     window.location.href = "cible.html";
@@ -986,10 +973,18 @@ function openPenalty(){
     window.location.href = "penalty.html";
 }
 
-function closeAllPanels(){
-    document.getElementById("sideMenu").classList.remove("open");
-    document.getElementById("accountPanel").classList.remove("open");
-    document.getElementById("notifPanel").classList.remove("open");
+function closeAllPanels(except){
+    if(except !== "menu"){
+        document.getElementById("sideMenu").classList.remove("open");
+    }
+
+    if(except !== "account"){
+        document.getElementById("accountPanel").classList.remove("open");
+    }
+
+    if(except !== "notif"){
+        document.getElementById("notifPanel").classList.remove("open");
+    }
 }
 
 function toggleMenu(){
@@ -1010,14 +1005,13 @@ function goToGame(page){
 
 function toggleAccountPanel(){
     const panel = document.getElementById("accountPanel");
+    const willOpen = !panel.classList.contains("open");
 
-    if(panel.classList.contains("open")){
-        panel.classList.remove("open");
-        return;
+    closeAllPanels("account");
+
+    if(willOpen){
+        panel.classList.add("open");
     }
-
-    closeAllPanels();
-    panel.classList.add("open");
 }
 
 function toggleNotifPanel(){
@@ -1808,7 +1802,7 @@ window.listenNotifications = function(){
 
         items.slice(0,30).forEach(n=>{
             const date = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null;
-            const icon = n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : "🔔 Notification";
+            const icon = n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : n.type === "gameInvite" ? "🎮 Invitation" : "🔔 Notification";
 
             const fromUid = n.fromUid || "";
             const fromPseudo = n.fromPseudo || "";
@@ -1863,6 +1857,11 @@ window.markNotificationsRead = async function(){
 
 
 window.openNotification = function(type, fromUid = "", fromPseudo = ""){
+    if(type === "gameInvite"){
+        window.location.href = "morpion_online.html";
+        return;
+    }
+
     closeAllPanels("account");
     document.getElementById("accountPanel").classList.add("open");
 
