@@ -485,7 +485,7 @@ button:hover{
     <div class="subtitle">Bienvenue sur ta plateforme de mini-jeux !</div>
 
     <div id="pseudoBox">
-        <input id="pseudo" placeholder="Entre ton pseudo..." maxlength="20">
+        <input id="pseudo" placeholder="Pseudo hors ligne..." maxlength="20">
         <button onclick="savePseudo()">Sauvegarder</button>
     </div>
 
@@ -555,6 +555,7 @@ button:hover{
         </p>
 
         <div id="onlineBox">
+            <input id="signupPseudo" placeholder="Pseudo unique">
             <input id="email" placeholder="Email">
             <input id="password" type="password" placeholder="Mot de passe">
 
@@ -619,8 +620,14 @@ async function changeAccountPseudo(){
 
     if(localStorage.getItem("playMode") === "online"){
         if(typeof updateFirebasePseudo === "function"){
-            await updateFirebasePseudo(p);
-            alert("Pseudo changé !");
+            const ok = await updateFirebasePseudo(p);
+
+            if(ok){
+                localStorage.setItem("pseudo", p);
+                input.value = p;
+                document.getElementById("accountPseudo").value = p;
+                alert("Pseudo changé !");
+            }
         }
     }else{
         localStorage.setItem("pseudo", p);
@@ -651,6 +658,11 @@ function playOffline(){
 
 function showOnlineLogin(){
     document.getElementById("onlineBox").style.display = "block";
+
+    const savedPseudo = localStorage.getItem("pseudo") || input.value || "";
+    if(document.getElementById("signupPseudo").value === ""){
+        document.getElementById("signupPseudo").value = savedPseudo;
+    }
 }
 
 function openLoginOverlay(){
@@ -771,17 +783,17 @@ async function loadUserProfile(user){
 }
 
 window.signup = async function(){
+    const pseudo = document.getElementById("signupPseudo").value.trim();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
-    const pseudo = (localStorage.getItem("pseudo") || input.value || "").trim();
 
-    if(email === "" || password === ""){
-        alert("Entre un email et un mot de passe.");
+    if(pseudo === ""){
+        alert("Choisis un pseudo.");
         return;
     }
 
-    if(pseudo === ""){
-        alert("Choisis un pseudo avant de créer ton compte.");
+    if(email === "" || password === ""){
+        alert("Entre un email et un mot de passe.");
         return;
     }
 
@@ -844,6 +856,7 @@ window.logout = function(){
 
         input.value = "";
 
+        document.getElementById("signupPseudo").value = "";
         document.getElementById("email").value = "";
         document.getElementById("password").value = "";
 
@@ -864,14 +877,15 @@ window.updateFirebasePseudo = async function(newPseudo){
     const user = auth.currentUser;
 
     if(!user){
-        return;
+        alert("Tu dois être connecté.");
+        return false;
     }
 
     const newKey = cleanPseudo(newPseudo);
 
     if(newKey.length < 3){
         alert("Ton pseudo doit faire au moins 3 caractères.");
-        return;
+        return false;
     }
 
     try{
@@ -880,7 +894,7 @@ window.updateFirebasePseudo = async function(newPseudo){
         const oldKey = userSnap.exists() ? userSnap.data().pseudoKey : "";
 
         if(oldKey === newKey){
-            return;
+            return true;
         }
 
         const pseudoRef = doc(db, "pseudos", newKey);
@@ -888,7 +902,7 @@ window.updateFirebasePseudo = async function(newPseudo){
 
         if(pseudoSnap.exists()){
             alert("Ce pseudo est déjà pris.");
-            return;
+            return false;
         }
 
         if(oldKey){
@@ -910,12 +924,11 @@ window.updateFirebasePseudo = async function(newPseudo){
 
         await updateProfile(user,{displayName:newPseudo});
 
-        localStorage.setItem("pseudo",newPseudo);
-        input.value = newPseudo;
-        document.getElementById("accountPseudo").value = newPseudo;
+        return true;
 
     }catch(error){
         alert(error.message);
+        return false;
     }
 };
 
