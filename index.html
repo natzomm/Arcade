@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Games</title>
+<link rel="icon" type="image/JPG" href="logo.jpg">
+
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center}
+#container{width:95%;max-width:1100px;text-align:center}
+h1{font-size:55px;margin-bottom:10px}
+.subtitle{color:#cbd5e1;margin-bottom:35px;font-size:20px}
+#pseudoBox{margin-bottom:40px}
+input{padding:14px;width:300px;font-size:18px;border:none;border-radius:10px;text-align:center}
+button{padding:14px 22px;font-size:18px;border:none;border-radius:10px;cursor:pointer;margin-left:10px;transition:.2s}
+button:hover{transform:scale(1.05)}
+#games{display:flex;justify-content:center;gap:30px;flex-wrap:wrap}
+.card{width:300px;height:220px;background:#1e293b;border-radius:20px;cursor:pointer;transition:.25s;display:flex;flex-direction:column;justify-content:center;align-items:center;border:3px solid transparent}
+.card:hover{transform:translateY(-8px);border-color:#38bdf8}
+.icon{font-size:70px;margin-bottom:15px}
+.title{font-size:30px;font-weight:bold}
+.desc{margin-top:10px;color:#cbd5e1;padding:0 15px}
+.footer{margin-top:45px;color:#94a3b8;font-size:15px}
+</style>
+</head>
+<body>
+<div id="container">
+<h1>🎮 Mini Games</h1>
+<div class="subtitle">Bienvenue sur ta plateforme de mini-jeux !</div>
+<div id="pseudoBox">
+<input id="pseudo" placeholder="Entre ton pseudo..." maxlength="20">
+<button onclick="savePseudo()">Sauvegarder</button>
+</div>
+<div id="games">
+<div class="card" onclick="openTarget()">
+<div class="icon">🎯</div><div class="title">Jeu de la cible</div><div class="desc">Teste ta précision !</div>
+</div>
+<div class="card" onclick="openPenalty()">
+<div class="icon">⚽</div><div class="title">Penalty Master</div><div class="desc">Tire, marque et bats le gardien !</div>
+</div>
+
+<div class="card" onclick="window.location.href='morpion.html'">
+    <div class="icon">❌</div>
+    <div class="title">Morpion</div>
+    <div class="desc">Joue à 2 ou contre le bot !</div>
+</div>
+
+<div class="card" onclick="window.location.href='rps.html'">
+    <div class="icon">✊</div>
+    <div class="title">Pierre Papier Ciseaux</div>
+    <div class="desc">Premier à 3, 5 ou 10 contre le bot !</div>
+</div>
+
+<div class="card" onclick="window.location.href='puissance4.html'">
+    <div class="icon">🔴</div>
+    <div class="title">Puissance 4</div>
+    <div class="desc">Aligne 4 pions contre un ami ou un bot !</div>
+</div>
+
+<div class="card" onclick="window.location.href='2048.html'">
+    <div class="icon">🔢</div>
+    <div class="title">2048 Deluxe</div>
+    <div class="desc">Fusionne les nombres en 4×4, 5×5 ou 6×6 !</div>
+</div>
+
+<div class="card" onclick="window.location.href='mole.html'">
+    <div class="icon">🔨</div>
+    <div class="title">Whack-a-Mole</div>
+    <div class="desc">Tape les taupes, évite les bombes et fais des combos !</div>
+</div>
+
+<div class="card" onclick="window.location.href='fruit.html'">
+    <div class="icon">🍉</div>
+    <div class="title">Fruit Slice</div>
+    <div class="desc">Tranche les fruits, évite les bombes et fais des combos !</div>
+</div>
+
+</div>
+<div class="footer">Ton pseudo est sauvegardé automatiquement dans le navigateur.</div>
+</div>
+<script>
+const input=document.getElementById("pseudo");
+input.value=localStorage.getItem("pseudo")||"";
+function savePseudo(){let p=input.value.trim();if(p===""){p="Joueur"}localStorage.setItem("pseudo",p);input.value=p}
+function openTarget(){savePseudo();window.location.href="cible.html"}
+function openPenalty(){savePseudo();window.location.href="penalty.html"}
+</script>
+</body>
+</html>

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penalty Master</title>
+
+<link rel="icon" type="image/JPG" href="logo.jpg">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#064e3b,#0f172a,#1e3a8a);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{
+    font-size:42px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#layout{
+    width:min(1120px,95%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:310px 1fr;
+    gap:18px;
+}
+
+.panel{
+    background:rgba(15,23,42,0.82);
+    border:1px solid rgba(148,163,184,0.25);
+    border-radius:22px;
+    padding:18px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.25);
+}
+
+.optionGroup{
+    margin-bottom:20px;
+}
+
+.optionGroup p{
+    margin-bottom:10px;
+    color:#cbd5e1;
+    font-weight:bold;
+}
+
+.choice{
+    width:100%;
+    padding:13px 14px;
+    margin:6px 0;
+    font-size:17px;
+    background:#334155;
+    color:white;
+    border:2px solid transparent;
+}
+
+.choice.selected{
+    background:#22c55e;
+    border-color:#bbf7d0;
+    color:#052e16;
+}
+
+#startBtn{
+    width:100%;
+    padding:17px;
+    font-size:23px;
+    background:#facc15;
+    color:#422006;
+    margin-top:8px;
+}
+
+#recordPanel{
+    margin-top:18px;
+    background:#020617;
+    border-radius:18px;
+    padding:16px;
+    min-height:130px;
+}
+
+#recordPanel h3{
+    margin-bottom:10px;
+    color:#facc15;
+}
+
+.recordLine{
+    margin:7px 0;
+    color:#e2e8f0;
+    font-size:17px;
+}
+
+.help{
+    margin-top:18px;
+    background:#0f172a;
+    border-radius:14px;
+    padding:13px;
+    color:#cbd5e1;
+    line-height:1.45;
+}
+
+#hud{
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    font-size:18px;
+    margin-bottom:12px;
+}
+
+.hudItem{
+    background:#020617;
+    padding:10px 14px;
+    border-radius:12px;
+    min-width:105px;
+    text-align:center;
+}
+
+#field{
+    height:68vh;
+    min-height:500px;
+    background:linear-gradient(#38bdf8 0 18%,#16a34a 19% 100%);
+    border-radius:22px;
+    position:relative;
+    overflow:hidden;
+    border:3px solid rgba(255,255,255,0.2);
+}
+
+#goal{
+    position:absolute;
+    top:45px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(650px,88%);
+    height:230px;
+    border:12px solid white;
+    border-bottom:none;
+    border-radius:8px 8px 0 0;
+    background:
+        linear-gradient(90deg,rgba(255,255,255,0.25) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.25) 1px, transparent 1px);
+    background-size:35px 35px;
+    cursor:crosshair;
+}
+
+#targetPoint{
+    position:absolute;
+    width:24px;
+    height:24px;
+    border:3px solid #facc15;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    display:none;
+    pointer-events:none;
+    box-shadow:0 0 18px #facc15;
+    z-index:8;
+}
+
+#keeper{
+    position:absolute;
+    bottom:8px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:70px;
+ transition:left 0.55s ease-out, bottom 0.55s ease-out, transform 0.55s ease-out;
+    z-index:5;
+}
+
+#ball{
+    position:absolute;
+    bottom:42px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:52px;
+    transition:0.45s ease-out;
+    z-index:10;
+}
+
+#spot{
+    position:absolute;
+    bottom:65px;
+    left:50%;
+    width:110px;
+    height:18px;
+    background:rgba(255,255,255,0.5);
+    border-radius:50%;
+    transform:translateX(-50%);
+}
+
+#powerBox{
+    margin-top:12px;
+    background:#020617;
+    padding:12px;
+    border-radius:14px;
+}
+
+#powerBar{
+    width:100%;
+    height:22px;
+    background:#334155;
+    border-radius:999px;
+    overflow:hidden;
+    border:2px solid rgba(255,255,255,0.2);
+}
+
+#powerFill{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,#22c55e,#facc15,#ef4444);
+    transition:0.04s linear;
+}
+
+#powerText{
+    margin-top:7px;
+    color:#cbd5e1;
+    font-weight:bold;
+}
+
+#message{
+    position:absolute;
+    left:50%;
+    top:55%;
+    transform:translate(-50%,-50%);
+    font-size:48px;
+    font-weight:bold;
+    text-shadow:0 4px 20px rgba(0,0,0,0.8);
+    opacity:0;
+    pointer-events:none;
+    z-index:30;
+}
+
+#message.show{
+    animation:flash 0.9s forwards;
+}
+
+#endScreen{
+    position:absolute;
+    inset:0;
+    background:rgba(2,6,23,0.92);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:100;
+}
+
+#endCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:26px;
+    text-align:center;
+    box-shadow:0 25px 55px rgba(0,0,0,0.45);
+}
+
+#endCard h2{
+    font-size:36px;
+    margin-bottom:16px;
+}
+
+#endStats{
+    font-size:20px;
+    line-height:1.8;
+    margin-bottom:20px;
+}
+
+.endButtons{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.endButtons button{
+    padding:13px 20px;
+    font-size:18px;
+}
+
+.restartBtn{
+    background:#22c55e;
+    color:#052e16;
+}
+
+.menuBtn{
+    background:#38bdf8;
+    color:#082f49;
+}
+
+@keyframes flash{
+    0%{opacity:0; transform:translate(-50%,-50%) scale(0.6);}
+    20%{opacity:1; transform:translate(-50%,-50%) scale(1.1);}
+    100%{opacity:0; transform:translate(-50%,-75%) scale(1);}
+}
+
+@media(max-width:850px){
+    #layout{
+        grid-template-columns:1fr;
+    }
+
+    h1{
+        font-size:34px;
+    }
+
+    #field{
+        height:62vh;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>⚽ Penalty Master</h1>
+        <div>👤 Joueur : <span id="playerName">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="layout">
+
+<aside class="panel">
+    <h2>⚙️ Paramètres</h2>
+
+    <div class="optionGroup">
+        <p>Mode</p>
+        <button class="choice selected" id="mode_shots" onclick="selectMode('shots')">🎯 10 tirs</button>
+        <button class="choice" id="mode_time" onclick="selectMode('time')">⏱️ 1 minute</button>
+        <button class="choice" id="mode_se" onclick="selectMode('se')">💔 SE</button>
+    </div>
+
+    <div class="optionGroup">
+        <p>Difficulté</p>
+        <button class="choice selected" id="diff_easy" onclick="selectDifficulty('easy')">🟢 Facile</button>
+        <button class="choice" id="diff_medium" onclick="selectDifficulty('medium')">🟠 Moyen</button>
+        <button class="choice" id="diff_hard" onclick="selectDifficulty('hard')">🔴 Difficile</button>
+    </div>
+
+    <button id="startBtn" onclick="startGame()">▶️ COMMENCER</button>
+
+    <div id="recordPanel">
+        <h3>🏆 Record actuel</h3>
+        <div id="recordContent"></div>
+    </div>
+
+    <div class="help">
+        <strong>Comment tirer :</strong><br>
+        1. Maintiens dans la cage.<br>
+        2. La puissance monte.<br>
+        3. Relâche pour tirer.<br><br>
+        Trop faible = facile à arrêter.<br>
+        Trop fort = tir au-dessus possible.
+    </div>
+</aside>
+
+<section class="panel">
+    <div id="hud">
+        <div class="hudItem">⚽ Buts<br><span id="scoreDisplay">0</span></div>
+        <div class="hudItem">🧤 Arrêts<br><span id="saveDisplay">0</span></div>
+        <div class="hudItem">🎯 Tirs<br><span id="shotDisplay">0</span></div>
+        <div class="hudItem">⏱️ Temps<br><span id="timeDisplay">0</span></div>
+    </div>
+
+    <div id="field">
+        <div id="goal">
+            <div id="targetPoint"></div>
+            <div id="keeper">🧤</div>
+        </div>
+
+        <div id="spot"></div>
+        <div id="ball">⚽</div>
+        <div id="message"></div>
+
+        <div id="endScreen">
+            <div id="endCard">
+                <h2 id="endTitle">FIN</h2>
+                <div id="endStats"></div>
+
+                <div class="endButtons">
+                    <button class="restartBtn" onclick="restartGame(event)">🔁 Rejouer</button>
+                    <button class="menuBtn" onclick="showMenu(event)">⚙️ Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="powerBox">
+        <div id="powerBar">
+            <div id="powerFill"></div>
+        </div>
+        <div id="powerText">Puissance : 0%</div>
+    </div>
+</section>
+
+</div>
+
+<script>
+document.getElementById("playerName").innerText =
+localStorage.getItem("pseudo") || "Joueur";
+
+let selectedMode = "shots";
+let selectedDifficulty = "easy";
+
+let isPlaying = false;
+let locked = false;
+let charging = false;
+
+let goals = 0;
+let saves = 0;
+let misses = 0;
+let shots = 0;
+let time = 0;
+
+let timer = null;
+let chargeTimer = null;
+let power = 0;
+let powerDirection = 1;
+let aimX = 0.5;
+let aimY = 0.5;
+
+const goal = document.getElementById("goal");
+const keeper = document.getElementById("keeper");
+const ball = document.getElementById("ball");
+const message = document.getElementById("message");
+const endScreen = document.getElementById("endScreen");
+const targetPoint = document.getElementById("targetPoint");
+
+const difficulty = {
+    easy:{label:"Facile", keeperSize:0.17, react:0.55, overChance:0.12},
+    medium:{label:"Moyen", keeperSize:0.22, react:0.72, overChance:0.20},
+    hard:{label:"Difficile", keeperSize:0.27, react:0.88, overChance:0.30}
+};
+
+function goHome(){
+    window.location.href = "index.html";
+}
+
+function selectMode(mode){
+    if(isPlaying){
+    if(!confirm("Changer le mode va arrêter la partie actuelle. Continuer ?")){
+        return;
+    }
+
+    showMenu();
+}
+
+    selectedMode = mode;
+
+    document.getElementById("mode_shots").classList.toggle("selected", mode==="shots");
+    document.getElementById("mode_time").classList.toggle("selected", mode==="time");
+    document.getElementById("mode_se").classList.toggle("selected", mode==="se");
+
+    updateRecordPanel();
+    updateHUD();
+}
+
+function selectDifficulty(diff){
+    if(isPlaying){
+    if(!confirm("Changer la difficulté va arrêter la partie actuelle. Continuer ?")){
+        return;
+    }
+
+    showMenu();
+}
+
+    selectedDifficulty = diff;
+
+    document.getElementById("diff_easy").classList.toggle("selected", diff==="easy");
+    document.getElementById("diff_medium").classList.toggle("selected", diff==="medium");
+    document.getElementById("diff_hard").classList.toggle("selected", diff==="hard");
+
+    updateRecordPanel();
+}
+
+function getRecordKey(){
+    return "penalty_v2_record_" + selectedMode + "_" + selectedDifficulty;
+}
+
+function updateRecordPanel(){
+    const box = document.getElementById("recordContent");
+    const record = JSON.parse(localStorage.getItem(getRecordKey()) || "null");
+    const modeName = selectedMode === "shots" ? "10 tirs" : selectedMode === "time" ? "1 minute" : "SE";
+    const diffName = difficulty[selectedDifficulty].label;
+
+    if(!record){
+        box.innerHTML = `
+            <div class="recordLine">${modeName} - ${diffName}</div>
+            <div class="recordLine">Aucun record.</div>
+        `;
+        return;
+    }
+
+    if(selectedMode === "se"){
+        box.innerHTML = `
+            <div class="recordLine">${modeName} - ${diffName}</div>
+            <div class="recordLine">⚽ Série : ${record.goals}</div>
+        `;
+    }else{
+        box.innerHTML = `
+            <div class="recordLine">${modeName} - ${diffName}</div>
+            <div class="recordLine">⚽ Buts : ${record.goals}</div>
+            <div class="recordLine">🎯 Tirs : ${record.shots}</div>
+            <div class="recordLine">📊 Réussite : ${record.accuracy}%</div>
+        `;
+    }
+}
+
+function resetGame(){
+    clearInterval(timer);
+    clearInterval(chargeTimer);
+
+    timer = null;
+    chargeTimer = null;
+
+    goals = 0;
+    saves = 0;
+    misses = 0;
+    shots = 0;
+    time = 0;
+    power = 0;
+    locked = false;
+    charging = false;
+
+    resetBall();
+    updatePower();
+    updateHUD();
+}
+
+function startGame(){
+    resetGame();
+
+    isPlaying = true;
+    endScreen.style.display = "none";
+    document.getElementById("startBtn").style.display = "none";
+
+    if(selectedMode === "time"){
+        time = 60;
+        timer = setInterval(() => {
+            time--;
+            updateHUD();
+
+            if(time <= 0){
+                endGame();
+            }
+        },1000);
+    }
+
+    updateHUD();
+}
+
+goal.addEventListener("mousedown", startCharge);
+goal.addEventListener("touchstart", function(e){
+    e.preventDefault();
+    startCharge(e.touches[0]);
+});
+
+window.addEventListener("mouseup", releaseShot);
+window.addEventListener("touchend", releaseShot);
+
+goal.addEventListener("mousemove", function(e){
+    if(charging){
+        updateAim(e);
+    }
+});
+
+goal.addEventListener("touchmove", function(e){
+    if(charging){
+        e.preventDefault();
+        updateAim(e.touches[0]);
+    }
+});
+
+function startCharge(e){
+    if(!isPlaying || locked) return;
+
+    charging = true;
+    power = 0;
+    powerDirection = 1;
+
+    updateAim(e);
+    targetPoint.style.display = "block";
+
+    clearInterval(chargeTimer);
+    chargeTimer = setInterval(() => {
+        power += 3.2 * powerDirection;
+
+        if(power >= 100){
+            power = 100;
+            powerDirection = -1;
+        }
+
+        if(power <= 0){
+            power = 0;
+            powerDirection = 1;
+        }
+
+        updatePower();
+    },30);
+}
+
+function updateAim(e){
+    const rect = goal.getBoundingClientRect();
+
+    aimX = (e.clientX - rect.left) / rect.width;
+    aimY = (e.clientY - rect.top) / rect.height;
+
+    aimX = Math.max(0.04, Math.min(0.96, aimX));
+    aimY = Math.max(0.06, Math.min(0.88, aimY));
+
+    targetPoint.style.left = (aimX * 100) + "%";
+    targetPoint.style.top = (aimY * 100) + "%";
+}
+
+function releaseShot(e){
+    if(!charging || !isPlaying || locked) return;
+
+    charging = false;
+    clearInterval(chargeTimer);
+    targetPoint.style.display = "none";
+
+    shootPrecise();
+}
+
+function updatePower(){
+    document.getElementById("powerFill").style.width = power + "%";
+    document.getElementById("powerText").innerText = "Puissance : " + Math.round(power) + "%";
+}
+
+function shootPrecise(){
+    locked = true;
+    shots++;
+
+    const result = calculateShotResult();
+
+    animateShot(result.finalX, result.finalY, result.keeperX, result.keeperY, result.saved);
+
+    setTimeout(() => {
+  if(result.out){
+
+    misses++;
+    flash("AU-DESSUS 😭");
+
+    if(selectedMode === "se"){
+        endGame();
+        return;
+    }
+
+}
+else if(result.crossbar){
+
+    misses++;
+    flash("BARRE 🥶");
+
+    if(selectedMode === "se"){
+        endGame();
+        return;
+    }
+
+}
+else if(result.post){
+
+    misses++;
+    flash("POTEAU 😱");
+
+    if(selectedMode === "se"){
+        endGame();
+        return;
+    }
+
+}
+else if(result.saved){
+
+    saves++;
+    flash("ARRÊT 🧤");
+
+    if(selectedMode === "se"){
+        endGame();
+        return;
+    }
+
+}
+else{
+
+    goals++;
+    flash("BUT ⚽");
+
+}
+
+        updateHUD();
+
+        if(selectedMode === "shots" && shots >= 10){
+            endGame();
+            return;
+        }
+
+        setTimeout(() => {
+            resetBall();
+            locked = false;
+        },500);
+
+    },650);
+}
+
+function calculateShotResult(){
+    const diff = difficulty[selectedDifficulty];
+
+    let finalX = aimX;
+    let finalY = aimY;
+
+    let out = false;
+let post = false;
+let crossbar = false;
+    if(power < 28){
+        // Tir trop mou : gardien lit mieux la balle.
+        finalY = Math.min(0.85, finalY + 0.20);
+    }
+
+    if(power > 88){
+        // Trop puissant : risque de tir au-dessus.
+        if(Math.random() < diff.overChance + ((power - 88) / 60)){
+            out = true;
+            finalY = -0.15;
+        }
+    }
+
+    // Petite imprécision selon la puissance.
+    let precisionError = 0;
+
+    if(power < 45){
+        precisionError = 0.10;
+    }else if(power <= 80){
+        precisionError = 0.035;
+    }else{
+        precisionError = 0.08;
+    }
+
+    finalX += (Math.random() - 0.5) * precisionError;
+    finalY += (Math.random() - 0.5) * precisionError;
+
+    finalX = Math.max(0.02, Math.min(0.98, finalX));
+    finalY = Math.max(-0.20, Math.min(0.93, finalY));
+
+    // Le gardien vise plus ou moins bien selon difficulté et puissance.
+    let keeperX = finalX;
+    let keeperY = Math.max(0.25, Math.min(0.80, finalY + 0.15));
+
+    if(Math.random() > diff.react){
+        keeperX = Math.random();
+        keeperY = 0.58;
+    }
+
+    // Tir mou = gardien plus dangereux.
+    let keeperSize = diff.keeperSize;
+
+    if(power < 35){
+        keeperSize += 0.16;
+    }
+
+    if(power > 80){
+        keeperSize -= 0.05;
+    }
+
+    const dx = finalX - keeperX;
+    const dy = finalY - keeperY;
+    const distance = Math.sqrt(dx*dx + dy*dy);
+
+
+// Détection poteaux et barre
+if(!out){
+
+    // Poteau gauche ou droit
+    if(finalX <= 0.04 || finalX >= 0.96){
+        post = true;
+    }
+
+    // Barre transversale
+    if(finalY <= 0.28){
+        crossbar = true;
+    }
+
+}
+    // Hitbox plus petite = arrêt seulement si les gants sont vraiment proches du ballon
+let saveDistance = 0.08;
+
+if(selectedDifficulty === "medium"){
+    saveDistance = 0.11;
+}
+
+if(selectedDifficulty === "hard"){
+    saveDistance = 0.15;
+}
+
+let saved = !out && distance < saveDistance;
+
+// Si arrêt, les gants vont exactement sur le ballon
+if(saved){
+    keeperX = finalX;
+    keeperY = finalY;
+}
+
+return {
+    finalX,
+    finalY,
+    keeperX,
+    keeperY,
+    saved,
+    out,
+    post,
+    crossbar
+};
+
+}
+
+function animateShot(finalX, finalY, keeperX, keeperY, saved){
+    const goalRect = goal.getBoundingClientRect();
+    const field = document.getElementById("field");
+    const fieldRect = field.getBoundingClientRect();
+
+    const targetLeft = goalRect.left - fieldRect.left + finalX * goalRect.width;
+    const targetTop = goalRect.top - fieldRect.top + finalY * goalRect.height;
+
+    ball.style.left = targetLeft + "px";
+    ball.style.bottom = (fieldRect.height - targetTop) + "px";
+    ball.style.transform = "translateX(-50%) scale(0.72)";
+
+    if(saved){
+        keeper.style.left = targetLeft + "px";
+        keeper.style.bottom = (fieldRect.height - targetTop) + "px";
+    }else{
+        keeper.style.left = (keeperX * 100) + "%";
+        keeper.style.bottom = (8 + (1 - keeperY) * 90) + "px";
+    }
+
+    keeper.style.transform = "translateX(-50%)";
+}
+
+function resetBall(){
+    ball.style.left = "50%";
+    ball.style.bottom = "42px";
+    ball.style.transform = "translateX(-50%) scale(1)";
+
+    keeper.style.left = "50%";
+    keeper.style.bottom = "8px";
+    keeper.style.transform = "translateX(-50%)";
+}
+
+function flash(text){
+    message.innerText = text;
+    message.classList.remove("show");
+    void message.offsetWidth;
+    message.classList.add("show");
+}
+
+function updateHUD(){
+    document.getElementById("scoreDisplay").innerText = goals;
+    document.getElementById("saveDisplay").innerText = saves + misses;
+    document.getElementById("shotDisplay").innerText = shots;
+    document.getElementById("timeDisplay").innerText = selectedMode === "time" ? time : "-";
+}
+
+function endGame(){
+    if(!isPlaying) return;
+
+    isPlaying = false;
+    clearInterval(timer);
+    clearInterval(chargeTimer);
+
+    timer = null;
+    chargeTimer = null;
+    locked = true;
+    charging = false;
+
+    saveRecord();
+
+    const accuracy = shots === 0 ? 0 : Math.round((goals / shots) * 100);
+
+    if(selectedMode === "se"){
+        endTitle.innerText = "💀 FIN DE SÉRIE";
+        endStats.innerHTML = `
+            ⚽ Buts d'affilée : ${goals}<br>
+            🧤 Arrêts/Ratés : ${saves + misses}
+        `;
+    }else{
+        endTitle.innerText = "🎉 FIN";
+        endStats.innerHTML = `
+            ⚽ Buts : ${goals}<br>
+            🧤 Arrêts/Ratés : ${saves + misses}<br>
+            🎯 Tirs : ${shots}<br>
+            📊 Réussite : ${accuracy}%
+        `;
+    }
+
+    updateRecordPanel();
+    endScreen.style.display = "flex";
+}
+
+function saveRecord(){
+    const key = getRecordKey();
+    const old = JSON.parse(localStorage.getItem(key) || "null");
+    const accuracy = shots === 0 ? 0 : Math.round((goals / shots) * 100);
+
+    if(selectedMode === "se"){
+        const record = {goals};
+        if(!old || goals > old.goals){
+            localStorage.setItem(key, JSON.stringify(record));
+        }
+    }else{
+        const record = {goals, shots, accuracy};
+        if(!old || goals > old.goals || (goals === old.goals && accuracy > old.accuracy)){
+            localStorage.setItem(key, JSON.stringify(record));
+        }
+    }
+}
+
+function restartGame(e){
+    if(e){
+        e.stopPropagation();
+        e.preventDefault();
+    }
+
+    endScreen.style.display = "none";
+
+    setTimeout(() => {
+        startGame();
+    },50);
+}
+
+function showMenu(e){
+    if(e){
+        e.stopPropagation();
+        e.preventDefault();
+    }
+
+    isPlaying = false;
+    locked = false;
+    charging = false;
+
+    clearInterval(timer);
+    clearInterval(chargeTimer);
+
+    endScreen.style.display = "none";
+    document.getElementById("startBtn").style.display = "block";
+
+    resetGame();
+    updateRecordPanel();
+}
+
+endScreen.addEventListener("click", function(e){
+    e.stopPropagation();
+});
+
+updateRecordPanel();
+updateHUD();
+updatePower();
+</script>
+
+</body>
+</html>

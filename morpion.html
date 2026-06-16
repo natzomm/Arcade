@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morpion</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f172a,#581c87,#1e3a8a);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{
+    font-size:42px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1050px,95%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:315px 1fr;
+    gap:22px;
+}
+
+.panel{
+    background:rgba(15,23,42,0.85);
+    border:1px solid rgba(148,163,184,0.25);
+    border-radius:22px;
+    padding:22px;
+    box-shadow:0 20px 45px rgba(0,0,0,0.3);
+}
+
+#scorePanel h2{
+    margin-bottom:15px;
+}
+
+.scoreLine{
+    background:#020617;
+    padding:13px;
+    margin:10px 0;
+    border-radius:12px;
+    font-size:20px;
+}
+
+.modeBtn,.diffBtn{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:17px;
+    background:#334155;
+    color:white;
+    border:2px solid transparent;
+}
+
+.modeBtn.selected,.diffBtn.selected{
+    background:#22c55e;
+    color:#052e16;
+    border-color:#bbf7d0;
+}
+
+#difficultyBox{
+    margin-top:20px;
+    display:none;
+}
+
+.resetBtn{
+    width:100%;
+    padding:13px;
+    margin-top:18px;
+    font-size:17px;
+    background:#ef4444;
+    color:white;
+}
+
+#gamePanel{
+    text-align:center;
+}
+
+#status{
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:18px;
+    color:#facc15;
+    min-height:35px;
+}
+
+#board{
+    width:min(420px,90vw);
+    height:min(420px,90vw);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(3,1fr);
+    gap:12px;
+}
+
+.cell{
+    background:#1e293b;
+    border:3px solid #475569;
+    border-radius:18px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:82px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.cell:hover{
+    background:#334155;
+    transform:scale(1.03);
+}
+
+.cell.x{
+    color:#38bdf8;
+    text-shadow:0 0 18px rgba(56,189,248,0.8);
+}
+
+.cell.o{
+    color:#f472b6;
+    text-shadow:0 0 18px rgba(244,114,182,0.8);
+}
+
+.cell.win{
+    background:#22c55e;
+    color:#052e16;
+    border-color:#bbf7d0;
+}
+
+#controls{
+    margin-top:22px;
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.playBtn{
+    padding:14px 24px;
+    font-size:18px;
+    background:#facc15;
+    color:#422006;
+}
+
+.clearBtn{
+    padding:14px 24px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#endMessage{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:50;
+}
+
+#endCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+}
+
+#endCard h2{
+    font-size:36px;
+    margin-bottom:16px;
+}
+
+#endCard button{
+    padding:13px 22px;
+    font-size:18px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+.info{
+    margin-top:15px;
+    color:#cbd5e1;
+    line-height:1.4;
+    background:#020617;
+    border-radius:12px;
+    padding:12px;
+}
+
+@media(max-width:800px){
+    #container{
+        grid-template-columns:1fr;
+    }
+
+    h1{
+        font-size:34px;
+    }
+
+    .cell{
+        font-size:62px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>❌⭕ Morpion</h1>
+        <div>👤 Joueur : <span id="player">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+
+<aside class="panel" id="scorePanel">
+    <h2>🏆 Scores</h2>
+
+    <div class="scoreLine">❌ X : <span id="scoreX">0</span></div>
+    <div class="scoreLine">⭕ O : <span id="scoreO">0</span></div>
+    <div class="scoreLine">🤝 Égalités : <span id="scoreDraw">0</span></div>
+
+    <h2 style="margin-top:25px;">🎮 Mode</h2>
+    <button class="modeBtn selected" id="mode2p" onclick="setMode('2p')">👥 2 joueurs</button>
+    <button class="modeBtn" id="modeBot" onclick="setMode('bot')">🤖 Contre bot</button>
+
+    <div id="difficultyBox">
+        <h2>🤖 Difficulté bot</h2>
+        <button class="diffBtn selected" id="diffEasy" onclick="setBotDifficulty('easy')">🟢 Facile</button>
+        <button class="diffBtn" id="diffMedium" onclick="setBotDifficulty('medium')">🟠 Moyen</button>
+        <button class="diffBtn" id="diffHard" onclick="setBotDifficulty('hard')">🔴 Difficile</button>
+        <button class="diffBtn" id="diffImpossible" onclick="setBotDifficulty('impossible')">⚫ Impossible</button>
+    </div>
+
+    <div class="info" id="botInfo">
+        Mode 2 joueurs : joue avec quelqu’un sur le même ordinateur.
+    </div>
+
+    <button class="resetBtn" onclick="resetScores()">🔄 Reset scores</button>
+</aside>
+
+<section class="panel" id="gamePanel">
+    <div id="status">Tour de ❌</div>
+
+    <div id="board">
+        <div class="cell" onclick="play(0)"></div>
+        <div class="cell" onclick="play(1)"></div>
+        <div class="cell" onclick="play(2)"></div>
+        <div class="cell" onclick="play(3)"></div>
+        <div class="cell" onclick="play(4)"></div>
+        <div class="cell" onclick="play(5)"></div>
+        <div class="cell" onclick="play(6)"></div>
+        <div class="cell" onclick="play(7)"></div>
+        <div class="cell" onclick="play(8)"></div>
+    </div>
+
+    <div id="controls">
+        <button class="playBtn" onclick="newRound()">🔁 Nouvelle manche</button>
+        <button class="clearBtn" onclick="resetBoardOnly()">🧹 Vider grille</button>
+    </div>
+</section>
+
+</div>
+
+<div id="endMessage">
+    <div id="endCard">
+        <h2 id="endTitle">Fin</h2>
+        <button onclick="closeEnd()">Continuer</button>
+    </div>
+</div>
+
+<script>
+document.getElementById("player").innerText =
+localStorage.getItem("pseudo") || "Joueur";
+
+let board = ["","","","","","","","",""];
+let current = "X";
+let gameOver = false;
+let mode = "2p";
+let botDifficulty = "easy";
+
+let scores = JSON.parse(localStorage.getItem("morpion_scores") || '{"X":0,"O":0,"draw":0}');
+
+const cells = document.querySelectorAll(".cell");
+
+const wins = [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6]
+];
+
+function goHome(){
+    window.location.href = "index.html";
+}
+
+function updateScores(){
+    document.getElementById("scoreX").innerText = scores.X;
+    document.getElementById("scoreO").innerText = scores.O;
+    document.getElementById("scoreDraw").innerText = scores.draw;
+    localStorage.setItem("morpion_scores", JSON.stringify(scores));
+}
+
+function setMode(newMode){
+    mode = newMode;
+
+    document.getElementById("mode2p").classList.toggle("selected", mode === "2p");
+    document.getElementById("modeBot").classList.toggle("selected", mode === "bot");
+
+    document.getElementById("difficultyBox").style.display = mode === "bot" ? "block" : "none";
+
+    updateBotInfo();
+    newRound();
+}
+
+function setBotDifficulty(diff){
+    botDifficulty = diff;
+
+    document.getElementById("diffEasy").classList.toggle("selected", diff === "easy");
+    document.getElementById("diffMedium").classList.toggle("selected", diff === "medium");
+    document.getElementById("diffHard").classList.toggle("selected", diff === "hard");
+    document.getElementById("diffImpossible").classList.toggle("selected", diff === "impossible");
+
+    updateBotInfo();
+    newRound();
+}
+
+function updateBotInfo(){
+    const info = document.getElementById("botInfo");
+
+    if(mode === "2p"){
+        info.innerHTML = "Mode 2 joueurs : joue avec quelqu’un sur le même ordinateur.";
+        return;
+    }
+
+    if(botDifficulty === "easy"){
+        info.innerHTML = "🟢 Facile : le bot joue presque au hasard.";
+    }else if(botDifficulty === "medium"){
+        info.innerHTML = "🟠 Moyen : le bot essaie de gagner et de te bloquer.";
+    }else if(botDifficulty === "hard"){
+        info.innerHTML = "🔴 Difficile : le bot joue très bien, mais peut encore faire une erreur.";
+    }else{
+        info.innerHTML = "⚫ Impossible : le bot joue parfaitement. Tu peux seulement espérer l’égalité.";
+    }
+}
+
+function play(index){
+    if(gameOver) return;
+    if(board[index] !== "") return;
+
+    board[index] = current;
+    render();
+
+    const result = checkWinner();
+
+    if(result){
+        finish(result);
+        return;
+    }
+
+    current = current === "X" ? "O" : "X";
+    updateStatus();
+
+    if(mode === "bot" && current === "O" && !gameOver){
+        setTimeout(botPlay, 350);
+    }
+}
+
+function botPlay(){
+    if(gameOver) return;
+
+    let move = null;
+
+    if(botDifficulty === "easy"){
+        move = randomMove();
+    }
+
+    if(botDifficulty === "medium"){
+        move = mediumMove();
+    }
+
+    if(botDifficulty === "hard"){
+        // 80% très bon, 20% erreur pour que ce soit battable.
+        move = Math.random() < 0.8 ? minimaxMove() : mediumMove();
+    }
+
+    if(botDifficulty === "impossible"){
+        move = minimaxMove();
+    }
+
+    if(move === null){
+        move = randomMove();
+    }
+
+    play(move);
+}
+
+function randomMove(){
+    const empty = board.map((v,i)=>v===""?i:null).filter(v=>v!==null);
+    if(empty.length === 0) return null;
+    return empty[Math.floor(Math.random()*empty.length)];
+}
+
+function mediumMove(){
+    let move = findBestMove("O");
+    if(move !== null) return move;
+
+    move = findBestMove("X");
+    if(move !== null) return move;
+
+    if(board[4] === "") return 4;
+
+    const corners = [0,2,6,8].filter(i => board[i] === "");
+    if(corners.length > 0){
+        return corners[Math.floor(Math.random()*corners.length)];
+    }
+
+    return randomMove();
+}
+
+function findBestMove(symbol){
+    for(const combo of wins){
+        const values = combo.map(i => board[i]);
+        const emptyIndex = combo.find(i => board[i] === "");
+
+        if(values.filter(v => v === symbol).length === 2 && emptyIndex !== undefined){
+            return emptyIndex;
+        }
+    }
+
+    return null;
+}
+
+function minimaxMove(){
+    let bestScore = -Infinity;
+    let bestMove = null;
+
+    for(let i=0;i<9;i++){
+        if(board[i] === ""){
+            board[i] = "O";
+            let score = minimax(false);
+            board[i] = "";
+
+            if(score > bestScore){
+                bestScore = score;
+                bestMove = i;
+            }
+        }
+    }
+
+    return bestMove;
+}
+
+function minimax(isMaximizing){
+    const result = checkWinnerSilent();
+
+    if(result === "O") return 10;
+    if(result === "X") return -10;
+    if(result === "draw") return 0;
+
+    if(isMaximizing){
+        let best = -Infinity;
+
+        for(let i=0;i<9;i++){
+            if(board[i] === ""){
+                board[i] = "O";
+                best = Math.max(best, minimax(false));
+                board[i] = "";
+            }
+        }
+
+        return best;
+    }else{
+        let best = Infinity;
+
+        for(let i=0;i<9;i++){
+            if(board[i] === ""){
+                board[i] = "X";
+                best = Math.min(best, minimax(true));
+                board[i] = "";
+            }
+        }
+
+        return best;
+    }
+}
+
+function render(){
+    board.forEach((value,index)=>{
+        cells[index].innerText = value === "X" ? "❌" : value === "O" ? "⭕" : "";
+        cells[index].classList.toggle("x", value === "X");
+        cells[index].classList.toggle("o", value === "O");
+    });
+}
+
+function checkWinner(){
+    for(const combo of wins){
+        const [a,b,c] = combo;
+
+        if(board[a] && board[a] === board[b] && board[a] === board[c]){
+            return {winner:board[a], combo};
+        }
+    }
+
+    if(board.every(v => v !== "")){
+        return {winner:"draw", combo:[]};
+    }
+
+    return null;
+}
+
+function checkWinnerSilent(){
+    for(const combo of wins){
+        const [a,b,c] = combo;
+
+        if(board[a] && board[a] === board[b] && board[a] === board[c]){
+            return board[a];
+        }
+    }
+
+    if(board.every(v => v !== "")){
+        return "draw";
+    }
+
+    return null;
+}
+
+function finish(result){
+    gameOver = true;
+
+    if(result.winner === "draw"){
+        scores.draw++;
+        showEnd("🤝 Égalité !");
+    }else{
+        scores[result.winner]++;
+        result.combo.forEach(i => cells[i].classList.add("win"));
+        showEnd((result.winner === "X" ? "❌" : "⭕") + " gagne !");
+    }
+
+    updateScores();
+}
+
+function showEnd(text){
+    document.getElementById("endTitle").innerText = text;
+    document.getElementById("endMessage").style.display = "flex";
+}
+
+function closeEnd(){
+    document.getElementById("endMessage").style.display = "none";
+}
+
+function newRound(){
+    board = ["","","","","","","","",""];
+    current = "X";
+    gameOver = false;
+
+    cells.forEach(cell=>{
+        cell.classList.remove("win","x","o");
+        cell.innerText = "";
+    });
+
+    updateStatus();
+}
+
+function resetBoardOnly(){
+    newRound();
+}
+
+function resetScores(){
+    if(!confirm("Tu veux vraiment reset les scores du morpion ?")) return;
+
+    scores = {X:0,O:0,draw:0};
+    updateScores();
+}
+
+function updateStatus(){
+    document.getElementById("status").innerText =
+    current === "X" ? "Tour de ❌" : "Tour de ⭕";
+}
+
+updateScores();
+updateBotInfo();
+newRound();
+</script>
+
+</body>
+</html>

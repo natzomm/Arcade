@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puissance 4</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f172a,#1e3a8a,#7c2d12);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{
+    font-size:42px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1120px,95%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:315px 1fr;
+    gap:22px;
+}
+
+.panel{
+    background:rgba(15,23,42,0.86);
+    border:1px solid rgba(148,163,184,0.25);
+    border-radius:24px;
+    padding:22px;
+    box-shadow:0 20px 45px rgba(0,0,0,0.3);
+}
+
+.scoreLine{
+    background:#020617;
+    padding:13px;
+    margin:10px 0;
+    border-radius:12px;
+    font-size:20px;
+}
+
+.modeBtn,.diffBtn{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:17px;
+    background:#334155;
+    color:white;
+    border:2px solid transparent;
+}
+
+.modeBtn.selected,.diffBtn.selected{
+    background:#22c55e;
+    color:#052e16;
+    border-color:#bbf7d0;
+}
+
+#difficultyBox{
+    margin-top:20px;
+    display:none;
+}
+
+.resetBtn{
+    width:100%;
+    padding:13px;
+    margin-top:18px;
+    font-size:17px;
+    background:#ef4444;
+    color:white;
+}
+
+.info{
+    margin-top:15px;
+    color:#cbd5e1;
+    line-height:1.4;
+    background:#020617;
+    border-radius:12px;
+    padding:12px;
+}
+
+#gamePanel{
+    text-align:center;
+}
+
+#status{
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:16px;
+    color:#facc15;
+    min-height:38px;
+}
+
+#dropPreview{
+    height:70px;
+    width:min(620px,95%);
+    margin:0 auto 8px;
+    position:relative;
+}
+
+.previewDisc{
+    position:absolute;
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    top:6px;
+    transition:left 0.15s;
+    border:4px solid rgba(255,255,255,0.55);
+    box-shadow:inset -8px -8px 14px rgba(0,0,0,0.25), inset 8px 8px 12px rgba(255,255,255,0.25), 0 8px 18px rgba(0,0,0,0.35);
+}
+
+.previewDisc.red{
+    background:#ef4444;
+}
+
+.previewDisc.yellow{
+    background:#facc15;
+}
+
+#boardWrap{
+    width:min(620px,95%);
+    margin:0 auto;
+    position:relative;
+    padding:16px;
+    border-radius:25px;
+    background:linear-gradient(145deg,#2563eb,#1d4ed8,#172554);
+    box-shadow:
+        0 22px 0 #0f172a,
+        0 28px 35px rgba(0,0,0,0.45),
+        inset 8px 8px 16px rgba(255,255,255,0.14),
+        inset -8px -8px 18px rgba(0,0,0,0.35);
+    transform:perspective(900px) rotateX(5deg);
+}
+
+#fallLayer{
+    position:absolute;
+    inset:16px;
+    pointer-events:none;
+    z-index:5;
+}
+
+#board{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    grid-template-rows:repeat(6,1fr);
+    gap:10px;
+    position:relative;
+    z-index:8;
+}
+
+.cell{
+    aspect-ratio:1/1;
+    border-radius:50%;
+    background:#020617;
+    box-shadow:
+        inset 0 8px 15px rgba(0,0,0,0.85),
+        inset 0 -4px 8px rgba(255,255,255,0.12);
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+}
+
+.cell:hover{
+    outline:3px solid rgba(250,204,21,0.45);
+}
+
+.disc{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    border:4px solid rgba(255,255,255,0.18);
+    box-shadow:
+        inset -8px -8px 14px rgba(0,0,0,0.25),
+        inset 8px 8px 12px rgba(255,255,255,0.25);
+}
+
+.disc.red{
+    background:#ef4444;
+}
+
+.disc.yellow{
+    background:#facc15;
+}
+
+.fallingDisc{
+    position:absolute;
+    border-radius:50%;
+    border:4px solid rgba(255,255,255,0.35);
+    box-shadow:
+        inset -8px -8px 14px rgba(0,0,0,0.25),
+        inset 8px 8px 12px rgba(255,255,255,0.25),
+        0 10px 20px rgba(0,0,0,0.35);
+    z-index:20;
+    transition:top 0.38s cubic-bezier(.2,.85,.25,1.25);
+}
+
+.fallingDisc.red{
+    background:#ef4444;
+}
+
+.fallingDisc.yellow{
+    background:#facc15;
+}
+
+.cell.win{
+    outline:5px solid #22c55e;
+    box-shadow:0 0 22px #22c55e, inset 0 8px 15px rgba(0,0,0,0.85);
+}
+
+#controls{
+    margin-top:24px;
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.playBtn{
+    padding:14px 24px;
+    font-size:18px;
+    background:#facc15;
+    color:#422006;
+}
+
+.clearBtn{
+    padding:14px 24px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#endMessage{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:50;
+}
+
+#endCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+}
+
+#endCard h2{
+    font-size:36px;
+    margin-bottom:16px;
+}
+
+#endCard button{
+    padding:13px 22px;
+    font-size:18px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+@media(max-width:850px){
+    #container{
+        grid-template-columns:1fr;
+    }
+
+    h1{
+        font-size:34px;
+    }
+
+    #board{
+        gap:7px;
+    }
+
+    #boardWrap{
+        padding:12px;
+    }
+
+    #fallLayer{
+        inset:12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>🔴🟡 Puissance 4</h1>
+        <div>👤 Joueur : <span id="player">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+
+<aside class="panel">
+    <h2>🏆 Scores</h2>
+
+    <div class="scoreLine">🔴 Rouge : <span id="scoreRed">0</span></div>
+    <div class="scoreLine">🟡 Jaune : <span id="scoreYellow">0</span></div>
+    <div class="scoreLine">🤝 Égalités : <span id="scoreDraw">0</span></div>
+
+    <h2 style="margin-top:25px;">🎮 Mode</h2>
+    <button class="modeBtn selected" id="mode2p" onclick="setMode('2p')">👥 2 joueurs</button>
+    <button class="modeBtn" id="modeBot" onclick="setMode('bot')">🤖 Contre bot</button>
+
+    <div id="difficultyBox">
+        <h2>🤖 Difficulté bot</h2>
+        <button class="diffBtn selected" id="diffEasy" onclick="setBotDifficulty('easy')">🟢 Facile</button>
+        <button class="diffBtn" id="diffMedium" onclick="setBotDifficulty('medium')">🟠 Moyen</button>
+        <button class="diffBtn" id="diffHard" onclick="setBotDifficulty('hard')">🔴 Difficile</button>
+    </div>
+
+    <div class="info" id="botInfo">
+        Mode 2 joueurs : Rouge commence, puis Jaune joue.
+    </div>
+
+    <button class="resetBtn" onclick="resetScores()">🔄 Reset scores</button>
+</aside>
+
+<section class="panel" id="gamePanel">
+    <div id="status">Tour de 🔴 Rouge</div>
+
+    <div id="dropPreview">
+        <div class="previewDisc red" id="previewDisc"></div>
+    </div>
+
+    <div id="boardWrap">
+        <div id="fallLayer"></div>
+        <div id="board"></div>
+    </div>
+
+    <div id="controls">
+        <button class="playBtn" onclick="newRound()">🔁 Nouvelle manche</button>
+        <button class="clearBtn" onclick="resetBoardOnly()">🧹 Vider grille</button>
+    </div>
+</section>
+
+</div>
+
+<div id="endMessage">
+    <div id="endCard">
+        <h2 id="endTitle">Fin</h2>
+        <button onclick="closeEnd()">Continuer</button>
+    </div>
+</div>
+
+<script>
+document.getElementById("player").innerText =
+localStorage.getItem("pseudo") || "Joueur";
+
+const ROWS = 6;
+const COLS = 7;
+
+let board = [];
+let current = "R";
+let gameOver = false;
+let mode = "2p";
+let botDifficulty = "easy";
+let animating = false;
+let hoverCol = 3;
+
+let scores = JSON.parse(localStorage.getItem("connect4_scores") || '{"R":0,"Y":0,"draw":0}');
+
+const boardEl = document.getElementById("board");
+const fallLayer = document.getElementById("fallLayer");
+const previewDisc = document.getElementById("previewDisc");
+
+function goHome(){
+    window.location.href = "index.html";
+}
+
+function createEmptyBoard(){
+    return Array.from({length:ROWS}, () => Array(COLS).fill(""));
+}
+
+function updateScores(){
+    document.getElementById("scoreRed").innerText = scores.R;
+    document.getElementById("scoreYellow").innerText = scores.Y;
+    document.getElementById("scoreDraw").innerText = scores.draw;
+    localStorage.setItem("connect4_scores", JSON.stringify(scores));
+}
+
+function setMode(newMode){
+    mode = newMode;
+
+    document.getElementById("mode2p").classList.toggle("selected", mode === "2p");
+    document.getElementById("modeBot").classList.toggle("selected", mode === "bot");
+    document.getElementById("difficultyBox").style.display = mode === "bot" ? "block" : "none";
+
+    updateBotInfo();
+    newRound();
+}
+
+function setBotDifficulty(diff){
+    botDifficulty = diff;
+
+    document.getElementById("diffEasy").classList.toggle("selected", diff === "easy");
+    document.getElementById("diffMedium").classList.toggle("selected", diff === "medium");
+    document.getElementById("diffHard").classList.toggle("selected", diff === "hard");
+
+    updateBotInfo();
+    newRound();
+}
+
+function updateBotInfo(){
+    const info = document.getElementById("botInfo");
+
+    if(mode === "2p"){
+        info.innerHTML = "Mode 2 joueurs : Rouge commence, puis Jaune joue.";
+        return;
+    }
+
+    if(botDifficulty === "easy"){
+        info.innerHTML = "🟢 Facile : le bot joue souvent au hasard.";
+    }else if(botDifficulty === "medium"){
+        info.innerHTML = "🟠 Moyen : le bot essaie de gagner et de bloquer.";
+    }else{
+        info.innerHTML = "🔴 Difficile : le bot anticipe plusieurs coups.";
+    }
+}
+
+function renderBoard(){
+    boardEl.innerHTML = "";
+
+    for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+
+            cell.onclick = () => playColumn(c);
+            cell.onmouseenter = () => {
+                hoverCol = c;
+                updatePreview();
+            };
+
+            if(board[r][c]){
+                const disc = document.createElement("div");
+                disc.className = "disc " + (board[r][c] === "R" ? "red" : "yellow");
+                cell.appendChild(disc);
+            }
+
+            boardEl.appendChild(cell);
+        }
+    }
+
+    updatePreview();
+}
+
+function updatePreview(){
+    const boardRect = boardEl.getBoundingClientRect();
+    const firstCell = boardEl.children[0];
+
+    if(!firstCell) return;
+
+    const cellRect = firstCell.getBoundingClientRect();
+    const boardW = boardRect.width;
+    const left = (hoverCol / COLS) * boardW + (boardW / COLS - 58) / 2;
+
+    previewDisc.style.left = left + "px";
+    previewDisc.className = "previewDisc " + (current === "R" ? "red" : "yellow");
+}
+
+function getAvailableRow(col){
+    for(let r=ROWS-1;r>=0;r--){
+        if(board[r][col] === ""){
+            return r;
+        }
+    }
+
+    return -1;
+}
+
+function playColumn(col){
+    if(gameOver || animating) return;
+    if(mode === "bot" && current === "Y") return;
+
+    const row = getAvailableRow(col);
+    if(row === -1) return;
+
+    dropDisc(row,col,current, () => {
+        board[row][col] = current;
+        renderBoard();
+
+        const result = checkWinner(board);
+
+        if(result){
+            finish(result);
+            return;
+        }
+
+        current = current === "R" ? "Y" : "R";
+        updateStatus();
+
+        if(mode === "bot" && current === "Y" && !gameOver){
+            setTimeout(botPlay, 500);
+        }
+    });
+}
+
+function botPlay(){
+    if(gameOver || animating) return;
+
+    let col;
+
+    if(botDifficulty === "easy"){
+        col = randomColumn();
+    }else if(botDifficulty === "medium"){
+        col = mediumBotMove();
+    }else{
+        col = hardBotMove();
+    }
+
+    if(col === null || col === undefined){
+        col = randomColumn();
+    }
+
+    const row = getAvailableRow(col);
+    if(row === -1) return;
+
+    dropDisc(row,col,current, () => {
+        board[row][col] = current;
+        renderBoard();
+
+        const result = checkWinner(board);
+
+        if(result){
+            finish(result);
+            return;
+        }
+
+        current = "R";
+        updateStatus();
+    });
+}
+
+function dropDisc(row,col,piece,callback){
+    animating = true;
+
+    const cell = getCell(row,col);
+    const boardRect = boardEl.getBoundingClientRect();
+    const cellRect = cell.getBoundingClientRect();
+
+    const disc = document.createElement("div");
+    disc.className = "fallingDisc " + (piece === "R" ? "red" : "yellow");
+
+    const size = cellRect.width;
+    disc.style.width = size + "px";
+    disc.style.height = size + "px";
+    disc.style.left = (cellRect.left - boardRect.left) + "px";
+    disc.style.top = "-85px";
+
+    fallLayer.appendChild(disc);
+
+    setTimeout(() => {
+        disc.style.top = (cellRect.top - boardRect.top) + "px";
+    },30);
+
+    setTimeout(() => {
+        disc.remove();
+        animating = false;
+        callback();
+    },430);
+}
+
+function getCell(row,col){
+    return boardEl.querySelector('[data-row="' + row + '"][data-col="' + col + '"]');
+}
+
+function randomColumn(){
+    const cols = [];
+
+    for(let c=0;c<COLS;c++){
+        if(getAvailableRow(c) !== -1){
+            cols.push(c);
+        }
+    }
+
+    if(cols.length === 0) return null;
+
+    return cols[Math.floor(Math.random()*cols.length)];
+}
+
+function mediumBotMove(){
+    let win = findWinningColumn("Y");
+    if(win !== null) return win;
+
+    let block = findWinningColumn("R");
+    if(block !== null) return block;
+
+    if(getAvailableRow(3) !== -1) return 3;
+
+    return randomColumn();
+}
+
+function hardBotMove(){
+    let win = findWinningColumn("Y");
+    if(win !== null) return win;
+
+    let block = findWinningColumn("R");
+    if(block !== null) return block;
+
+    let bestScore = -Infinity;
+    let bestCol = null;
+
+    for(let c=0;c<COLS;c++){
+        const r = getAvailableRow(c);
+        if(r === -1) continue;
+
+        board[r][c] = "Y";
+        let score = evaluateBoard(board);
+        board[r][c] = "";
+
+        if(score > bestScore){
+            bestScore = score;
+            bestCol = c;
+        }
+    }
+
+    return bestCol !== null ? bestCol : randomColumn();
+}
+
+function findWinningColumn(piece){
+    for(let c=0;c<COLS;c++){
+        const r = getAvailableRow(c);
+        if(r === -1) continue;
+
+        board[r][c] = piece;
+        const result = checkWinner(board);
+        board[r][c] = "";
+
+        if(result && result.winner === piece){
+            return c;
+        }
+    }
+
+    return null;
+}
+
+function evaluateBoard(b){
+    let score = 0;
+
+    for(let r=0;r<ROWS;r++){
+        if(b[r][3] === "Y") score += 6;
+        if(b[r][3] === "R") score -= 6;
+    }
+
+    const lines = getAllLines();
+
+    for(const line of lines){
+        const vals = line.map(([r,c]) => b[r][c]);
+        score += scoreLine(vals);
+    }
+
+    return score;
+}
+
+function scoreLine(vals){
+    const y = vals.filter(v=>v==="Y").length;
+    const r = vals.filter(v=>v==="R").length;
+    const e = vals.filter(v=>v==="").length;
+
+    if(y === 4) return 1000;
+    if(r === 4) return -1000;
+    if(y === 3 && e === 1) return 80;
+    if(y === 2 && e === 2) return 20;
+    if(r === 3 && e === 1) return -90;
+    if(r === 2 && e === 2) return -20;
+
+    return 0;
+}
+
+function getAllLines(){
+    const lines = [];
+
+    for(let r=0;r<ROWS;r++){
+        for(let c=0;c<COLS;c++){
+            if(c+3<COLS) lines.push([[r,c],[r,c+1],[r,c+2],[r,c+3]]);
+            if(r+3<ROWS) lines.push([[r,c],[r+1,c],[r+2,c],[r+3,c]]);
+            if(r+3<ROWS && c+3<COLS) lines.push([[r,c],[r+1,c+1],[r+2,c+2],[r+3,c+3]]);
+            if(r+3<ROWS && c-3>=0) lines.push([[r,c],[r+1,c-1],[r+2,c-2],[r+3,c-3]]);
+        }
+    }
+
+    return lines;
+}
+
+function checkWinner(b){
+    const lines = getAllLines();
+
+    for(const line of lines){
+        const vals = line.map(([r,c]) => b[r][c]);
+
+        if(vals[0] && vals.every(v => v === vals[0])){
+            return {winner:vals[0], combo:line};
+        }
+    }
+
+    const full = b.every(row => row.every(cell => cell !== ""));
+
+    if(full){
+        return {winner:"draw", combo:[]};
+    }
+
+    return null;
+}
+
+function finish(result){
+    gameOver = true;
+
+    if(result.winner === "draw"){
+        scores.draw++;
+        showEnd("🤝 Égalité !");
+    }else{
+        scores[result.winner]++;
+        result.combo.forEach(([r,c]) => {
+            const cell = getCell(r,c);
+            if(cell) cell.classList.add("win");
+        });
+
+        showEnd((result.winner === "R" ? "🔴 Rouge" : "🟡 Jaune") + " gagne !");
+    }
+
+    updateScores();
+}
+
+function showEnd(text){
+    document.getElementById("endTitle").innerText = text;
+    document.getElementById("endMessage").style.display = "flex";
+}
+
+function closeEnd(){
+    document.getElementById("endMessage").style.display = "none";
+}
+
+function newRound(){
+    board = createEmptyBoard();
+    current = "R";
+    gameOver = false;
+    animating = false;
+    fallLayer.innerHTML = "";
+    renderBoard();
+    updateStatus();
+}
+
+function resetBoardOnly(){
+    newRound();
+}
+
+function resetScores(){
+    if(!confirm("Tu veux vraiment reset les scores du Puissance 4 ?")) return;
+
+    scores = {R:0,Y:0,draw:0};
+    updateScores();
+}
+
+function updateStatus(){
+    document.getElementById("status").innerText =
+    current === "R" ? "Tour de 🔴 Rouge" : "Tour de 🟡 Jaune";
+    updatePreview();
+}
+
+updateScores();
+updateBotInfo();
+newRound();
+
+window.addEventListener("resize", updatePreview);
+</script>
+
+</body>
+</html>

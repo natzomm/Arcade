@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whack-a-Mole</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#14532d,#0f172a,#78350f);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{
+    font-size:42px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1120px,95%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:310px 1fr;
+    gap:22px;
+}
+
+.panel{
+    background:rgba(15,23,42,0.86);
+    border:1px solid rgba(148,163,184,0.25);
+    border-radius:24px;
+    padding:22px;
+    box-shadow:0 20px 45px rgba(0,0,0,0.3);
+}
+
+.optionGroup{
+    margin-bottom:20px;
+}
+
+.optionGroup p{
+    margin-bottom:10px;
+    color:#cbd5e1;
+    font-weight:bold;
+}
+
+.choice{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:17px;
+    background:#334155;
+    color:white;
+    border:2px solid transparent;
+}
+
+.choice.selected{
+    background:#22c55e;
+    color:#052e16;
+    border-color:#bbf7d0;
+}
+
+#startBtn{
+    width:100%;
+    padding:16px;
+    font-size:22px;
+    background:#facc15;
+    color:#422006;
+}
+
+.resetBtn{
+    width:100%;
+    padding:13px;
+    margin-top:18px;
+    font-size:17px;
+    background:#ef4444;
+    color:white;
+}
+
+#recordPanel{
+    margin-top:18px;
+    background:#020617;
+    border-radius:18px;
+    padding:16px;
+    min-height:125px;
+}
+
+#recordPanel h3{
+    margin-bottom:10px;
+    color:#facc15;
+}
+
+.recordLine{
+    margin:7px 0;
+    color:#e2e8f0;
+    font-size:17px;
+}
+
+.info{
+    margin-top:15px;
+    color:#cbd5e1;
+    line-height:1.45;
+    background:#020617;
+    border-radius:12px;
+    padding:12px;
+}
+
+#hud{
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.hudItem{
+    background:#020617;
+    padding:12px 16px;
+    border-radius:14px;
+    min-width:110px;
+    font-size:18px;
+    text-align:center;
+}
+
+#gameArea{
+    min-height:560px;
+    background:linear-gradient(#22c55e 0 64%,#854d0e 65% 100%);
+    border-radius:24px;
+    position:relative;
+    overflow:hidden;
+    border:3px solid rgba(255,255,255,0.2);
+    box-shadow:inset 0 -20px 40px rgba(0,0,0,0.22);
+}
+
+#holes{
+    position:absolute;
+    inset:30px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(3,1fr);
+    gap:24px;
+}
+
+.hole{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:flex-end;
+    overflow:hidden;
+    cursor:pointer;
+}
+
+.hole::after{
+    content:"";
+    position:absolute;
+    bottom:8px;
+    width:135px;
+    height:45px;
+    background:#3f2212;
+    border-radius:50%;
+    box-shadow:inset 0 10px 18px rgba(0,0,0,0.8),0 8px 10px rgba(0,0,0,0.25);
+    z-index:5;
+}
+
+.mole{
+    position:absolute;
+    bottom:-90px;
+    width:105px;
+    height:115px;
+    background:#a16207;
+    border-radius:50% 50% 42% 42%;
+    border:4px solid #422006;
+    z-index:4;
+    transition:bottom 0.16s ease-out;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:54px;
+    user-select:none;
+}
+
+.mole.show{
+    bottom:28px;
+}
+
+.mole::before{
+    content:"🐹";
+}
+
+.mole.golden{
+    background:#facc15;
+    box-shadow:0 0 25px #facc15;
+}
+
+.mole.golden::before{
+    content:"⭐";
+}
+
+.mole.bomb{
+    background:#111827;
+    border-color:#525252;
+    box-shadow:0 0 20px rgba(0,0,0,0.8);
+}
+
+.mole.bomb::before{
+    content:"💣";
+}
+
+.mole.fake{
+    background:#64748b;
+}
+
+.mole.fake::before{
+    content:"😵";
+}
+
+.floatText{
+    position:absolute;
+    font-size:30px;
+    font-weight:bold;
+    color:#facc15;
+    pointer-events:none;
+    z-index:30;
+    animation:floatUp 0.75s forwards;
+}
+
+#centerMessage{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    font-size:46px;
+    font-weight:bold;
+    color:#facc15;
+    text-shadow:0 4px 18px rgba(0,0,0,0.8);
+    opacity:0;
+    z-index:40;
+    pointer-events:none;
+}
+
+#centerMessage.show{
+    animation:centerFlash 0.9s forwards;
+}
+
+#endScreen{
+    position:absolute;
+    inset:0;
+    background:rgba(2,6,23,0.92);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:100;
+}
+
+#endCard{
+    width:min(440px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+}
+
+#endCard h2{
+    font-size:38px;
+    margin-bottom:16px;
+}
+
+#endStats{
+    font-size:20px;
+    color:#cbd5e1;
+    line-height:1.7;
+}
+
+.endButtons{
+    margin-top:20px;
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.endButtons button{
+    padding:13px 20px;
+    font-size:18px;
+}
+
+.restartBtn{
+    background:#22c55e;
+    color:#052e16;
+}
+
+.menuBtn{
+    background:#38bdf8;
+    color:#082f49;
+}
+
+.shake{
+    animation:shake 0.22s;
+}
+
+@keyframes floatUp{
+    from{opacity:1;transform:translateY(0)}
+    to{opacity:0;transform:translateY(-60px)}
+}
+
+@keyframes centerFlash{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(0.7)}
+    20%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
+    100%{opacity:0;transform:translate(-50%,-80%) scale(1)}
+}
+
+@keyframes shake{
+    0%{transform:translate(0)}
+    25%{transform:translate(8px,-4px)}
+    50%{transform:translate(-8px,4px)}
+    75%{transform:translate(5px,2px)}
+    100%{transform:translate(0)}
+}
+
+@media(max-width:850px){
+    #container{
+        grid-template-columns:1fr;
+    }
+
+    h1{
+        font-size:34px;
+    }
+
+    #gameArea{
+        min-height:520px;
+    }
+
+    #holes{
+        gap:14px;
+        inset:20px;
+    }
+
+    .hole::after{
+        width:100px;
+        height:38px;
+    }
+
+    .mole{
+        width:85px;
+        height:95px;
+        font-size:42px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>🔨 Whack-a-Mole</h1>
+        <div>👤 Joueur : <span id="player">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+
+<aside class="panel">
+    <h2>⚙️ Paramètres</h2>
+
+    <div class="optionGroup">
+        <p>Mode</p>
+        <button class="choice selected" id="modeTime" onclick="selectMode('time')">⏱️ 1 minute</button>
+        <button class="choice" id="modeLives" onclick="selectMode('lives')">❤️ 3 vies</button>
+    </div>
+
+    <div class="optionGroup">
+        <p>Difficulté</p>
+        <button class="choice selected" id="diffEasy" onclick="selectDifficulty('easy')">🟢 Facile</button>
+        <button class="choice" id="diffMedium" onclick="selectDifficulty('medium')">🟠 Moyen</button>
+        <button class="choice" id="diffHard" onclick="selectDifficulty('hard')">🔴 Difficile</button>
+    </div>
+
+    <button id="startBtn" onclick="startGame()">▶️ COMMENCER</button>
+
+    <div id="recordPanel">
+        <h3>🏆 Record actuel</h3>
+        <div id="recordContent"></div>
+    </div>
+
+    <div class="info">
+        Tape les taupes 🐹.<br>
+        ⭐ Taupe dorée = bonus.<br>
+        💣 Bombe = malus ou vie perdue.<br>
+        😵 Fausse taupe = piège.
+    </div>
+
+    <button class="resetBtn" onclick="resetRecords()">🔄 Reset records</button>
+</aside>
+
+<section class="panel">
+    <div id="hud">
+        <div class="hudItem">⭐ Score<br><span id="score">0</span></div>
+        <div class="hudItem">⏱️ Temps<br><span id="time">0</span></div>
+        <div class="hudItem">❤️ Vies<br><span id="lives">3</span></div>
+        <div class="hudItem">🔥 Combo<br><span id="combo">x1</span></div>
+    </div>
+
+    <div id="gameArea">
+        <div id="holes"></div>
+        <div id="centerMessage"></div>
+
+        <div id="endScreen">
+            <div id="endCard">
+                <h2>FIN</h2>
+                <div id="endStats"></div>
+                <div class="endButtons">
+                    <button class="restartBtn" onclick="restartGame(event)">🔁 Rejouer</button>
+                    <button class="menuBtn" onclick="showMenu(event)">⚙️ Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</div>
+
+<script>
+document.getElementById("player").innerText =
+localStorage.getItem("pseudo") || "Joueur";
+
+const holesEl = document.getElementById("holes");
+const gameArea = document.getElementById("gameArea");
+const endScreen = document.getElementById("endScreen");
+const centerMessage = document.getElementById("centerMessage");
+
+let selectedMode = "time";
+let selectedDifficulty = "easy";
+
+let isPlaying = false;
+let score = 0;
+let time = 60;
+let lives = 3;
+let hits = 0;
+let misses = 0;
+let combo = 0;
+let comboMultiplier = 1;
+
+let timer = null;
+let spawnTimer = null;
+let activeMoles = [];
+
+const config = {
+    easy:{spawn:950, visible:1050, max:1, bomb:0.00, fake:0.05, golden:0.08},
+    medium:{spawn:700, visible:820, max:2, bomb:0.12, fake:0.12, golden:0.07},
+    hard:{spawn:480, visible:650, max:3, bomb:0.22, fake:0.18, golden:0.06}
+};
+
+function goHome(){
+    window.location.href = "index.html";
+}
+
+function buildHoles(){
+    holesEl.innerHTML = "";
+
+    for(let i=0;i<9;i++){
+        const hole = document.createElement("div");
+        hole.className = "hole";
+        hole.dataset.index = i;
+        holesEl.appendChild(hole);
+    }
+}
+
+function selectMode(mode){
+ if(isPlaying){
+    if(!confirm("Changer le mode va arrêter la partie actuelle. Continuer ?")){
+        return;
+    }
+
+    showMenu();
+}
+
+    selectedMode = mode;
+    document.getElementById("modeTime").classList.toggle("selected", mode === "time");
+    document.getElementById("modeLives").classList.toggle("selected", mode === "lives");
+
+    updateRecordPanel();
+}
+
+function selectDifficulty(diff){
+ if(isPlaying){
+    if(!confirm("Changer la difficulté va arrêter la partie actuelle. Continuer ?")){
+        return;
+    }
+
+    showMenu();
+}
+
+    selectedDifficulty = diff;
+    document.getElementById("diffEasy").classList.toggle("selected", diff === "easy");
+    document.getElementById("diffMedium").classList.toggle("selected", diff === "medium");
+    document.getElementById("diffHard").classList.toggle("selected", diff === "hard");
+
+    updateRecordPanel();
+}
+
+function getRecordKey(){
+    return "wam_record_" + selectedMode + "_" + selectedDifficulty;
+}
+
+function updateRecordPanel(){
+    const record = JSON.parse(localStorage.getItem(getRecordKey()) || "null");
+    const modeName = selectedMode === "time" ? "1 minute" : "3 vies";
+    const diffName = selectedDifficulty === "easy" ? "Facile" : selectedDifficulty === "medium" ? "Moyen" : "Difficile";
+
+    const box = document.getElementById("recordContent");
+
+    if(!record){
+        box.innerHTML = `
+            <div class="recordLine">${modeName} - ${diffName}</div>
+            <div class="recordLine">Aucun record.</div>
+        `;
+        return;
+    }
+
+    box.innerHTML = `
+        <div class="recordLine">${modeName} - ${diffName}</div>
+        <div class="recordLine">⭐ Score : ${record.score}</div>
+        <div class="recordLine">🐹 Touches : ${record.hits}</div>
+        <div class="recordLine">❌ Ratés : ${record.misses}</div>
+    `;
+}
+
+function startGame(){
+    resetGame();
+
+    isPlaying = true;
+    endScreen.style.display = "none";
+    document.getElementById("startBtn").style.display = "none";
+
+    time = selectedMode === "time" ? 60 : 0;
+    lives = 3;
+
+    timer = setInterval(() => {
+        if(selectedMode === "time"){
+            time--;
+            if(time <= 0){
+                endGame();
+            }
+        }else{
+            time++;
+        }
+
+        updateHUD();
+    },1000);
+
+    spawnTimer = setInterval(spawnMole, config[selectedDifficulty].spawn);
+    spawnMole();
+    updateHUD();
+}
+
+function resetGame(){
+    clearInterval(timer);
+    clearInterval(spawnTimer);
+
+    timer = null;
+    spawnTimer = null;
+
+    score = 0;
+    hits = 0;
+    misses = 0;
+    combo = 0;
+    comboMultiplier = 1;
+    time = selectedMode === "time" ? 60 : 0;
+    lives = 3;
+    isPlaying = false;
+    activeMoles = [];
+
+    document.querySelectorAll(".mole,.floatText").forEach(el => el.remove());
+    updateHUD();
+}
+
+function spawnMole(){
+    if(!isPlaying) return;
+
+    const c = config[selectedDifficulty];
+
+    if(activeMoles.length >= c.max) return;
+
+    const holes = [...document.querySelectorAll(".hole")];
+    const free = holes.filter(h => !h.querySelector(".mole"));
+
+    if(free.length === 0) return;
+
+    const hole = free[Math.floor(Math.random()*free.length)];
+    const mole = document.createElement("div");
+    mole.className = "mole";
+
+    let type = "normal";
+    const roll = Math.random();
+
+    if(roll < c.bomb){
+        type = "bomb";
+        mole.classList.add("bomb");
+    }else if(roll < c.bomb + c.fake){
+        type = "fake";
+        mole.classList.add("fake");
+    }else if(roll < c.bomb + c.fake + c.golden){
+        type = "golden";
+        mole.classList.add("golden");
+    }
+
+    mole.dataset.type = type;
+
+    mole.onclick = function(e){
+        e.stopPropagation();
+        hitMole(mole, hole);
+    };
+
+    hole.appendChild(mole);
+    activeMoles.push(mole);
+
+    setTimeout(() => mole.classList.add("show"), 30);
+
+    setTimeout(() => {
+        if(mole.parentElement){
+            missMole(mole);
+        }
+    }, c.visible);
+}
+
+function hitMole(mole, hole){
+    if(!isPlaying || !mole.parentElement) return;
+
+    const type = mole.dataset.type;
+    const rect = mole.getBoundingClientRect();
+    const areaRect = gameArea.getBoundingClientRect();
+
+    mole.remove();
+    activeMoles = activeMoles.filter(m => m !== mole);
+
+    if(type === "bomb"){
+        gameArea.classList.add("shake");
+        setTimeout(() => gameArea.classList.remove("shake"), 250);
+
+        combo = 0;
+        comboMultiplier = 1;
+
+        if(selectedMode === "time"){
+            score = Math.max(0, score - 5);
+            showFloat("-5", rect.left - areaRect.left, rect.top - areaRect.top);
+        }else{
+            lives--;
+            showFloat("-1 ❤️", rect.left - areaRect.left, rect.top - areaRect.top);
+            if(lives <= 0){
+                endGame();
+            }
+        }
+    }else if(type === "fake"){
+        combo = 0;
+        comboMultiplier = 1;
+        score = Math.max(0, score - 2);
+        misses++;
+        showFloat("-2", rect.left - areaRect.left, rect.top - areaRect.top);
+    }else{
+        hits++;
+        combo++;
+        updateCombo();
+
+        let gain = type === "golden" ? 5 * comboMultiplier : 1 * comboMultiplier;
+        score += gain;
+        showFloat("+" + gain, rect.left - areaRect.left, rect.top - areaRect.top);
+
+        if(type === "golden"){
+            flashCenter("⭐ BONUS !");
+        }
+    }
+
+    updateHUD();
+}
+
+function missMole(mole){
+    if(!isPlaying || !mole.parentElement) return;
+
+    const type = mole.dataset.type;
+
+    mole.remove();
+    activeMoles = activeMoles.filter(m => m !== mole);
+
+    if(type === "normal" || type === "golden"){
+        misses++;
+        combo = 0;
+        comboMultiplier = 1;
+
+        if(selectedMode === "lives"){
+            lives--;
+            if(lives <= 0){
+                endGame();
+            }
+        }
+    }
+
+    updateHUD();
+}
+
+function updateCombo(){
+    if(combo >= 20){
+        comboMultiplier = 5;
+        flashCenter("🔥 COMBO x5");
+    }else if(combo >= 12){
+        comboMultiplier = 4;
+        flashCenter("🔥 COMBO x4");
+    }else if(combo >= 7){
+        comboMultiplier = 3;
+        flashCenter("🔥 COMBO x3");
+    }else if(combo >= 3){
+        comboMultiplier = 2;
+        flashCenter("🔥 COMBO x2");
+    }else{
+        comboMultiplier = 1;
+    }
+}
+
+function showFloat(text,x,y){
+    const el = document.createElement("div");
+    el.className = "floatText";
+    el.innerText = text;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    gameArea.appendChild(el);
+
+    setTimeout(() => el.remove(), 750);
+}
+
+function flashCenter(text){
+    centerMessage.innerText = text;
+    centerMessage.classList.remove("show");
+    void centerMessage.offsetWidth;
+    centerMessage.classList.add("show");
+}
+
+function updateHUD(){
+    document.getElementById("score").innerText = score;
+    document.getElementById("time").innerText = time;
+    document.getElementById("lives").innerText = lives;
+    document.getElementById("combo").innerText = "x" + comboMultiplier;
+}
+
+function saveRecord(){
+    const key = getRecordKey();
+    const old = JSON.parse(localStorage.getItem(key) || "null");
+
+    const record = {score,hits,misses};
+
+    if(!old || score > old.score){
+        localStorage.setItem(key, JSON.stringify(record));
+    }
+}
+
+function endGame(){
+    if(!isPlaying) return;
+
+    isPlaying = false;
+    clearInterval(timer);
+    clearInterval(spawnTimer);
+
+    document.querySelectorAll(".mole").forEach(m => m.remove());
+    activeMoles = [];
+
+    saveRecord();
+    updateRecordPanel();
+
+    document.getElementById("endStats").innerHTML = `
+        ⭐ Score : ${score}<br>
+        🐹 Taupes touchées : ${hits}<br>
+        ❌ Ratés : ${misses}<br>
+        ⏱️ Temps : ${time}s
+    `;
+
+    endScreen.style.display = "flex";
+}
+
+function restartGame(e){
+    if(e){
+        e.stopPropagation();
+        e.preventDefault();
+    }
+
+    endScreen.style.display = "none";
+    setTimeout(startGame, 50);
+}
+
+function showMenu(e){
+    if(e){
+        e.stopPropagation();
+        e.preventDefault();
+    }
+
+    resetGame();
+    endScreen.style.display = "none";
+    document.getElementById("startBtn").style.display = "block";
+    updateRecordPanel();
+}
+
+function resetRecords(){
+    if(!confirm("Tu veux vraiment reset les records du Whack-a-Mole ?")) return;
+
+    ["time","lives"].forEach(mode=>{
+        ["easy","medium","hard"].forEach(diff=>{
+            localStorage.removeItem("wam_record_" + mode + "_" + diff);
+        });
+    });
+
+    updateRecordPanel();
+}
+
+endScreen.addEventListener("click", function(e){
+    e.stopPropagation();
+});
+
+buildHoles();
+updateRecordPanel();
+updateHUD();
+</script>
+
+</body>
+</html>

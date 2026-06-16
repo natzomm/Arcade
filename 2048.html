@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2048 Deluxe</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f172a,#78350f,#1e3a8a);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{
+    font-size:42px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1120px,95%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:320px 1fr;
+    gap:22px;
+}
+
+.panel{
+    background:rgba(15,23,42,0.86);
+    border:1px solid rgba(148,163,184,0.25);
+    border-radius:24px;
+    padding:22px;
+    box-shadow:0 20px 45px rgba(0,0,0,0.3);
+}
+
+.statLine{
+    background:#020617;
+    padding:13px;
+    margin:10px 0;
+    border-radius:12px;
+    font-size:19px;
+}
+
+.sizeBtn{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:17px;
+    background:#334155;
+    color:white;
+    border:2px solid transparent;
+}
+
+.sizeBtn.selected{
+    background:#22c55e;
+    color:#052e16;
+    border-color:#bbf7d0;
+}
+
+.resetBtn{
+    width:100%;
+    padding:13px;
+    margin-top:18px;
+    font-size:17px;
+    background:#ef4444;
+    color:white;
+}
+
+.newBtn{
+    width:100%;
+    padding:15px;
+    margin-top:18px;
+    font-size:19px;
+    background:#facc15;
+    color:#422006;
+}
+
+.info{
+    margin-top:15px;
+    color:#cbd5e1;
+    line-height:1.45;
+    background:#020617;
+    border-radius:12px;
+    padding:12px;
+}
+
+#gamePanel{
+    text-align:center;
+}
+
+#topStats{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.topBox{
+    background:#020617;
+    padding:12px 16px;
+    border-radius:14px;
+    font-size:18px;
+    min-width:120px;
+}
+
+#comboMessage{
+    height:35px;
+    color:#facc15;
+    font-size:26px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+#boardWrap{
+    width:min(570px,92vw);
+    margin:0 auto;
+    background:#1e293b;
+    border-radius:24px;
+    padding:14px;
+    box-shadow:
+        0 18px 0 #0f172a,
+        0 26px 40px rgba(0,0,0,0.45),
+        inset 8px 8px 18px rgba(255,255,255,0.08),
+        inset -8px -8px 20px rgba(0,0,0,0.35);
+    transform:perspective(900px) rotateX(3deg);
+}
+
+#board{
+    display:grid;
+    gap:10px;
+}
+
+.cell{
+    aspect-ratio:1/1;
+    background:#0f172a;
+    border-radius:16px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:34px;
+    font-weight:bold;
+    color:white;
+    box-shadow:inset 0 5px 10px rgba(0,0,0,0.55);
+    transition:0.12s;
+}
+
+.tile{
+    animation:pop 0.16s ease-out;
+    box-shadow:
+        inset -5px -5px 10px rgba(0,0,0,0.22),
+        inset 5px 5px 10px rgba(255,255,255,0.22),
+        0 8px 14px rgba(0,0,0,0.25);
+}
+
+@keyframes pop{
+    from{transform:scale(0.4);opacity:0}
+    to{transform:scale(1);opacity:1}
+}
+
+.v2{background:#e2e8f0;color:#0f172a}
+.v4{background:#cbd5e1;color:#0f172a}
+.v8{background:#fdba74;color:#431407}
+.v16{background:#fb923c;color:white}
+.v32{background:#f97316;color:white}
+.v64{background:#ea580c;color:white}
+.v128{background:#fde047;color:#422006;font-size:30px}
+.v256{background:#facc15;color:#422006;font-size:30px}
+.v512{background:#eab308;color:#422006;font-size:30px}
+.v1024{background:#84cc16;color:#14532d;font-size:26px}
+.v2048{background:#22c55e;color:#052e16;font-size:26px}
+.v4096{background:#14b8a6;color:#042f2e;font-size:24px}
+.v8192{background:#38bdf8;color:#082f49;font-size:24px}
+.vbig{background:#a855f7;color:white;font-size:22px}
+
+#mobileControls{
+    display:none;
+    margin-top:22px;
+    grid-template-columns:repeat(3,70px);
+    gap:10px;
+    justify-content:center;
+}
+
+.ctrlBtn{
+    height:58px;
+    font-size:24px;
+    background:#334155;
+    color:white;
+}
+
+#endOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.9);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:50;
+}
+
+#endCard{
+    width:min(450px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+}
+
+#endCard h2{
+    font-size:38px;
+    margin-bottom:16px;
+}
+
+#endCard p{
+    color:#cbd5e1;
+    font-size:20px;
+    line-height:1.7;
+}
+
+#endCard button{
+    margin-top:18px;
+    padding:13px 22px;
+    font-size:18px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+@media(max-width:850px){
+    #container{
+        grid-template-columns:1fr;
+    }
+
+    h1{
+        font-size:34px;
+    }
+
+    .cell{
+        font-size:26px;
+    }
+
+    #mobileControls{
+        display:grid;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>🔢 2048 Deluxe</h1>
+        <div>👤 Joueur : <span id="player">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+
+<aside class="panel">
+    <h2>🏆 Records</h2>
+
+    <div class="statLine">4×4 : <span id="best4">0</span></div>
+    <div class="statLine">5×5 : <span id="best5">0</span></div>
+    <div class="statLine">6×6 : <span id="best6">0</span></div>
+
+    <h2 style="margin-top:25px;">📏 Taille</h2>
+    <button class="sizeBtn selected" id="size4" onclick="changeSize(4)">4×4 classique</button>
+    <button class="sizeBtn" id="size5" onclick="changeSize(5)">5×5 long</button>
+    <button class="sizeBtn" id="size6" onclick="changeSize(6)">6×6 géant</button>
+
+    <button class="newBtn" onclick="newGame()">▶️ Nouvelle partie</button>
+    <button class="resetBtn" onclick="resetRecords()">🔄 Reset records</button>
+
+    <div class="info">
+        Utilise les flèches du clavier. Sur téléphone, utilise les boutons en bas.
+        <br><br>
+        Les grosses fusions donnent beaucoup plus de points.
+        Si tu fais plusieurs fusions en un seul coup, tu gagnes un combo x2, x3, x4...
+    </div>
+</aside>
+
+<section class="panel" id="gamePanel">
+
+    <div id="topStats">
+        <div class="topBox">⭐ Score<br><span id="score">0</span></div>
+        <div class="topBox">👑 Max<br><span id="maxTile">0</span></div>
+        <div class="topBox">⏱️ Temps<br><span id="time">0s</span></div>
+        <div class="topBox">🔥 Combo<br><span id="combo">x1</span></div>
+    </div>
+
+    <div id="comboMessage"></div>
+
+    <div id="boardWrap">
+        <div id="board"></div>
+    </div>
+
+    <div id="mobileControls">
+        <div></div>
+        <button class="ctrlBtn" onclick="move('up')">⬆️</button>
+        <div></div>
+        <button class="ctrlBtn" onclick="move('left')">⬅️</button>
+        <button class="ctrlBtn" onclick="move('down')">⬇️</button>
+        <button class="ctrlBtn" onclick="move('right')">➡️</button>
+    </div>
+
+</section>
+
+</div>
+
+<div id="endOverlay">
+    <div id="endCard">
+        <h2>💀 Game Over</h2>
+        <p id="endStats"></p>
+        <button onclick="closeEnd()">Continuer</button>
+    </div>
+</div>
+
+<script>
+document.getElementById("player").innerText =
+localStorage.getItem("pseudo") || "Joueur";
+
+let size = 4;
+let grid = [];
+let score = 0;
+let maxTile = 0;
+let gameStarted = false;
+let gameOver = false;
+let startTime = 0;
+let timer = null;
+let lastCombo = 1;
+
+let records = JSON.parse(localStorage.getItem("records_2048") || '{"4":0,"5":0,"6":0}');
+
+function goHome(){
+    window.location.href = "index.html";
+}
+
+function updateRecordDisplay(){
+    document.getElementById("best4").innerText = records["4"];
+    document.getElementById("best5").innerText = records["5"];
+    document.getElementById("best6").innerText = records["6"];
+}
+
+function changeSize(newSize){
+    if(gameStarted && !confirm("Changer de taille va recommencer la partie. Continuer ?")) return;
+
+    size = newSize;
+
+    document.getElementById("size4").classList.toggle("selected", size === 4);
+    document.getElementById("size5").classList.toggle("selected", size === 5);
+    document.getElementById("size6").classList.toggle("selected", size === 6);
+
+    newGame();
+}
+
+function newGame(){
+    clearInterval(timer);
+
+    grid = Array.from({length:size}, () => Array(size).fill(0));
+    score = 0;
+    maxTile = 0;
+    gameStarted = true;
+    gameOver = false;
+    startTime = Date.now();
+    lastCombo = 1;
+
+    addRandomTile();
+    addRandomTile();
+
+    timer = setInterval(updateTime, 1000);
+
+    render();
+    updateStats();
+}
+
+function addRandomTile(){
+    const empty = [];
+
+    for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+            if(grid[r][c] === 0){
+                empty.push([r,c]);
+            }
+        }
+    }
+
+    if(empty.length === 0) return;
+
+    const [r,c] = empty[Math.floor(Math.random()*empty.length)];
+    grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+}
+
+function render(){
+    const board = document.getElementById("board");
+    board.innerHTML = "";
+    board.style.gridTemplateColumns = "repeat(" + size + ", 1fr)";
+
+    for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+            const val = grid[r][c];
+            const cell = document.createElement("div");
+            cell.className = "cell";
+
+            if(val){
+                cell.classList.add("tile");
+                cell.classList.add(getTileClass(val));
+                cell.innerText = val;
+            }
+
+            board.appendChild(cell);
+        }
+    }
+}
+
+function getTileClass(v){
+    if(v <= 8192) return "v" + v;
+    return "vbig";
+}
+
+function move(direction){
+    if(gameOver) return;
+
+    const before = JSON.stringify(grid);
+    let mergeValues = [];
+
+    if(direction === "left"){
+        for(let r=0;r<size;r++){
+            grid[r] = slideLine(grid[r], mergeValues);
+        }
+    }
+
+    if(direction === "right"){
+        for(let r=0;r<size;r++){
+            grid[r] = slideLine([...grid[r]].reverse(), mergeValues).reverse();
+        }
+    }
+
+    if(direction === "up"){
+        for(let c=0;c<size;c++){
+            const col = [];
+
+            for(let r=0;r<size;r++) col.push(grid[r][c]);
+
+            const newCol = slideLine(col, mergeValues);
+
+            for(let r=0;r<size;r++) grid[r][c] = newCol[r];
+        }
+    }
+
+    if(direction === "down"){
+        for(let c=0;c<size;c++){
+            const col = [];
+
+            for(let r=0;r<size;r++) col.push(grid[r][c]);
+
+            const newCol = slideLine(col.reverse(), mergeValues).reverse();
+
+            for(let r=0;r<size;r++) grid[r][c] = newCol[r];
+        }
+    }
+
+    const after = JSON.stringify(grid);
+
+    if(before !== after){
+        applyScore(mergeValues);
+        addRandomTile();
+        render();
+        updateStats();
+
+        if(!canMove()){
+            endGame();
+        }
+    }
+}
+
+function slideLine(line, mergeValues){
+    let arr = line.filter(v => v !== 0);
+    let result = [];
+
+    for(let i=0;i<arr.length;i++){
+        if(arr[i] === arr[i+1]){
+            const merged = arr[i] * 2;
+            result.push(merged);
+            mergeValues.push(merged);
+            i++;
+        }else{
+            result.push(arr[i]);
+        }
+    }
+
+    while(result.length < size){
+        result.push(0);
+    }
+
+    return result;
+}
+
+function applyScore(mergeValues){
+    if(mergeValues.length === 0){
+        lastCombo = 1;
+        document.getElementById("comboMessage").innerText = "";
+        return;
+    }
+
+    let combo = Math.max(1, mergeValues.length);
+
+    if(mergeValues.length >= 3){
+        combo = mergeValues.length;
+        document.getElementById("comboMessage").innerText = "🔥 COMBO x" + combo + " !";
+    }else{
+        document.getElementById("comboMessage").innerText = "";
+    }
+
+    lastCombo = combo;
+
+    let gained = mergeValues.reduce((sum,v) => sum + v, 0) * combo;
+
+    score += gained;
+
+    for(const v of mergeValues){
+        if(v > maxTile){
+            maxTile = v;
+        }
+    }
+
+    if(score > records[String(size)]){
+        records[String(size)] = score;
+        localStorage.setItem("records_2048", JSON.stringify(records));
+        updateRecordDisplay();
+    }
+}
+
+function canMove(){
+    for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+            if(grid[r][c] === 0) return true;
+
+            if(c < size-1 && grid[r][c] === grid[r][c+1]) return true;
+            if(r < size-1 && grid[r][c] === grid[r+1][c]) return true;
+        }
+    }
+
+    return false;
+}
+
+function updateStats(){
+    document.getElementById("score").innerText = score;
+    document.getElementById("maxTile").innerText = maxTile;
+    document.getElementById("combo").innerText = "x" + lastCombo;
+    updateTime();
+}
+
+function updateTime(){
+    if(!gameStarted) return;
+
+    const seconds = Math.floor((Date.now() - startTime) / 1000);
+    document.getElementById("time").innerText = seconds + "s";
+}
+
+function endGame(){
+    gameOver = true;
+    clearInterval(timer);
+
+    const seconds = Math.floor((Date.now() - startTime) / 1000);
+
+    document.getElementById("endStats").innerHTML =
+    "Score : " + score + "<br>" +
+    "Plus grosse tuile : " + maxTile + "<br>" +
+    "Temps : " + seconds + "s<br>" +
+    "Grille : " + size + "×" + size;
+
+    document.getElementById("endOverlay").style.display = "flex";
+}
+
+function closeEnd(){
+    document.getElementById("endOverlay").style.display = "none";
+}
+
+function resetRecords(){
+    if(!confirm("Tu veux vraiment reset les records du 2048 ?")) return;
+
+    records = {"4":0,"5":0,"6":0};
+    localStorage.setItem("records_2048", JSON.stringify(records));
+    updateRecordDisplay();
+}
+
+document.addEventListener("keydown", function(e){
+    if(e.key === "ArrowLeft"){
+        e.preventDefault();
+        move("left");
+    }
+
+    if(e.key === "ArrowRight"){
+        e.preventDefault();
+        move("right");
+    }
+
+    if(e.key === "ArrowUp"){
+        e.preventDefault();
+        move("up");
+    }
+
+    if(e.key === "ArrowDown"){
+        e.preventDefault();
+        move("down");
+    }
+});
+
+updateRecordDisplay();
+newGame();
+</script>
+
+</body>
+</html>

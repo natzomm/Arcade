@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fruit Slice</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f172a,#14532d,#7f1d1d);
+    color:white;
+    overflow:hidden;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    position:relative;
+    z-index:20;
+    padding:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{
+    font-size:38px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#hud{
+    position:relative;
+    z-index:20;
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+}
+
+.hudItem{
+    background:rgba(2,6,23,0.9);
+    padding:11px 16px;
+    border-radius:14px;
+    min-width:110px;
+    text-align:center;
+    font-size:18px;
+}
+
+#game{
+    position:relative;
+    width:min(900px,96vw);
+    height:76vh;
+    min-height:560px;
+    margin:0 auto;
+    background:
+        radial-gradient(circle at 50% 20%,rgba(34,197,94,0.25),transparent 35%),
+        radial-gradient(circle at center,#1e293b,#020617 70%);
+    border-radius:28px;
+    overflow:hidden;
+    border:3px solid rgba(255,255,255,0.18);
+    box-shadow:0 25px 60px rgba(0,0,0,0.45);
+    user-select:none;
+    touch-action:none;
+    cursor:crosshair;
+}
+
+.fruit{
+    position:absolute;
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:52px;
+    z-index:10;
+    pointer-events:none;
+    filter:drop-shadow(0 10px 12px rgba(0,0,0,0.35));
+}
+
+.bomb{
+    font-size:58px;
+    filter:drop-shadow(0 0 16px rgba(0,0,0,0.9));
+}
+
+.slicePart{
+    position:absolute;
+    font-size:46px;
+    pointer-events:none;
+    z-index:12;
+    animation:sliceFly 0.55s forwards;
+}
+
+.splash{
+    position:absolute;
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    opacity:0.8;
+    transform:translate(-50%,-50%);
+    z-index:8;
+    pointer-events:none;
+    animation:splash 0.45s forwards;
+}
+
+.slash{
+    position:absolute;
+    width:120px;
+    height:5px;
+    background:white;
+    border-radius:999px;
+    transform-origin:left center;
+    opacity:0.9;
+    z-index:30;
+    pointer-events:none;
+    box-shadow:0 0 18px white;
+    animation:slashFade 0.25s forwards;
+}
+
+.floatText{
+    position:absolute;
+    color:#facc15;
+    font-size:30px;
+    font-weight:bold;
+    pointer-events:none;
+    z-index:40;
+    animation:floatUp 0.75s forwards;
+    text-shadow:0 4px 16px rgba(0,0,0,0.8);
+}
+
+#centerMessage{
+    position:absolute;
+    left:50%;
+    top:45%;
+    transform:translate(-50%,-50%);
+    font-size:46px;
+    font-weight:bold;
+    color:#facc15;
+    text-shadow:0 5px 20px rgba(0,0,0,0.9);
+    opacity:0;
+    z-index:45;
+    pointer-events:none;
+}
+
+#centerMessage.show{
+    animation:centerFlash 0.9s forwards;
+}
+
+#startScreen,#endScreen{
+    position:absolute;
+    inset:0;
+    background:rgba(2,6,23,0.92);
+    z-index:60;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#endScreen{
+    display:none;
+}
+
+.card{
+    width:min(460px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+    box-shadow:0 25px 60px rgba(0,0,0,0.45);
+}
+
+.card h2{
+    font-size:38px;
+    margin-bottom:14px;
+}
+
+.card p{
+    color:#cbd5e1;
+    font-size:19px;
+    line-height:1.55;
+    margin-bottom:18px;
+}
+
+.card button{
+    padding:14px 24px;
+    font-size:20px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+.modeBox{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.modeBtn{
+    padding:11px 16px;
+    background:#334155;
+    color:white;
+}
+
+.modeBtn.selected{
+    background:#facc15;
+    color:#422006;
+}
+
+.shake{
+    animation:shake 0.25s;
+}
+
+@keyframes sliceFly{
+    from{opacity:1;transform:translate(0,0) rotate(0deg) scale(1)}
+    to{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(0.7)}
+}
+
+@keyframes splash{
+    from{opacity:0.85;transform:translate(-50%,-50%) scale(0.2)}
+    to{opacity:0;transform:translate(-50%,-50%) scale(1.7)}
+}
+
+@keyframes slashFade{
+    from{opacity:1;transform:rotate(var(--rot)) scaleX(1)}
+    to{opacity:0;transform:rotate(var(--rot)) scaleX(0.25)}
+}
+
+@keyframes floatUp{
+    from{opacity:1;transform:translateY(0)}
+    to{opacity:0;transform:translateY(-60px)}
+}
+
+@keyframes centerFlash{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(0.7)}
+    20%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
+    100%{opacity:0;transform:translate(-50%,-85%) scale(1)}
+}
+
+@keyframes shake{
+    0%{transform:translate(0)}
+    25%{transform:translate(8px,-4px)}
+    50%{transform:translate(-8px,4px)}
+    75%{transform:translate(5px,2px)}
+    100%{transform:translate(0)}
+}
+
+@media(max-width:700px){
+    h1{font-size:30px}
+    #game{height:74vh;min-height:520px}
+    .fruit{width:58px;height:58px;font-size:44px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>🍉 Fruit Slice</h1>
+        <div>👤 Joueur : <span id="player">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="hud">
+    <div class="hudItem">⭐ Score<br><span id="score">0</span></div>
+    <div class="hudItem">🏆 Record<br><span id="record">0</span></div>
+    <div class="hudItem">⏱️ Temps<br><span id="time">60</span></div>
+    <div class="hudItem">❤️ Vies<br><span id="lives">3</span></div>
+    <div class="hudItem">🔥 Combo<br><span id="combo">x1</span></div>
+</div>
+
+<div id="game">
+    <div id="centerMessage"></div>
+
+    <div id="startScreen">
+        <div class="card">
+            <h2>🍉 Fruit Slice</h2>
+            <p>
+                Maintiens la souris ou le doigt et tranche les fruits.<br>
+                Évite les bombes 💣.<br>
+                Coupe plusieurs fruits d’un coup pour faire des combos.
+            </p>
+
+            <div class="modeBox">
+                <button class="modeBtn selected" id="modeTime" onclick="setMode('time')">⏱️ 1 minute</button>
+                <button class="modeBtn" id="modeLives" onclick="setMode('lives')">❤️ 3 vies</button>
+            </div>
+
+            <button onclick="startGame()">▶️ COMMENCER</button>
+        </div>
+    </div>
+
+    <div id="endScreen">
+        <div class="card">
+            <h2>💀 FIN</h2>
+            <p id="endStats"></p>
+            <button onclick="startGame()">🔁 Rejouer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById("player").innerText =
+localStorage.getItem("pseudo") || "Joueur";
+
+const game = document.getElementById("game");
+const centerMessage = document.getElementById("centerMessage");
+
+let mode = "time";
+let score = 0;
+let record = Number(localStorage.getItem("fruit_record")) || 0;
+let time = 60;
+let lives = 3;
+let combo = 0;
+let comboMultiplier = 1;
+let slicedThisSwipe = 0;
+
+let isPlaying = false;
+let slicing = false;
+let lastPoint = null;
+let fruits = [];
+
+let timer = null;
+let spawnTimer = null;
+let physicsTimer = null;
+
+const fruitTypes = ["🍉","🍎","🍊","🍌","🍓","🍍","🥝","🍇"];
+
+document.getElementById("record").innerText = record;
+
+function goHome(){
+    window.location.href = "index.html";
+}
+
+function setMode(m){
+    if(isPlaying) return;
+
+    mode = m;
+    document.getElementById("modeTime").classList.toggle("selected", m === "time");
+    document.getElementById("modeLives").classList.toggle("selected", m === "lives");
+}
+
+function startGame(){
+    clearInterval(timer);
+    clearInterval(spawnTimer);
+    clearInterval(physicsTimer);
+
+    document.querySelectorAll(".fruit,.slash,.splash,.floatText,.slicePart").forEach(e => e.remove());
+
+    score = 0;
+    time = mode === "time" ? 60 : 0;
+    lives = 3;
+    combo = 0;
+    comboMultiplier = 1;
+    slicedThisSwipe = 0;
+    fruits = [];
+    isPlaying = true;
+    slicing = false;
+    lastPoint = null;
+
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("endScreen").style.display = "none";
+
+    timer = setInterval(() => {
+        if(mode === "time"){
+            time--;
+            if(time <= 0){
+                endGame();
+            }
+        }else{
+            time++;
+        }
+        updateHUD();
+    },1000);
+
+    spawnTimer = setInterval(spawnWave, 900);
+    physicsTimer = setInterval(updatePhysics, 1000/60);
+
+    spawnWave();
+    updateHUD();
+}
+
+function spawnWave(){
+    if(!isPlaying) return;
+
+    const count = Math.random() < 0.22 ? 3 : Math.random() < 0.55 ? 2 : 1;
+
+    for(let i=0;i<count;i++){
+        setTimeout(spawnFruit, i * 120);
+    }
+}
+
+function spawnFruit(){
+    if(!isPlaying) return;
+
+    const rect = game.getBoundingClientRect();
+    const item = document.createElement("div");
+    item.className = "fruit";
+
+    const isBomb = Math.random() < 0.14;
+    const emoji = isBomb ? "💣" : fruitTypes[Math.floor(Math.random()*fruitTypes.length)];
+
+    item.innerText = emoji;
+    if(isBomb) item.classList.add("bomb");
+
+    const x = 60 + Math.random() * (rect.width - 120);
+    const y = rect.height + 60;
+
+    const vx = (Math.random() - 0.5) * 4.2;
+    const vy = -13 - Math.random() * 5;
+
+    item.style.left = x + "px";
+    item.style.top = y + "px";
+
+    game.appendChild(item);
+
+    fruits.push({
+        el:item,
+        x,
+        y,
+        vx,
+        vy,
+        bomb:isBomb,
+        sliced:false,
+        emoji
+    });
+}
+
+function updatePhysics(){
+    if(!isPlaying) return;
+
+    const rect = game.getBoundingClientRect();
+
+    fruits.forEach(f => {
+        f.vy += 0.28;
+        f.x += f.vx;
+        f.y += f.vy;
+
+        f.el.style.left = f.x + "px";
+        f.el.style.top = f.y + "px";
+        f.el.style.transform = "translate(-50%,-50%) rotate(" + (f.x + f.y) + "deg)";
+    });
+
+    fruits = fruits.filter(f => {
+        if(f.y > rect.height + 100){
+            if(!f.bomb && !f.sliced && mode === "lives"){
+                lives--;
+                combo = 0;
+                comboMultiplier = 1;
+
+                if(lives <= 0){
+                    endGame();
+                }
+            }
+
+            f.el.remove();
+            return false;
+        }
+        return !f.sliced;
+    });
+
+    updateHUD();
+}
+
+function startSlice(e){
+    if(!isPlaying) return;
+
+    slicing = true;
+    slicedThisSwipe = 0;
+    lastPoint = getPoint(e);
+}
+
+function moveSlice(e){
+    if(!slicing || !isPlaying) return;
+
+    const p = getPoint(e);
+    createSlash(lastPoint,p);
+    checkSlice(p);
+    lastPoint = p;
+}
+
+function endSlice(){
+    slicing = false;
+    lastPoint = null;
+
+    if(slicedThisSwipe >= 3){
+        flashCenter("🔥 COMBO +" + slicedThisSwipe);
+    }
+}
+
+function getPoint(e){
+    const rect = game.getBoundingClientRect();
+
+    if(e.touches){
+        return {
+            x:e.touches[0].clientX - rect.left,
+            y:e.touches[0].clientY - rect.top
+        };
+    }
+
+    return {
+        x:e.clientX - rect.left,
+        y:e.clientY - rect.top
+    };
+}
+
+function createSlash(a,b){
+    if(!a || !b) return;
+
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    if(dist < 8) return;
+
+    const slash = document.createElement("div");
+    slash.className = "slash";
+    slash.style.left = a.x + "px";
+    slash.style.top = a.y + "px";
+    slash.style.width = dist + "px";
+    slash.style.setProperty("--rot", Math.atan2(dy,dx) + "rad");
+
+    game.appendChild(slash);
+    setTimeout(() => slash.remove(),250);
+}
+
+function checkSlice(p){
+    fruits.forEach(f => {
+        if(f.sliced) return;
+
+        const dx = p.x - f.x;
+        const dy = p.y - f.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+
+        if(d < 42){
+            sliceFruit(f);
+        }
+    });
+}
+
+function sliceFruit(f){
+    if(f.sliced) return;
+    f.sliced = true;
+
+    if(f.bomb){
+        bombHit(f);
+        return;
+    }
+
+    slicedThisSwipe++;
+    combo++;
+
+    if(combo >= 12){
+        comboMultiplier = 5;
+    }else if(combo >= 8){
+        comboMultiplier = 4;
+    }else if(combo >= 5){
+        comboMultiplier = 3;
+    }else if(combo >= 3){
+        comboMultiplier = 2;
+    }else{
+        comboMultiplier = 1;
+    }
+
+    const gain = comboMultiplier;
+    score += gain;
+
+    if(score > record){
+        record = score;
+        localStorage.setItem("fruit_record", record);
+    }
+
+    createSplash(f.x,f.y,"rgba(34,197,94,0.75)");
+    createParts(f);
+    showFloat("+" + gain, f.x, f.y);
+
+    f.el.remove();
+    updateHUD();
+}
+
+function bombHit(f){
+    createSplash(f.x,f.y,"rgba(239,68,68,0.85)");
+    game.classList.add("shake");
+    setTimeout(() => game.classList.remove("shake"),250);
+
+    f.el.remove();
+    combo = 0;
+    comboMultiplier = 1;
+
+    if(mode === "time"){
+        score = Math.max(0, score - 10);
+        showFloat("-10", f.x, f.y);
+    }else{
+        lives--;
+        showFloat("-1 ❤️", f.x, f.y);
+
+        if(lives <= 0){
+            endGame();
+        }
+    }
+
+    updateHUD();
+}
+
+function createSplash(x,y,color){
+    const s = document.createElement("div");
+    s.className = "splash";
+    s.style.left = x + "px";
+    s.style.top = y + "px";
+    s.style.background = color;
+
+    game.appendChild(s);
+    setTimeout(() => s.remove(),450);
+}
+
+function createParts(f){
+    for(let i=0;i<2;i++){
+        const p = document.createElement("div");
+        p.className = "slicePart";
+        p.innerText = f.emoji;
+        p.style.left = f.x + "px";
+        p.style.top = f.y + "px";
+        p.style.setProperty("--x", (i===0 ? -55 : 55) + "px");
+        p.style.setProperty("--y", (Math.random()*60-90) + "px");
+        p.style.setProperty("--r", (i===0 ? -180 : 180) + "deg");
+        game.appendChild(p);
+        setTimeout(() => p.remove(),550);
+    }
+}
+
+function showFloat(text,x,y){
+    const el = document.createElement("div");
+    el.className = "floatText";
+    el.innerText = text;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    game.appendChild(el);
+    setTimeout(() => el.remove(),750);
+}
+
+function flashCenter(text){
+    centerMessage.innerText = text;
+    centerMessage.classList.remove("show");
+    void centerMessage.offsetWidth;
+    centerMessage.classList.add("show");
+}
+
+function updateHUD(){
+    document.getElementById("score").innerText = score;
+    document.getElementById("record").innerText = record;
+    document.getElementById("time").innerText = time;
+    document.getElementById("lives").innerText = lives;
+    document.getElementById("combo").innerText = "x" + comboMultiplier;
+}
+
+function endGame(){
+    if(!isPlaying) return;
+
+    isPlaying = false;
+
+    clearInterval(timer);
+    clearInterval(spawnTimer);
+    clearInterval(physicsTimer);
+
+    document.getElementById("endStats").innerHTML =
+    "Score : " + score + "<br>" +
+    "Record : " + record + "<br>" +
+    "Temps : " + time + "s<br>" +
+    "Mode : " + (mode === "time" ? "1 minute" : "3 vies");
+
+    document.getElementById("endScreen").style.display = "flex";
+}
+
+game.addEventListener("mousedown", startSlice);
+game.addEventListener("mousemove", moveSlice);
+window.addEventListener("mouseup", endSlice);
+
+game.addEventListener("touchstart", e => {
+    e.preventDefault();
+    startSlice(e);
+});
+
+game.addEventListener("touchmove", e => {
+    e.preventDefault();
+    moveSlice(e);
+});
+
+window.addEventListener("touchend", endSlice);
+
+updateHUD();
+</script>
+
+</body>
+</html>
