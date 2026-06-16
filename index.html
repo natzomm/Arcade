@@ -874,11 +874,11 @@ button:hover{
             <div class="desc">Tire, marque et bats le gardien !</div>
         </div>
 
-        <div class="card" onclick="goToGame('morpion.html')">
-            <div class="icon">❌</div>
-            <div class="title">Morpion</div>
-            <div class="desc">Joue à 2 ou contre le bot !</div>
-        </div>
+       <div class="card" onclick="openMorpion()">
+    <div class="icon">❌</div>
+    <div class="title">Morpion</div>
+    <div class="desc">Joue en local ou en ligne avec tes amis !</div>
+</div>
 
         <div class="card" onclick="goToGame('rps.html')">
             <div class="icon">✊</div>
@@ -962,6 +962,19 @@ function savePseudo(){
     localStorage.setItem("pseudo", p);
     input.value = p;
 }
+
+function openMorpion(){
+    savePseudo();
+
+    const mode = localStorage.getItem("playMode");
+
+    if(mode === "online"){
+        window.location.href = "morpion_online.html";
+    }else{
+        window.location.href = "morpion.html";
+    }
+}
+
 
 function openTarget(){
     savePseudo();

@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morpion Online</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f172a,#581c87,#1e3a8a);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{
+    font-size:42px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1050px,95%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:315px 1fr;
+    gap:22px;
+}
+
+.panel{
+    background:rgba(15,23,42,0.85);
+    border:1px solid rgba(148,163,184,0.25);
+    border-radius:22px;
+    padding:22px;
+    box-shadow:0 20px 45px rgba(0,0,0,0.3);
+}
+
+#scorePanel h2{
+    margin-bottom:15px;
+}
+
+.scoreLine{
+    background:#020617;
+    padding:13px;
+    margin:10px 0;
+    border-radius:12px;
+    font-size:20px;
+}
+
+.modeBtn,.diffBtn{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:17px;
+    background:#334155;
+    color:white;
+    border:2px solid transparent;
+}
+
+.modeBtn.selected,.diffBtn.selected{
+    background:#22c55e;
+    color:#052e16;
+    border-color:#bbf7d0;
+}
+
+.resetBtn{
+    width:100%;
+    padding:13px;
+    margin-top:18px;
+    font-size:17px;
+    background:#ef4444;
+    color:white;
+}
+
+#gamePanel{
+    text-align:center;
+}
+
+#status{
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:18px;
+    color:#facc15;
+    min-height:35px;
+}
+
+#board{
+    width:min(420px,90vw);
+    height:min(420px,90vw);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(3,1fr);
+    gap:12px;
+}
+
+.cell{
+    background:#1e293b;
+    border:3px solid #475569;
+    border-radius:18px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:82px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.cell:hover{
+    background:#334155;
+    transform:scale(1.03);
+}
+
+.cell.x{
+    color:#38bdf8;
+    text-shadow:0 0 18px rgba(56,189,248,0.8);
+}
+
+.cell.o{
+    color:#f472b6;
+    text-shadow:0 0 18px rgba(244,114,182,0.8);
+}
+
+.cell.win{
+    background:#22c55e;
+    color:#052e16;
+    border-color:#bbf7d0;
+}
+
+#controls{
+    margin-top:22px;
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.playBtn{
+    padding:14px 24px;
+    font-size:18px;
+    background:#facc15;
+    color:#422006;
+}
+
+.clearBtn{
+    padding:14px 24px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#endMessage{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:50;
+}
+
+#endCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+}
+
+#endCard h2{
+    font-size:36px;
+    margin-bottom:16px;
+}
+
+#endCard button{
+    padding:13px 22px;
+    font-size:18px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+.info{
+    margin-top:15px;
+    color:#cbd5e1;
+    line-height:1.4;
+    background:#020617;
+    border-radius:12px;
+    padding:12px;
+}
+
+select{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    background:#020617;
+    color:white;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    background:#020617;
+    color:white;
+}
+
+.playerSlot{
+    background:#020617;
+    border-radius:16px;
+    padding:14px;
+    margin:10px 0;
+    border:2px solid #334155;
+}
+
+.playerSlot.filled{
+    border-color:#22c55e;
+}
+
+.playerSlot.empty{
+    color:#94a3b8;
+    border-style:dashed;
+}
+
+.hostBadge{
+    color:#facc15;
+    font-weight:bold;
+}
+
+#roundDots{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:14px 0;
+}
+
+.dot{
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:#334155;
+    border:2px solid #64748b;
+}
+
+.dot.x{
+    background:#38bdf8;
+    border-color:#bae6fd;
+}
+
+.dot.o{
+    background:#f472b6;
+    border-color:#fbcfe8;
+}
+
+.dot.draw{
+    background:#facc15;
+    border-color:#fef08a;
+}
+
+.turnFlash{
+    animation:flashTurn 1.7s ease-out;
+}
+
+@keyframes flashTurn{
+    0%{transform:scale(0.6);opacity:0}
+    25%{transform:scale(1.15);opacity:1}
+    100%{transform:scale(1);opacity:1}
+}
+
+#inviteList{
+    max-height:170px;
+    overflow:auto;
+}
+
+.friendItem{
+    background:#020617;
+    border-radius:12px;
+    padding:10px;
+    margin:8px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+}
+
+.friendItem button{
+    padding:9px 12px;
+    font-size:14px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+.kickBtn{
+    padding:8px 10px;
+    font-size:13px;
+    background:#ef4444;
+    color:white;
+    margin-top:8px;
+}
+
+#inviteOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:60;
+}
+
+#inviteCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+}
+
+#inviteCard h2{
+    font-size:32px;
+    margin-bottom:15px;
+}
+
+@media(max-width:800px){
+    #container{
+        grid-template-columns:1fr;
+    }
+
+    h1{
+        font-size:34px;
+    }
+
+    .cell{
+        font-size:62px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>❌⭕ Morpion Online</h1>
+        <div>👤 Joueur : <span id="player">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+
+<aside class="panel" id="scorePanel">
+    <h2>🏆 Partie</h2>
+
+    <div class="scoreLine">❌ X : <span id="scoreX">0</span></div>
+    <div class="scoreLine">⭕ O : <span id="scoreO">0</span></div>
+    <div class="scoreLine">🤝 Égalités : <span id="scoreDraw">0</span></div>
+
+    <h2 style="margin-top:25px;">👥 Salon</h2>
+
+    <div class="playerSlot filled">
+        <div>Joueur 1</div>
+        <strong id="hostPseudo">En attente...</strong>
+        <span class="hostBadge"> 👑 Hôte</span>
+    </div>
+
+    <div class="playerSlot empty" id="guestSlot">
+        <div>Joueur 2</div>
+        <strong id="guestPseudo">Case vide</strong>
+        <br>
+        <button class="kickBtn" id="kickBtn" onclick="kickGuest()" style="display:none;">Expulser</button>
+    </div>
+
+    <h2 style="margin-top:25px;">🎮 Format</h2>
+    <button class="modeBtn selected" id="modeRounds3" onclick="setMatchMode('rounds3')">3 manches</button>
+    <button class="modeBtn" id="modeRounds5" onclick="setMatchMode('rounds5')">5 manches</button>
+    <button class="modeBtn" id="modePoints3" onclick="setMatchMode('points3')">3 points</button>
+    <button class="modeBtn" id="modePoints5" onclick="setMatchMode('points5')">5 points</button>
+
+    <div class="info">
+        Le hôte choisit le format, invite un ami, puis lance la partie quand vous êtes deux.
+    </div>
+
+    <button class="resetBtn" onclick="leaveRoom()">🚪 Quitter le salon</button>
+</aside>
+
+<section class="panel" id="gamePanel">
+    <div id="status">Connecte-toi depuis l'accueil puis crée un salon.</div>
+
+    <div id="roundDots"></div>
+
+    <div id="board">
+        <div class="cell" onclick="play(0)"></div>
+        <div class="cell" onclick="play(1)"></div>
+        <div class="cell" onclick="play(2)"></div>
+        <div class="cell" onclick="play(3)"></div>
+        <div class="cell" onclick="play(4)"></div>
+        <div class="cell" onclick="play(5)"></div>
+        <div class="cell" onclick="play(6)"></div>
+        <div class="cell" onclick="play(7)"></div>
+        <div class="cell" onclick="play(8)"></div>
+    </div>
+
+    <div id="controls">
+        <button class="playBtn" onclick="createRoom()">➕ Créer salon</button>
+        <button class="clearBtn" onclick="loadFriends()">👥 Inviter un ami</button>
+        <button class="playBtn" onclick="startMatch()">▶️ Commencer</button>
+    </div>
+
+    <div id="inviteList"></div>
+</section>
+
+</div>
+
+<div id="endMessage">
+    <div id="endCard">
+        <h2 id="endTitle">Fin</h2>
+        <button onclick="closeEnd()">Continuer</button>
+    </div>
+</div>
+
+<div id="inviteOverlay">
+    <div id="inviteCard">
+        <h2>🎮 Invitation Morpion</h2>
+        <p id="inviteText">Quelqu'un t'invite.</p>
+        <div style="margin-top:18px;">
+            <button class="playBtn" onclick="acceptInvite()">Accepter</button>
+            <button class="resetBtn" onclick="refuseInvite()">Refuser</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import {
+    getAuth,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    onSnapshot,
+    serverTimestamp,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCicpzlFc-WfbmBjzu8y-bWYPaXu6Mnt24",
+    authDomain: "arcade-fbd7c.firebaseapp.com",
+    projectId: "arcade-fbd7c",
+    storageBucket: "arcade-fbd7c.firebasestorage.app",
+    messagingSenderId: "648897624519",
+    appId: "1:648897624519:web:bffd2e9d3023362f8781e2"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+let userData = null;
+let roomId = localStorage.getItem("morpion_room") || "";
+let roomUnsub = null;
+let inviteUnsub = null;
+let pendingInvite = null;
+let room = null;
+
+let board = ["","","","","","","","",""];
+let current = "X";
+let gameOver = false;
+
+const cells = document.querySelectorAll(".cell");
+
+const wins = [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6]
+];
+
+function goHome(){
+    window.location.href = "index.html";
+}
+window.goHome = goHome;
+
+onAuthStateChanged(auth, async u => {
+    user = u;
+
+    if(!user){
+        document.getElementById("status").innerText = "Tu dois être connecté en ligne depuis l'accueil.";
+        return;
+    }
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+    userData = snap.exists() ? snap.data() : {pseudo:localStorage.getItem("pseudo") || "Joueur"};
+
+    document.getElementById("player").innerText = userData.pseudo || "Joueur";
+
+    listenInvites();
+
+    if(roomId){
+        listenRoom(roomId);
+    }else{
+        resetLocalView();
+        document.getElementById("status").innerText = "Crée un salon ou accepte une invitation.";
+    }
+});
+
+function resetLocalView(){
+    board = ["","","","","","","","",""];
+    current = "X";
+    gameOver = false;
+    render();
+    updateScores({scoreX:0,scoreO:0,draw:0});
+    updateDots([]);
+    document.getElementById("hostPseudo").innerText = "En attente...";
+    document.getElementById("guestPseudo").innerText = "Case vide";
+    document.getElementById("guestSlot").className = "playerSlot empty";
+    document.getElementById("kickBtn").style.display = "none";
+}
+
+async function createRoom(){
+    if(!user){
+        alert("Connecte-toi depuis l'accueil.");
+        return;
+    }
+
+    if(roomId){
+        if(!confirm("Tu as déjà un salon. En créer un nouveau ?")) return;
+        await leaveRoom();
+    }
+
+    const newRoom = doc(collection(db, "morpionRooms"));
+    roomId = newRoom.id;
+    localStorage.setItem("morpion_room", roomId);
+
+    await setDoc(newRoom, {
+        hostUid:user.uid,
+        hostPseudo:userData.pseudo || "Joueur",
+        guestUid:"",
+        guestPseudo:"",
+        status:"waiting",
+        board:["","","","","","","","",""],
+        current:"X",
+        xUid:user.uid,
+        oUid:"",
+        turnUid:user.uid,
+        mode:"rounds3",
+        scoreX:0,
+        scoreO:0,
+        draw:0,
+        roundResults:[],
+        round:1,
+        gameOver:false,
+        winner:"",
+        createdAt:serverTimestamp()
+    });
+
+    listenRoom(roomId);
+    document.getElementById("status").innerText = "Salon créé. Invite un ami.";
+}
+window.createRoom = createRoom;
+
+function listenRoom(id){
+    if(roomUnsub) roomUnsub();
+
+    roomUnsub = onSnapshot(doc(db, "morpionRooms", id), snap => {
+        if(!snap.exists()){
+            roomId = "";
+            localStorage.removeItem("morpion_room");
+            resetLocalView();
+            document.getElementById("status").innerText = "Le salon a été fermé.";
+            return;
+        }
+
+        room = {id:snap.id, ...snap.data()};
+        applyRoom();
+    });
+}
+
+function applyRoom(){
+    if(!room) return;
+
+    board = room.board || ["","","","","","","","",""];
+    current = room.current || "X";
+    gameOver = room.gameOver || false;
+
+    document.getElementById("hostPseudo").innerText = room.hostPseudo || "Hôte";
+
+    const guestSlot = document.getElementById("guestSlot");
+    if(room.guestUid){
+        document.getElementById("guestPseudo").innerText = room.guestPseudo;
+        guestSlot.className = "playerSlot filled";
+    }else{
+        document.getElementById("guestPseudo").innerText = "Case vide";
+        guestSlot.className = "playerSlot empty";
+    }
+
+    const isHost = user && room.hostUid === user.uid;
+    document.getElementById("kickBtn").style.display = isHost && room.guestUid ? "inline-block" : "none";
+
+    updateModeButtons(room.mode || "rounds3");
+    updateScores(room);
+    updateDots(room.roundResults || []);
+    render();
+
+    if(room.status === "waiting"){
+        document.getElementById("status").innerText = isHost ? "En attente d'un ami..." : "En attente du lancement par l'hôte...";
+        return;
+    }
+
+    if(room.status === "ended"){
+        document.getElementById("status").innerText = "Partie terminée.";
+        return;
+    }
+
+    if(room.status === "playing"){
+        const mySymbol = getMySymbol();
+
+        if(room.turnUid === user.uid){
+            document.getElementById("status").innerText = "À vous de jouer " + (mySymbol === "X" ? "❌" : "⭕");
+            document.getElementById("status").classList.remove("turnFlash");
+            void document.getElementById("status").offsetWidth;
+            document.getElementById("status").classList.add("turnFlash");
+        }else{
+            const other = room.turnUid === room.hostUid ? room.hostPseudo : room.guestPseudo;
+            document.getElementById("status").innerText = "Tour de " + other;
+        }
+    }
+}
+
+function updateScores(r){
+    document.getElementById("scoreX").innerText = r.scoreX || 0;
+    document.getElementById("scoreO").innerText = r.scoreO || 0;
+    document.getElementById("scoreDraw").innerText = r.draw || 0;
+}
+
+function updateDots(results){
+    const box = document.getElementById("roundDots");
+    box.innerHTML = "";
+
+    const total = getMaxRoundsForMode(room ? room.mode : "rounds3");
+
+    if(total === 0){
+        return;
+    }
+
+    for(let i=0;i<total;i++){
+        const d = document.createElement("div");
+        d.className = "dot";
+
+        if(results[i] === "X") d.classList.add("x");
+        if(results[i] === "O") d.classList.add("o");
+        if(results[i] === "draw") d.classList.add("draw");
+
+        box.appendChild(d);
+    }
+}
+
+function getMaxRoundsForMode(mode){
+    if(mode === "rounds3") return 3;
+    if(mode === "rounds5") return 5;
+    return 0;
+}
+
+function getTargetPoints(mode){
+    if(mode === "points3") return 3;
+    if(mode === "points5") return 5;
+    return 0;
+}
+
+async function setMatchMode(mode){
+    if(!room || room.hostUid !== user.uid){
+        alert("Seul l'hôte peut changer le format.");
+        return;
+    }
+
+    if(room.status !== "waiting"){
+        alert("Tu peux changer le format seulement avant de commencer.");
+        return;
+    }
+
+    await updateDoc(doc(db, "morpionRooms", roomId), {mode});
+}
+window.setMatchMode = setMatchMode;
+
+function updateModeButtons(mode){
+    ["rounds3","rounds5","points3","points5"].forEach(m=>{
+        const btn = document.getElementById("mode" + m.charAt(0).toUpperCase() + m.slice(1));
+        if(btn) btn.classList.toggle("selected", m === mode);
+    });
+}
+
+async function loadFriends(){
+    if(!user){
+        alert("Connecte-toi.");
+        return;
+    }
+
+    if(!roomId){
+        alert("Crée d'abord un salon.");
+        return;
+    }
+
+    const snap = await getDoc(doc(db, "users", user.uid));
+
+    if(!snap.exists() || !snap.data().friends || snap.data().friends.length === 0){
+        document.getElementById("inviteList").innerHTML = "<div class='info'>Tu n'as pas encore d'amis.</div>";
+        return;
+    }
+
+    const friends = snap.data().friends;
+    const box = document.getElementById("inviteList");
+    box.innerHTML = "<h3 style='margin-top:15px;'>Inviter</h3>";
+
+    for(const fuid of friends){
+        const fsnap = await getDoc(doc(db, "users", fuid));
+
+        if(fsnap.exists()){
+            const f = fsnap.data();
+            box.innerHTML += `
+                <div class="friendItem">
+                    <span>${f.online ? "🟢" : "⚫"} ${f.pseudo}</span>
+                    <button onclick="inviteFriend('${fuid}','${f.pseudo}')">Inviter</button>
+                </div>
+            `;
+        }
+    }
+}
+window.loadFriends = loadFriends;
+
+async function inviteFriend(friendUid, friendPseudo){
+    if(!roomId || !room){
+        alert("Crée d'abord un salon.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut inviter.");
+        return;
+    }
+
+    await addDoc(collection(db, "gameInvites"), {
+        game:"morpion",
+        roomId,
+        fromUid:user.uid,
+        fromPseudo:userData.pseudo || "Joueur",
+        toUid:friendUid,
+        toPseudo:friendPseudo,
+        status:"pending",
+        createdAt:serverTimestamp()
+    });
+
+    await addDoc(collection(db, "notifications"), {
+        toUid:friendUid,
+        type:"gameInvite",
+        text:(userData.pseudo || "Joueur") + " t'invite à jouer au Morpion.",
+        read:false,
+        createdAt:serverTimestamp()
+    });
+
+    alert("Invitation envoyée à " + friendPseudo);
+}
+window.inviteFriend = inviteFriend;
+
+function listenInvites(){
+    if(inviteUnsub) inviteUnsub();
+
+    const q = query(
+        collection(db, "gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","morpion"),
+        where("status","==","pending")
+    );
+
+    inviteUnsub = onSnapshot(q, snap => {
+        if(snap.empty) return;
+
+        const first = snap.docs[0];
+        pendingInvite = {id:first.id, ...first.data()};
+
+        document.getElementById("inviteText").innerText =
+        pendingInvite.fromPseudo + " t'invite à jouer au Morpion.";
+
+        document.getElementById("inviteOverlay").style.display = "flex";
+    });
+}
+
+async function acceptInvite(){
+    if(!pendingInvite) return;
+
+    const roomRef = doc(db, "morpionRooms", pendingInvite.roomId);
+    const roomSnap = await getDoc(roomRef);
+
+    if(!roomSnap.exists()){
+        alert("Le salon n'existe plus.");
+        await updateDoc(doc(db, "gameInvites", pendingInvite.id), {status:"expired"});
+        document.getElementById("inviteOverlay").style.display = "none";
+        return;
+    }
+
+    const r = roomSnap.data();
+
+    if(r.guestUid && r.guestUid !== user.uid){
+        alert("Le salon est déjà plein.");
+        await updateDoc(doc(db, "gameInvites", pendingInvite.id), {status:"full"});
+        document.getElementById("inviteOverlay").style.display = "none";
+        return;
+    }
+
+    await updateDoc(roomRef, {
+        guestUid:user.uid,
+        guestPseudo:userData.pseudo || "Joueur",
+        oUid:user.uid
+    });
+
+    await updateDoc(doc(db, "gameInvites", pendingInvite.id), {status:"accepted"});
+
+    roomId = pendingInvite.roomId;
+    localStorage.setItem("morpion_room", roomId);
+
+    document.getElementById("inviteOverlay").style.display = "none";
+    listenRoom(roomId);
+}
+window.acceptInvite = acceptInvite;
+
+async function refuseInvite(){
+    if(!pendingInvite) return;
+
+    await updateDoc(doc(db, "gameInvites", pendingInvite.id), {status:"refused"});
+    document.getElementById("inviteOverlay").style.display = "none";
+    pendingInvite = null;
+}
+window.refuseInvite = refuseInvite;
+
+async function kickGuest(){
+    if(!room || room.hostUid !== user.uid) return;
+
+    if(!confirm("Expulser ce joueur ?")) return;
+
+    await updateDoc(doc(db, "morpionRooms", roomId), {
+        guestUid:"",
+        guestPseudo:"",
+        oUid:"",
+        status:"waiting",
+        board:["","","","","","","","",""],
+        current:"X",
+        turnUid:room.hostUid,
+        gameOver:false
+    });
+}
+window.kickGuest = kickGuest;
+
+async function startMatch(){
+    if(!room){
+        alert("Crée un salon.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut lancer.");
+        return;
+    }
+
+    if(!room.guestUid){
+        alert("Il faut être deux pour commencer.");
+        return;
+    }
+
+    const xStarts = Math.random() < 0.5;
+    const xUid = xStarts ? room.hostUid : room.guestUid;
+    const oUid = xStarts ? room.guestUid : room.hostUid;
+    const turnUid = xUid;
+
+    await updateDoc(doc(db, "morpionRooms", roomId), {
+        status:"playing",
+        board:["","","","","","","","",""],
+        current:"X",
+        xUid,
+        oUid,
+        turnUid,
+        gameOver:false,
+        winner:"",
+        scoreX:0,
+        scoreO:0,
+        draw:0,
+        roundResults:[],
+        round:1
+    });
+
+    const starter = xUid === room.hostUid ? room.hostPseudo : room.guestPseudo;
+    document.getElementById("status").innerText = starter + " commence ❌";
+}
+window.startMatch = startMatch;
+
+function getMySymbol(){
+    if(!room || !user) return "";
+    if(room.xUid === user.uid) return "X";
+    if(room.oUid === user.uid) return "O";
+    return "";
+}
+
+async function play(index){
+    if(!room || room.status !== "playing") return;
+    if(room.gameOver) return;
+    if(room.turnUid !== user.uid) return;
+    if(board[index] !== "") return;
+
+    const mySymbol = getMySymbol();
+    if(mySymbol !== room.current) return;
+
+    const newBoard = [...board];
+    newBoard[index] = room.current;
+
+    const result = checkWinner(newBoard);
+    const nextSymbol = room.current === "X" ? "O" : "X";
+    const nextUid = nextSymbol === "X" ? room.xUid : room.oUid;
+
+    if(result){
+        await finishRound(result, newBoard);
+        return;
+    }
+
+    await updateDoc(doc(db, "morpionRooms", roomId), {
+        board:newBoard,
+        current:nextSymbol,
+        turnUid:nextUid
+    });
+}
+window.play = play;
+
+async function finishRound(result, finalBoard){
+    const updates = {
+        board:finalBoard,
+        gameOver:true,
+        winner:result.winner
+    };
+
+    let scoreX = room.scoreX || 0;
+    let scoreO = room.scoreO || 0;
+    let draw = room.draw || 0;
+    let roundResults = room.roundResults || [];
+
+    if(result.winner === "draw"){
+        draw++;
+        roundResults.push("draw");
+    }else if(result.winner === "X"){
+        scoreX++;
+        roundResults.push("X");
+    }else{
+        scoreO++;
+        roundResults.push("O");
+    }
+
+    updates.scoreX = scoreX;
+    updates.scoreO = scoreO;
+    updates.draw = draw;
+    updates.roundResults = roundResults;
+
+    const matchEnded = isMatchEnded(room.mode, scoreX, scoreO, roundResults);
+
+    if(matchEnded){
+        updates.status = "ended";
+    }
+
+    await updateDoc(doc(db, "morpionRooms", roomId), updates);
+
+    if(result.combo){
+        result.combo.forEach(i => cells[i].classList.add("win"));
+    }
+
+    if(matchEnded){
+        let text = "Partie terminée !";
+        if(scoreX > scoreO) text = "❌ remporte la partie !";
+        if(scoreO > scoreX) text = "⭕ remporte la partie !";
+        if(scoreX === scoreO) text = "🤝 Partie égalité !";
+        showEnd(text);
+    }else{
+        const text = result.winner === "draw" ? "🤝 Manche égalité !" : (result.winner === "X" ? "❌ gagne la manche !" : "⭕ gagne la manche !");
+        showEnd(text);
+    }
+}
+
+function isMatchEnded(mode, scoreX, scoreO, results){
+    if(mode === "rounds3") return results.length >= 3;
+    if(mode === "rounds5") return results.length >= 5;
+    if(mode === "points3") return scoreX >= 3 || scoreO >= 3;
+    if(mode === "points5") return scoreX >= 5 || scoreO >= 5;
+    return false;
+}
+
+async function newRound(){
+    if(!room) return;
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte lance la manche suivante.");
+        return;
+    }
+
+    if(room.status === "ended"){
+        alert("La partie est terminée. Relance avec Commencer.");
+        return;
+    }
+
+    const xStarts = Math.random() < 0.5;
+    const xUid = xStarts ? room.hostUid : room.guestUid;
+    const oUid = xStarts ? room.guestUid : room.hostUid;
+
+    await updateDoc(doc(db, "morpionRooms", roomId), {
+        status:"playing",
+        board:["","","","","","","","",""],
+        current:"X",
+        xUid,
+        oUid,
+        turnUid:xUid,
+        gameOver:false,
+        winner:"",
+        round:(room.round || 1) + 1
+    });
+
+    closeEnd();
+}
+window.newRound = newRound;
+
+async function resetBoardOnly(){
+    await newRound();
+}
+window.resetBoardOnly = resetBoardOnly;
+
+async function leaveRoom(){
+    if(!roomId){
+        goHome();
+        return;
+    }
+
+    if(room && user && room.hostUid === user.uid){
+        if(confirm("Tu es hôte. Quitter va fermer le salon.")){
+            await deleteDoc(doc(db, "morpionRooms", roomId));
+        }else{
+            return;
+        }
+    }else if(room && user && room.guestUid === user.uid){
+        await updateDoc(doc(db, "morpionRooms", roomId), {
+            guestUid:"",
+            guestPseudo:"",
+            oUid:"",
+            status:"waiting"
+        });
+    }
+
+    roomId = "";
+    localStorage.removeItem("morpion_room");
+    resetLocalView();
+    document.getElementById("status").innerText = "Tu as quitté le salon.";
+}
+window.leaveRoom = leaveRoom;
+
+function render(){
+    board.forEach((value,index)=>{
+        cells[index].innerText = value === "X" ? "❌" : value === "O" ? "⭕" : "";
+        cells[index].classList.toggle("x", value === "X");
+        cells[index].classList.toggle("o", value === "O");
+        cells[index].classList.remove("win");
+    });
+
+    const result = checkWinner(board);
+    if(result && result.combo){
+        result.combo.forEach(i => cells[i].classList.add("win"));
+    }
+}
+
+function checkWinner(b){
+    for(const combo of wins){
+        const [a,c,d] = combo;
+
+        if(b[a] && b[a] === b[c] && b[a] === b[d]){
+            return {winner:b[a], combo};
+        }
+    }
+
+    if(b.every(v => v !== "")){
+        return {winner:"draw", combo:[]};
+    }
+
+    return null;
+}
+
+function showEnd(text){
+    document.getElementById("endTitle").innerText = text;
+    document.getElementById("endMessage").style.display = "flex";
+}
+
+function closeEnd(){
+    document.getElementById("endMessage").style.display = "none";
+}
+window.closeEnd = closeEnd;
+
+resetLocalView();
+</script>
+
+</body>
+</html>
