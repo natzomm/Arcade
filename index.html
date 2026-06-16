@@ -84,6 +84,66 @@ body{
     padding-top:70px;
 }
 
+#loginOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.88);
+    backdrop-filter:blur(5px);
+    z-index:9999;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#loginCard{
+    width:min(420px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+    box-shadow:0 25px 60px rgba(0,0,0,0.45);
+}
+
+#loginCard h2{
+    font-size:36px;
+    margin-bottom:12px;
+}
+
+#loginCard p{
+    color:#cbd5e1;
+    margin:10px 0;
+}
+
+#loginCard button{
+    width:100%;
+    margin:8px 0;
+    padding:14px;
+    font-size:18px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+#loginCard input{
+    width:100%;
+    margin:7px 0;
+    padding:13px;
+    font-size:17px;
+    border:none;
+    border-radius:10px;
+}
+
+#onlineBox{
+    display:none;
+    margin-top:15px;
+}
+
+.warning{
+    font-size:14px;
+    color:#facc15 !important;
+}
+
+
 
 </style>
 </head>
@@ -170,6 +230,31 @@ body{
     <p id="userStatus">Non connecté</p>
 </div>
 
+
+<div id="loginOverlay">
+    <div id="loginCard">
+        <h2>🎮 Mini Games</h2>
+        <p>Choisis comment tu veux jouer :</p>
+
+        <button onclick="playOffline()">🎮 Jouer hors ligne</button>
+        <button onclick="showOnlineLogin()">🌐 Jouer en ligne</button>
+
+        <p class="warning">
+            Hors ligne : tes scores restent seulement sur cet appareil.
+        </p>
+
+        <div id="onlineBox">
+            <input id="email" placeholder="Email">
+            <input id="password" type="password" placeholder="Mot de passe">
+
+            <button onclick="signup()">Créer un compte</button>
+            <button onclick="login()">Se connecter</button>
+
+            <p id="userStatus">Non connecté</p>
+        </div>
+    </div>
+</div>
+
 <script>
 const input = document.getElementById("pseudo");
 input.value = localStorage.getItem("pseudo") || "";
@@ -201,6 +286,18 @@ function goToGame(page){
     savePseudo();
     window.location.href = page;
 }
+
+function playOffline(){
+    localStorage.setItem("playMode","offline");
+    document.getElementById("loginOverlay").style.display = "none";
+}
+
+function showOnlineLogin(){
+    document.getElementById("onlineBox").style.display = "block";
+}
+
+
+
 </script>
 
 <script type="module">
