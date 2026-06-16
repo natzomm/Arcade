@@ -624,13 +624,40 @@ button:hover{
     margin-bottom:3px;
 }
 
-#chatFriendSelect{
-    width:100%;
+#conversationList{
+    margin-top:10px;
+}
+
+.conversationItem{
+    background:#020617;
+    border-radius:12px;
     padding:12px;
-    border-radius:10px;
-    border:none;
     margin:8px 0;
-    font-size:15px;
+    cursor:pointer;
+    color:#cbd5e1;
+    transition:0.2s;
+}
+
+.conversationItem:hover{
+    background:#1e293b;
+    transform:scale(1.02);
+}
+
+.conversationTitle{
+    color:white;
+    font-weight:bold;
+    font-size:16px;
+}
+
+.conversationLast{
+    font-size:13px;
+    color:#94a3b8;
+    margin-top:4px;
+}
+
+#currentChatTitle{
+    margin-top:12px;
+    color:#facc15;
 }
 
 #chatInput{
@@ -748,11 +775,10 @@ button:hover{
         <div id="settings_chat" class="settingsPage">
             <h2>💬 Chat</h2>
 
-            <select id="chatFriendSelect" onchange="openChatWithSelectedFriend()">
-                <option value="">Choisis un ami...</option>
-            </select>
+            <div id="conversationList">Tes conversations apparaîtront ici.</div>
 
-            <div id="chatBox">Choisis un ami pour commencer à discuter.</div>
+            <h3 id="currentChatTitle">Aucune conversation ouverte</h3>
+            <div id="chatBox">Clique sur une conversation pour discuter.</div>
 
             <input id="chatInput" placeholder="Écris un message...">
             <button onclick="sendChatMessage()">Envoyer</button>
@@ -1479,6 +1505,7 @@ window.loadFriends = async function(){
                         <span class="friendName">${f.pseudo}</span><br>
                         ${status}
                         <br>
+                        <button class="smallBtn" onclick="openChatFromFriend('${friendUid}','${f.pseudo}')">💬 Chat</button>
                         <button class="smallBtn dangerBtn" onclick="removeFriend('${friendUid}')">Retirer</button>
                     </div>
                 `;
@@ -1599,7 +1626,7 @@ window.listenNotifications = function(){
             const icon = n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : "🔔 Notification";
 
             list.innerHTML += `
-                <div class="notifItem">
+                <div class="notifItem" onclick="openNotification('${n.type}')">
                     <strong>${icon}</strong>${n.read ? "" : " <span class='unreadDot'>●</span>"}<br>
                     ${n.text}
                     <div class="notifTime">${timeAgo(date)}</div>
@@ -1637,25 +1664,50 @@ window.markNotificationsRead = async function(){
 
 
 
-window.loadChatFriends = async function(){
-    const user = auth.currentUser;
-    const select = document.getElementById("chatFriendSelect");
 
-    select.innerHTML = '<option value="">Choisis un ami...</option>';
+window.openNotification = function(type){
+    document.getElementById("notifPanel").classList.remove("open");
+    document.getElementById("accountPanel").classList.add("open");
+
+    if(type === "friendRequest"){
+        showSettingsPage("requests");
+    }else if(type === "message"){
+        showSettingsPage("chat");
+    }else{
+        showSettingsPage("account");
+    }
+};
+
+window.openChatFromFriend = function(friendUid, friendPseudo){
+    document.getElementById("accountPanel").classList.add("open");
+    showSettingsPage("chat");
+    openConversation(friendUid, friendPseudo);
+};
+
+window.loadChatFriends = async function(){
+    await loadConversations();
+};
+
+window.loadConversations = async function(){
+    const user = auth.currentUser;
+    const box = document.getElementById("conversationList");
 
     if(!user){
-        document.getElementById("chatBox").innerHTML = "Connecte-toi pour utiliser le chat.";
+        box.innerHTML = "Connecte-toi pour utiliser le chat.";
         return;
     }
 
     const meSnap = await getDoc(doc(db, "users", user.uid));
 
     if(!meSnap.exists() || !meSnap.data().friends || meSnap.data().friends.length === 0){
-        document.getElementById("chatBox").innerHTML = "Tu n'as pas encore d'amis.";
+        box.innerHTML = "<div class='friendItem'>Tu n'as pas encore d'amis.</div>";
         return;
     }
 
-    for(const friendUid of meSnap.data().friends){
+    const friends = meSnap.data().friends;
+    let conversations = [];
+
+    for(const friendUid of friends){
         const fSnap = await getDoc(doc(db, "users", friendUid));
 
         if(fSnap.exists()){
@@ -1664,34 +1716,53 @@ window.loadChatFriends = async function(){
             const chatSnap = await getDoc(doc(db, "chats", chatId));
 
             let unread = false;
+            let last = "Aucun message";
 
             if(chatSnap.exists()){
                 const chat = chatSnap.data();
                 unread = chat.unreadBy && chat.unreadBy[user.uid] === true;
+                last = chat.lastMessage || "Aucun message";
             }
 
-            const opt = document.createElement("option");
-            opt.value = friendUid;
-            opt.textContent = unread ? "🔴 " + f.pseudo : f.pseudo;
-            opt.dataset.pseudo = f.pseudo;
-            select.appendChild(opt);
+            conversations.push({
+                uid:friendUid,
+                pseudo:f.pseudo,
+                unread,
+                last
+            });
         }
     }
+
+    if(conversations.length === 0){
+        box.innerHTML = "<div class='friendItem'>Aucune conversation.</div>";
+        return;
+    }
+
+    box.innerHTML = "";
+
+    conversations.forEach(c=>{
+        box.innerHTML += `
+            <div class="conversationItem" onclick="openConversation('${c.uid}','${c.pseudo}')">
+                <div class="conversationTitle">${c.unread ? "🔴 " : ""}${c.pseudo}</div>
+                <div class="conversationLast">${c.last}</div>
+            </div>
+        `;
+    });
 };
 
-window.openChatWithSelectedFriend = async function(){
-    const select = document.getElementById("chatFriendSelect");
-    const friendUid = select.value;
+window.openConversation = async function(friendUid, friendPseudo){
+    const user = auth.currentUser;
 
-    if(!friendUid){
-        document.getElementById("chatBox").innerHTML = "Choisis un ami pour commencer à discuter.";
+    if(!user){
+        alert("Connecte-toi pour utiliser le chat.");
         return;
     }
 
     currentChatFriendUid = friendUid;
-    currentChatFriendPseudo = select.options[select.selectedIndex].dataset.pseudo || select.options[select.selectedIndex].textContent.replace("🔴 ","");
+    currentChatFriendPseudo = friendPseudo;
 
-    const user = auth.currentUser;
+    document.getElementById("currentChatTitle").innerText = "Conversation avec " + friendPseudo;
+
     const chatId = chatIdFor(user.uid, friendUid);
 
     await setDoc(doc(db, "chats", chatId), {
@@ -1702,7 +1773,7 @@ window.openChatWithSelectedFriend = async function(){
     }, { merge:true });
 
     listenChat(friendUid);
-    loadChatFriends();
+    loadConversations();
 };
 
 window.listenChat = function(friendUid){
@@ -1749,7 +1820,7 @@ window.listenChat = function(friendUid){
             }
         }, { merge:true });
 
-        loadChatFriends();
+        loadConversations();
     });
 };
 
@@ -1762,7 +1833,7 @@ window.sendChatMessage = async function(){
     }
 
     if(!currentChatFriendUid){
-        alert("Choisis un ami.");
+        alert("Ouvre une conversation.");
         return;
     }
 
@@ -1804,7 +1875,7 @@ window.sendChatMessage = async function(){
     );
 
     inputMsg.value = "";
-    loadChatFriends();
+    loadConversations();
 };
 
 onAuthStateChanged(auth,async user=>{
