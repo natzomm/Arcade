@@ -533,6 +533,124 @@ button:hover{
     }
 }
 
+
+/* NOTIFICATIONS + CHAT */
+#notifBtn{
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    background:#1e293b;
+    color:white;
+    font-size:23px;
+    padding:0;
+    margin:0;
+    position:relative;
+}
+
+#notifCount{
+    position:absolute;
+    top:-5px;
+    right:-5px;
+    background:#ef4444;
+    color:white;
+    min-width:20px;
+    height:20px;
+    border-radius:999px;
+    font-size:12px;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+#notifPanel{
+    position:fixed;
+    top:70px;
+    right:-340px;
+    width:320px;
+    background:#0f172a;
+    border:1px solid rgba(148,163,184,0.35);
+    border-radius:0 0 0 22px;
+    padding:16px;
+    z-index:997;
+    box-shadow:-8px 8px 25px rgba(0,0,0,0.4);
+    transition:0.25s;
+    max-height:75vh;
+    overflow:auto;
+}
+
+#notifPanel.open{
+    right:0;
+}
+
+.notifItem{
+    background:#020617;
+    border-radius:12px;
+    padding:10px;
+    margin:8px 0;
+    color:#cbd5e1;
+}
+
+.notifItem strong{
+    color:white;
+}
+
+#chatBox{
+    background:#020617;
+    border-radius:14px;
+    padding:10px;
+    height:250px;
+    overflow:auto;
+    margin-top:12px;
+}
+
+.chatMsg{
+    background:#1e293b;
+    padding:9px;
+    border-radius:12px;
+    margin:7px 0;
+    color:#cbd5e1;
+}
+
+.chatMsg.mine{
+    background:#14532d;
+    color:white;
+    text-align:right;
+}
+
+.chatSender{
+    font-size:12px;
+    color:#facc15;
+    margin-bottom:3px;
+}
+
+#chatFriendSelect{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    margin:8px 0;
+    font-size:15px;
+}
+
+#chatInput{
+    width:100%;
+    margin:8px 0;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    font-size:15px;
+}
+
+@media(max-width:750px){
+    #notifPanel{
+        top:96px;
+        width:100%;
+        right:-100%;
+        border-radius:0 0 22px 22px;
+    }
+}
+
 </style>
 </head>
 
@@ -554,8 +672,14 @@ button:hover{
             <div id="accountText">Hors ligne</div>
         </div>
 
+        <button id="notifBtn" onclick="toggleNotifPanel()">🔔<span id="notifCount">0</span></button>
         <button id="accountBtn" onclick="toggleAccountPanel()">⚙️</button>
     </div>
+</div>
+
+<div id="notifPanel">
+    <h2>🔔 Notifications</h2>
+    <div id="notifList">Aucune notification.</div>
 </div>
 
 <div id="sideMenu">
@@ -574,6 +698,7 @@ button:hover{
         <button class="settingsTab active" onclick="showSettingsPage('account')">👤 Compte</button>
         <button class="settingsTab" onclick="showSettingsPage('friends')">👥 Amis</button>
         <button class="settingsTab" onclick="showSettingsPage('requests')">📨 Demandes</button>
+        <button class="settingsTab" onclick="showSettingsPage('chat')">💬 Chat</button>
     </div>
 
     <div>
@@ -605,6 +730,19 @@ button:hover{
         <div id="settings_requests" class="settingsPage">
             <h2>📨 Demandes reçues</h2>
             <div id="requestsList">Connecte-toi pour voir tes demandes.</div>
+        </div>
+
+        <div id="settings_chat" class="settingsPage">
+            <h2>💬 Chat</h2>
+
+            <select id="chatFriendSelect" onchange="openChatWithSelectedFriend()">
+                <option value="">Choisis un ami...</option>
+            </select>
+
+            <div id="chatBox">Choisis un ami pour commencer à discuter.</div>
+
+            <input id="chatInput" placeholder="Écris un message...">
+            <button onclick="sendChatMessage()">Envoyer</button>
         </div>
     </div>
 </div>
@@ -753,9 +891,11 @@ function showSettingsPage(page){
     if(page === "account") buttons[0].classList.add("active");
     if(page === "friends") buttons[1].classList.add("active");
     if(page === "requests") buttons[2].classList.add("active");
+    if(page === "chat") buttons[3].classList.add("active");
 
     if(page === "friends" && typeof loadFriends === "function") loadFriends();
     if(page === "requests" && typeof loadFriendRequests === "function") loadFriendRequests();
+    if(page === "chat" && typeof loadChatFriends === "function") loadChatFriends();
 }
 
 function showAuthPage(page){
@@ -878,7 +1018,10 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
-    serverTimestamp
+    serverTimestamp,
+    onSnapshot,
+    orderBy,
+    limit
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1037,6 +1180,12 @@ window.logout = async function(){
         document.getElementById("loginEmail").value = "";
         document.getElementById("loginPassword").value = "";
 
+        if(notifUnsubscribe){ notifUnsubscribe(); notifUnsubscribe = null; }
+        if(chatUnsubscribe){ chatUnsubscribe(); chatUnsubscribe = null; }
+        document.getElementById("notifCount").style.display = "none";
+        document.getElementById("notifList").innerHTML = "Aucune notification.";
+        document.getElementById("chatBox").innerHTML = "Choisis un ami pour commencer à discuter.";
+
         document.getElementById("accountEmail").innerText = "Non connecté";
         document.getElementById("accountPseudo").value = "";
         document.getElementById("userStatus").innerText = "Non connecté";
@@ -1163,14 +1312,22 @@ window.sendFriendRequest = async function(){
             return;
         }
 
+        const myPseudo = me.pseudo || user.displayName || "Joueur";
+
         await addDoc(collection(db, "friendRequests"), {
             fromUid:user.uid,
-            fromPseudo:me.pseudo || user.displayName || "Joueur",
+            fromPseudo:myPseudo,
             toUid:target.uid,
             toPseudo:target.pseudo,
             status:"pending",
             createdAt:serverTimestamp()
         });
+
+        await createNotification(
+            target.uid,
+            "friendRequest",
+            myPseudo + " t'a envoyé une demande d'ami."
+        );
 
         document.getElementById("friendSearchResult").innerHTML = "<div class='friendItem'>✅ Demande envoyée à " + target.pseudo + ".</div>";
         document.getElementById("friendPseudo").value = "";
@@ -1328,6 +1485,227 @@ window.removeFriend = async function(friendUid){
 };
 
 
+
+let notifUnsubscribe = null;
+let chatUnsubscribe = null;
+let currentChatFriendUid = "";
+let currentChatFriendPseudo = "";
+
+function chatIdFor(uid1, uid2){
+    return [uid1, uid2].sort().join("_");
+}
+
+async function createNotification(toUid, type, text){
+    await addDoc(collection(db, "notifications"), {
+        toUid,
+        type,
+        text,
+        read:false,
+        createdAt:serverTimestamp()
+    });
+}
+
+window.listenNotifications = function(){
+    const user = auth.currentUser;
+    if(!user) return;
+
+    if(notifUnsubscribe){
+        notifUnsubscribe();
+    }
+
+    const q = query(
+        collection(db, "notifications"),
+        where("toUid","==",user.uid),
+        orderBy("createdAt","desc"),
+        limit(20)
+    );
+
+    notifUnsubscribe = onSnapshot(q, snap=>{
+        const list = document.getElementById("notifList");
+        const count = document.getElementById("notifCount");
+
+        let unread = 0;
+        list.innerHTML = "";
+
+        if(snap.empty){
+            list.innerHTML = "Aucune notification.";
+            count.style.display = "none";
+            return;
+        }
+
+        snap.forEach(docSnap=>{
+            const n = docSnap.data();
+            if(!n.read) unread++;
+
+            list.innerHTML += `
+                <div class="notifItem">
+                    <strong>${n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : "🔔 Notification"}</strong><br>
+                    ${n.text}
+                </div>
+            `;
+        });
+
+        if(unread > 0){
+            count.innerText = unread;
+            count.style.display = "flex";
+        }else{
+            count.style.display = "none";
+        }
+    });
+};
+
+window.markNotificationsRead = async function(){
+    const user = auth.currentUser;
+    if(!user) return;
+
+    const q = query(
+        collection(db, "notifications"),
+        where("toUid","==",user.uid),
+        where("read","==",false)
+    );
+
+    const snap = await getDocs(q);
+
+    snap.forEach(async docSnap=>{
+        await updateDoc(doc(db, "notifications", docSnap.id), {
+            read:true
+        });
+    });
+};
+
+
+
+window.loadChatFriends = async function(){
+    const user = auth.currentUser;
+    const select = document.getElementById("chatFriendSelect");
+
+    select.innerHTML = '<option value="">Choisis un ami...</option>';
+
+    if(!user){
+        document.getElementById("chatBox").innerHTML = "Connecte-toi pour utiliser le chat.";
+        return;
+    }
+
+    const meSnap = await getDoc(doc(db, "users", user.uid));
+
+    if(!meSnap.exists() || !meSnap.data().friends || meSnap.data().friends.length === 0){
+        document.getElementById("chatBox").innerHTML = "Tu n'as pas encore d'amis.";
+        return;
+    }
+
+    for(const friendUid of meSnap.data().friends){
+        const fSnap = await getDoc(doc(db, "users", friendUid));
+
+        if(fSnap.exists()){
+            const f = fSnap.data();
+            const opt = document.createElement("option");
+            opt.value = friendUid;
+            opt.textContent = f.pseudo;
+            opt.dataset.pseudo = f.pseudo;
+            select.appendChild(opt);
+        }
+    }
+};
+
+window.openChatWithSelectedFriend = function(){
+    const select = document.getElementById("chatFriendSelect");
+    const friendUid = select.value;
+
+    if(!friendUid){
+        document.getElementById("chatBox").innerHTML = "Choisis un ami pour commencer à discuter.";
+        return;
+    }
+
+    currentChatFriendUid = friendUid;
+    currentChatFriendPseudo = select.options[select.selectedIndex].textContent;
+
+    listenChat(friendUid);
+};
+
+window.listenChat = function(friendUid){
+    const user = auth.currentUser;
+    if(!user) return;
+
+    if(chatUnsubscribe){
+        chatUnsubscribe();
+    }
+
+    const chatId = chatIdFor(user.uid, friendUid);
+
+    const q = query(
+        collection(db, "chats", chatId, "messages"),
+        orderBy("createdAt","asc"),
+        limit(60)
+    );
+
+    chatUnsubscribe = onSnapshot(q, snap=>{
+        const box = document.getElementById("chatBox");
+        box.innerHTML = "";
+
+        if(snap.empty){
+            box.innerHTML = "Aucun message pour l'instant.";
+            return;
+        }
+
+        snap.forEach(docSnap=>{
+            const msg = docSnap.data();
+            const mine = msg.fromUid === user.uid;
+
+            box.innerHTML += `
+                <div class="chatMsg ${mine ? "mine" : ""}">
+                    <div class="chatSender">${mine ? "Moi" : msg.fromPseudo}</div>
+                    ${msg.text}
+                </div>
+            `;
+        });
+
+        box.scrollTop = box.scrollHeight;
+    });
+};
+
+window.sendChatMessage = async function(){
+    const user = auth.currentUser;
+
+    if(!user){
+        alert("Connecte-toi pour envoyer un message.");
+        return;
+    }
+
+    if(!currentChatFriendUid){
+        alert("Choisis un ami.");
+        return;
+    }
+
+    const inputMsg = document.getElementById("chatInput");
+    const text = inputMsg.value.trim();
+
+    if(text === ""){
+        return;
+    }
+
+    const meSnap = await getDoc(doc(db, "users", user.uid));
+    const me = meSnap.exists() ? meSnap.data() : {};
+    const myPseudo = me.pseudo || user.displayName || "Joueur";
+    const chatId = chatIdFor(user.uid, currentChatFriendUid);
+
+    await addDoc(collection(db, "chats", chatId, "messages"), {
+        fromUid:user.uid,
+        fromPseudo:myPseudo,
+        toUid:currentChatFriendUid,
+        text:text,
+        createdAt:serverTimestamp()
+    });
+
+    await createNotification(
+        currentChatFriendUid,
+        "message",
+        myPseudo + " t'a envoyé un message."
+    );
+
+    inputMsg.value = "";
+};
+
+
 onAuthStateChanged(auth,async user=>{
     const status = document.getElementById("userStatus");
     const accountEmail = document.getElementById("accountEmail");
@@ -1345,6 +1723,7 @@ onAuthStateChanged(auth,async user=>{
 
         loadFriends();
         loadFriendRequests();
+        listenNotifications();
 
         if(user.displayName && !localStorage.getItem("pseudo")){
             localStorage.setItem("pseudo",user.displayName);
