@@ -4,356 +4,68 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mini Games</title>
-<link rel="icon" type="image/JPG" href="logo.jpg">
-
-
+<link rel="icon" type="image/jpg" href="logo.jpg">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center}
+body{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding-top:70px}
 #container{width:95%;max-width:1100px;text-align:center}
-h1{font-size:55px;margin-bottom:10px}
-.subtitle{color:#cbd5e1;margin-bottom:35px;font-size:20px}
-#pseudoBox{margin-bottom:40px}
-input{padding:14px;width:300px;font-size:18px;border:none;border-radius:10px;text-align:center}
-button{padding:14px 22px;font-size:18px;border:none;border-radius:10px;cursor:pointer;margin-left:10px;transition:.2s}
-button:hover{transform:scale(1.05)}
-#games{display:flex;justify-content:center;gap:30px;flex-wrap:wrap}
-.card{width:300px;height:220px;background:#1e293b;border-radius:20px;cursor:pointer;transition:.25s;display:flex;flex-direction:column;justify-content:center;align-items:center;border:3px solid transparent}
-.card:hover{transform:translateY(-8px);border-color:#38bdf8}
-.icon{font-size:70px;margin-bottom:15px}
-.title{font-size:30px;font-weight:bold}
-.desc{margin-top:10px;color:#cbd5e1;padding:0 15px}
-.footer{margin-top:45px;color:#94a3b8;font-size:15px}
-
-#topBar{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:60px;
-    background:#020617;
-    display:flex;
-    align-items:center;
-    gap:15px;
-    padding:0 18px;
-    z-index:1000;
-    box-shadow:0 8px 20px rgba(0,0,0,0.35);
-}
-
-#burgerBtn{
-    background:#1e293b;
-    color:white;
-    font-size:28px;
-    padding:8px 14px;
-    margin:0;
-}
-
-#topTitle{
-    font-size:24px;
-    font-weight:bold;
-}
-
-#sideMenu{
-    position:fixed;
-    top:60px;
-    left:-280px;
-    width:260px;
-    height:calc(100vh - 60px);
-    background:#0f172a;
-    z-index:999;
-    padding:15px;
-    transition:0.25s;
-    box-shadow:8px 0 20px rgba(0,0,0,0.35);
-}
-
-#sideMenu.open{
-    left:0;
-}
-
-#sideMenu button{
-    width:100%;
-    margin:7px 0;
-    padding:13px;
-    background:#1e293b;
-    color:white;
-    font-size:16px;
-    text-align:left;
-}
-
-body{
-    padding-top:70px;
-}
-
-#loginOverlay{
-    position:fixed;
-    inset:0;
-    background:rgba(2,6,23,0.88);
-    backdrop-filter:blur(5px);
-    z-index:9999;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-#loginCard{
-    width:min(420px,90%);
-    background:#1e293b;
-    border:2px solid #38bdf8;
-    border-radius:24px;
-    padding:28px;
-    text-align:center;
-    box-shadow:0 25px 60px rgba(0,0,0,0.45);
-}
-
-#loginCard h2{
-    font-size:36px;
-    margin-bottom:12px;
-}
-
-#loginCard p{
-    color:#cbd5e1;
-    margin:10px 0;
-}
-
-#loginCard button{
-    width:100%;
-    margin:8px 0;
-    padding:14px;
-    font-size:18px;
-    background:#22c55e;
-    color:#052e16;
-}
-
-#loginCard input{
-    width:100%;
-    margin:7px 0;
-    padding:13px;
-    font-size:17px;
-    border:none;
-    border-radius:10px;
-}
-
-#onlineBox{
-    display:none;
-    margin-top:15px;
-}
-
-.warning{
-    font-size:14px;
-    color:#facc15 !important;
-}
-
-
-
+h1{font-size:55px;margin-bottom:10px}.subtitle{color:#cbd5e1;margin-bottom:35px;font-size:20px}
+#pseudoBox{margin-bottom:40px}input{padding:14px;width:300px;font-size:18px;border:none;border-radius:10px;text-align:center}
+button{padding:14px 22px;font-size:18px;border:none;border-radius:10px;cursor:pointer;margin-left:10px;transition:.2s}button:hover{transform:scale(1.05)}
+#games{display:flex;justify-content:center;gap:30px;flex-wrap:wrap}.card{width:300px;height:220px;background:#1e293b;border-radius:20px;cursor:pointer;transition:.25s;display:flex;flex-direction:column;justify-content:center;align-items:center;border:3px solid transparent}
+.card:hover{transform:translateY(-8px);border-color:#38bdf8}.icon{font-size:70px;margin-bottom:15px}.title{font-size:30px;font-weight:bold}.desc{margin-top:10px;color:#cbd5e1;padding:0 15px}.footer{margin-top:45px;color:#94a3b8;font-size:15px}
+#topBar{position:fixed;top:0;left:0;width:100%;min-height:60px;background:#020617;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:0 18px;z-index:1000;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+#topLeft{display:flex;align-items:center;gap:15px}#burgerBtn{background:#1e293b;color:white;font-size:28px;padding:8px 14px;margin:0}#topTitle{font-size:24px;font-weight:bold}
+#modeSwitch{width:210px;height:46px;background:#1e293b;border:2px solid #334155;border-radius:999px;padding:4px;display:flex;position:relative;cursor:pointer;user-select:none}.switchChoice{flex:1;z-index:2;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;color:#cbd5e1}
+#switchSlider{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:34px;background:#22c55e;border-radius:999px;transition:.25s;z-index:1}#modeSwitch.online #switchSlider{left:calc(50% + 0px);background:#38bdf8}#modeSwitch.online .onlineText,#modeSwitch.offline .offlineText{color:#052e16}
+#accountText{font-size:13px;color:#cbd5e1;text-align:right}
+#sideMenu{position:fixed;top:60px;left:-280px;width:260px;height:calc(100vh - 60px);background:#0f172a;z-index:999;padding:15px;transition:.25s;box-shadow:8px 0 20px rgba(0,0,0,.35)}#sideMenu.open{left:0}#sideMenu button{width:100%;margin:7px 0;padding:13px;background:#1e293b;color:white;font-size:16px;text-align:left}
+#loginOverlay{position:fixed;inset:0;background:rgba(2,6,23,.88);backdrop-filter:blur(5px);z-index:9999;display:none;justify-content:center;align-items:center}
+#loginCard{width:min(430px,90%);background:#1e293b;border:2px solid #38bdf8;border-radius:24px;padding:28px;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,.45)}#loginCard h2{font-size:36px;margin-bottom:12px}#loginCard p{color:#cbd5e1;margin:10px 0}#loginCard button{width:100%;margin:8px 0;padding:14px;font-size:18px;background:#22c55e;color:#052e16}#loginCard input{width:100%;margin:7px 0;padding:13px;font-size:17px;border:none;border-radius:10px}#onlineBox{display:none;margin-top:15px}.warning{font-size:14px;color:#facc15!important}#userStatus{font-size:14px;color:#cbd5e1}.logoutBtn{background:#ef4444!important;color:white!important}
+@media(max-width:750px){body{align-items:flex-start;padding-top:90px}h1{font-size:42px}#topBar{flex-wrap:wrap;padding:8px 12px}#topTitle{font-size:20px}#modeSwitch{width:185px;height:42px}#switchSlider{height:30px}#accountText{width:100%;text-align:center}#sideMenu{top:76px;height:calc(100vh - 76px)}}
 </style>
 </head>
 <body>
-<div id="container">
-<h1>🎮 Mini Games</h1>
-<div class="subtitle">Bienvenue sur ta plateforme de mini-jeux !</div>
-<div id="pseudoBox">
-<input id="pseudo" placeholder="Entre ton pseudo..." maxlength="20">
-<button onclick="savePseudo()">Sauvegarder</button>
-</div>
-<div id="games">
-<div class="card" onclick="openTarget()">
-<div class="icon">🎯</div><div class="title">Jeu de la cible</div><div class="desc">Teste ta précision !</div>
-</div>
-<div class="card" onclick="openPenalty()">
-<div class="icon">⚽</div><div class="title">Penalty Master</div><div class="desc">Tire, marque et bats le gardien !</div>
-</div>
-
-<div class="card" onclick="window.location.href='morpion.html'">
-    <div class="icon">❌</div>
-    <div class="title">Morpion</div>
-    <div class="desc">Joue à 2 ou contre le bot !</div>
-</div>
-
-<div class="card" onclick="window.location.href='rps.html'">
-    <div class="icon">✊</div>
-    <div class="title">Pierre Papier Ciseaux</div>
-    <div class="desc">Premier à 3, 5 ou 10 contre le bot !</div>
-</div>
-
-<div class="card" onclick="window.location.href='puissance4.html'">
-    <div class="icon">🔴</div>
-    <div class="title">Puissance 4</div>
-    <div class="desc">Aligne 4 pions contre un ami ou un bot !</div>
-</div>
-
-<div class="card" onclick="window.location.href='2048.html'">
-    <div class="icon">🔢</div>
-    <div class="title">2048 Deluxe</div>
-    <div class="desc">Fusionne les nombres en 4×4, 5×5 ou 6×6 !</div>
-</div>
-
-<div class="card" onclick="window.location.href='mole.html'">
-    <div class="icon">🔨</div>
-    <div class="title">Whack-a-Mole</div>
-    <div class="desc">Tape les taupes, évite les bombes et fais des combos !</div>
-</div>
-
-<div class="card" onclick="window.location.href='fruit.html'">
-    <div class="icon">🍉</div>
-    <div class="title">Fruit Slice</div>
-    <div class="desc">Tranche les fruits, évite les bombes et fais des combos !</div>
-</div>
-
-</div>
-<div class="footer">Ton pseudo est sauvegardé automatiquement dans le navigateur.</div>
-</div>
-
-<div id="topBar">
-    <button id="burgerBtn" onclick="toggleMenu()">☰</button>
-    <div id="topTitle">🎮 Mini Games</div>
-</div>
-
+<div id="topBar"><div id="topLeft"><button id="burgerBtn" onclick="toggleMenu()">☰</button><div id="topTitle">🎮 Mini Games</div></div><div><div id="modeSwitch" class="offline" onclick="togglePlayMode()"><div id="switchSlider"></div><div class="switchChoice offlineText">Hors ligne</div><div class="switchChoice onlineText">En ligne</div></div><div id="accountText">Mode : hors ligne</div></div></div>
 <div id="sideMenu">
-    <button onclick="goToGame('cible.html')">🎯 Jeu de la cible</button>
-    <button onclick="goToGame('penalité.html')">⚽ Penalty Master</button>
-    <button onclick="goToGame('morpion.html')">❌⭕ Morpion</button>
-    <button onclick="goToGame('rps.html')">✊ Pierre Papier Ciseaux</button>
-    <button onclick="goToGame('puissance4.html')">🔴🟡 Puissance 4</button>
-    <button onclick="goToGame('2048.html')">🔢 2048</button>
-    <button onclick="goToGame('mole.html')">🔨 Whack-a-Mole</button>
-    <button onclick="goToGame('fruit.html')">🍉 Fruit Slice</button>
+<button onclick="goToGame('cible.html')">🎯 Jeu de la cible</button><button onclick="goToGame('penalty.html')">⚽ Penalty Master</button><button onclick="goToGame('morpion.html')">❌⭕ Morpion</button><button onclick="goToGame('rps.html')">✊ Pierre Papier Ciseaux</button><button onclick="goToGame('puissance4.html')">🔴🟡 Puissance 4</button><button onclick="goToGame('2048.html')">🔢 2048</button><button onclick="goToGame('mole.html')">🔨 Whack-a-Mole</button><button onclick="goToGame('fruit.html')">🍉 Fruit Slice</button><button onclick="goToGame('helix.html')">🌀 Helix Jump</button>
 </div>
-
-
-
-<div id="loginBox">
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Mot de passe">
-    <button onclick="signup()">Créer un compte</button>
-    <button onclick="login()">Se connecter</button>
-    <button onclick="logout()">Se déconnecter</button>
-    <p id="userStatus">Non connecté</p>
-</div>
-
-
-<div id="loginOverlay">
-    <div id="loginCard">
-        <h2>🎮 Mini Games</h2>
-        <p>Choisis comment tu veux jouer :</p>
-
-        <button onclick="playOffline()">🎮 Jouer hors ligne</button>
-        <button onclick="showOnlineLogin()">🌐 Jouer en ligne</button>
-
-        <p class="warning">
-            Hors ligne : tes scores restent seulement sur cet appareil.
-        </p>
-
-        <div id="onlineBox">
-            <input id="email" placeholder="Email">
-            <input id="password" type="password" placeholder="Mot de passe">
-
-            <button onclick="signup()">Créer un compte</button>
-            <button onclick="login()">Se connecter</button>
-
-            <p id="userStatus">Non connecté</p>
-        </div>
-    </div>
-</div>
-
+<div id="container">
+<h1>🎮 Mini Games</h1><div class="subtitle">Bienvenue sur ta plateforme de mini-jeux !</div>
+<div id="pseudoBox"><input id="pseudo" placeholder="Entre ton pseudo..." maxlength="20"><button onclick="savePseudo()">Sauvegarder</button></div>
+<div id="games">
+<div class="card" onclick="openTarget()"><div class="icon">🎯</div><div class="title">Jeu de la cible</div><div class="desc">Teste ta précision !</div></div>
+<div class="card" onclick="openPenalty()"><div class="icon">⚽</div><div class="title">Penalty Master</div><div class="desc">Tire, marque et bats le gardien !</div></div>
+<div class="card" onclick="goToGame('morpion.html')"><div class="icon">❌</div><div class="title">Morpion</div><div class="desc">Joue à 2 ou contre le bot !</div></div>
+<div class="card" onclick="goToGame('rps.html')"><div class="icon">✊</div><div class="title">Pierre Papier Ciseaux</div><div class="desc">Premier à 3, 5 ou 10 contre le bot !</div></div>
+<div class="card" onclick="goToGame('puissance4.html')"><div class="icon">🔴</div><div class="title">Puissance 4</div><div class="desc">Aligne 4 pions contre un ami ou un bot !</div></div>
+<div class="card" onclick="goToGame('2048.html')"><div class="icon">🔢</div><div class="title">2048 Deluxe</div><div class="desc">Fusionne les nombres en 4×4, 5×5 ou 6×6 !</div></div>
+<div class="card" onclick="goToGame('mole.html')"><div class="icon">🔨</div><div class="title">Whack-a-Mole</div><div class="desc">Tape les taupes, évite les bombes et fais des combos !</div></div>
+<div class="card" onclick="goToGame('fruit.html')"><div class="icon">🍉</div><div class="title">Fruit Slice</div><div class="desc">Tranche les fruits, évite les bombes et fais des combos !</div></div>
+<div class="card" onclick="goToGame('helix.html')"><div class="icon">🌀</div><div class="title">Helix Jump</div><div class="desc">Fais tourner la tour et évite les zones rouges !</div></div>
+</div><div class="footer">Ton pseudo est sauvegardé automatiquement dans le navigateur.</div></div>
+<div id="loginOverlay"><div id="loginCard"><h2>🎮 Mini Games</h2><p>Choisis comment tu veux jouer :</p><button onclick="playOffline()">🎮 Jouer hors ligne</button><button onclick="showOnlineLogin()">🌐 Jouer en ligne</button><p class="warning">Hors ligne : tes scores restent seulement sur cet appareil et ne seront pas synchronisés.</p><div id="onlineBox"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Mot de passe"><button onclick="signup()">Créer un compte</button><button onclick="login()">Se connecter</button><button class="logoutBtn" onclick="logout()">Se déconnecter</button><p id="userStatus">Non connecté</p></div></div></div>
 <script>
-const input = document.getElementById("pseudo");
-input.value = localStorage.getItem("pseudo") || "";
-
-function savePseudo(){
-    let p = input.value.trim();
-    if(p === ""){
-        p = "Joueur";
-    }
-    localStorage.setItem("pseudo", p);
-    input.value = p;
-}
-
-function openTarget(){
-    savePseudo();
-    window.location.href = "cible.html";
-}
-
-function openPenalty(){
-    savePseudo();
-    window.location.href = "penalty.html";
-}
-
-function toggleMenu(){
-    document.getElementById("sideMenu").classList.toggle("open");
-}
-
-function goToGame(page){
-    savePseudo();
-    window.location.href = page;
-}
-
-function playOffline(){
-    localStorage.setItem("playMode","offline");
-    document.getElementById("loginOverlay").style.display = "none";
-}
-
-function showOnlineLogin(){
-    document.getElementById("onlineBox").style.display = "block";
-}
-
-
-
+const input=document.getElementById("pseudo");input.value=localStorage.getItem("pseudo")||"";
+function savePseudo(){let p=input.value.trim();if(p===""){p="Joueur"}localStorage.setItem("pseudo",p);input.value=p}
+function openTarget(){savePseudo();window.location.href="cible.html"}function openPenalty(){savePseudo();window.location.href="penalty.html"}
+function toggleMenu(){document.getElementById("sideMenu").classList.toggle("open")}function goToGame(page){savePseudo();window.location.href=page}
+function setModeVisual(mode){const sw=document.getElementById("modeSwitch");const txt=document.getElementById("accountText");sw.classList.remove("online","offline");sw.classList.add(mode);txt.innerText=mode==="online"?"Mode : en ligne":"Mode : hors ligne"}
+function playOffline(){localStorage.setItem("playMode","offline");setModeVisual("offline");document.getElementById("loginOverlay").style.display="none"}
+function showOnlineLogin(){document.getElementById("onlineBox").style.display="block"}
+function openLoginOverlay(){document.getElementById("loginOverlay").style.display="flex";document.getElementById("onlineBox").style.display="block"}
+function togglePlayMode(){const mode=localStorage.getItem("playMode")||"";if(mode==="online"){localStorage.setItem("playMode","offline");setModeVisual("offline");if(typeof logout==="function"){logout()}}else{openLoginOverlay()}}
+window.addEventListener("load",()=>{const mode=localStorage.getItem("playMode");if(mode==="offline"||mode==="online"){setModeVisual(mode);document.getElementById("loginOverlay").style.display="none"}else{document.getElementById("loginOverlay").style.display="flex"}});
 </script>
-
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "TON_API_KEY",
-  authDomain: "arcade-fbd7c.firebaseapp.com",
-  projectId: "arcade-fbd7c",
-  storageBucket: "arcade-fbd7c.firebasestorage.app",
-  messagingSenderId: "648897624519",
-  appId: "1:648897624519:web:bffd2e9d3023362f8781e2"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-window.signup = function(){
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    createUserWithEmailAndPassword(auth, email, password)
-    .then(() => alert("Compte créé !"))
-    .catch(error => alert(error.message));
-}
-
-window.login = function(){
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    signInWithEmailAndPassword(auth, email, password)
-    .then(() => alert("Connecté !"))
-    .catch(error => alert(error.message));
-}
-
-window.logout = function(){
-    signOut(auth);
-}
-
-onAuthStateChanged(auth, user => {
-    const status = document.getElementById("userStatus");
-
-    if(user){
-        status.innerText = "Connecté : " + user.email;
-    }else{
-        status.innerText = "Non connecté";
-    }
-});
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+const firebaseConfig={apiKey:"AIzaSyCicpzlFc-WfbmBjzu8y-bWYPaXu6Mnt24",authDomain:"arcade-fbd7c.firebaseapp.com",projectId:"arcade-fbd7c",storageBucket:"arcade-fbd7c.firebasestorage.app",messagingSenderId:"648897624519",appId:"1:648897624519:web:bffd2e9d3023362f8781e2"};
+const app=initializeApp(firebaseConfig);const auth=getAuth(app);
+window.signup=function(){const email=document.getElementById("email").value.trim();const password=document.getElementById("password").value;if(email===""||password===""){alert("Entre un email et un mot de passe.");return}createUserWithEmailAndPassword(auth,email,password).then(()=>{localStorage.setItem("playMode","online");setModeVisual("online");document.getElementById("loginOverlay").style.display="none";alert("Compte créé !")}).catch(error=>alert(error.message))};
+window.login=function(){const email=document.getElementById("email").value.trim();const password=document.getElementById("password").value;if(email===""||password===""){alert("Entre ton email et ton mot de passe.");return}signInWithEmailAndPassword(auth,email,password).then(()=>{localStorage.setItem("playMode","online");setModeVisual("online");document.getElementById("loginOverlay").style.display="none";alert("Connecté !")}).catch(error=>alert(error.message))};
+window.logout=function(){signOut(auth)};
+onAuthStateChanged(auth,user=>{const status=document.getElementById("userStatus");const accountText=document.getElementById("accountText");if(user){status.innerText="Connecté : "+user.email;accountText.innerText="En ligne : "+user.email;localStorage.setItem("playMode","online");setModeVisual("online");document.getElementById("loginOverlay").style.display="none"}else{status.innerText="Non connecté";if(localStorage.getItem("playMode")==="online"){localStorage.setItem("playMode","offline");setModeVisual("offline")}}});
 </script>
-
 </body>
 </html>
