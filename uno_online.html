@@ -535,10 +535,231 @@ h1{font-size:42px}
     }
 }
 
+
+/* UNO V5 PREMIUM */
+.miniBack,
+.card.back{
+    background:linear-gradient(135deg,#991b1b,#dc2626);
+    color:#facc15 !important;
+    font-weight:900;
+    text-shadow:0 0 8px rgba(250,204,21,.8);
+}
+
+.card.back{
+    border-color:#facc15;
+}
+
+.miniBack{
+    position:relative;
+    border-color:#facc15;
+}
+
+.miniBack::after{
+    content:"UNO";
+    position:absolute;
+    font-size:7px;
+    color:#facc15;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%) rotate(-20deg);
+    font-weight:bold;
+}
+
+#unoSplash{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:200;
+    font-size:90px;
+    font-weight:900;
+    color:#facc15;
+    text-shadow:0 0 25px #dc2626,0 0 50px #facc15;
+}
+
+#unoSplash.show{
+    display:flex;
+    animation:unoSplashAnim 1.2s ease-out;
+}
+
+@keyframes unoSplashAnim{
+    0%{transform:scale(.3) rotate(-15deg);opacity:0}
+    30%{transform:scale(1.25) rotate(8deg);opacity:1}
+    100%{transform:scale(1) rotate(0);opacity:0}
+}
+
+#confettiLayer{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:190;
+    overflow:hidden;
+}
+
+.confetti{
+    position:absolute;
+    top:-20px;
+    font-size:22px;
+    animation:fallConfetti 2.2s linear forwards;
+}
+
+@keyframes fallConfetti{
+    to{transform:translateY(110vh) rotate(720deg);opacity:0}
+}
+
+#quickActions{
+    margin-top:12px;
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+#quickActions button{
+    width:auto;
+    margin:0;
+    padding:9px 11px;
+    font-size:15px;
+}
+
+#gameChat{
+    width:100%;
+    background:#020617;
+    border-radius:14px;
+    padding:10px;
+    margin-top:12px;
+    text-align:left;
+}
+
+#gameChatMessages{
+    height:105px;
+    overflow:auto;
+    color:#cbd5e1;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.gameChatLine{
+    padding:4px 0;
+    border-bottom:1px solid rgba(148,163,184,.15);
+}
+
+#gameChatInput{
+    width:100%;
+    padding:10px;
+    font-size:14px;
+    border-radius:10px;
+    border:none;
+    background:#1e293b;
+    color:white;
+    text-align:left;
+}
+
+#sendGameChatBtn{
+    width:100%;
+    margin:7px 0 0 0;
+    padding:10px;
+    font-size:15px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+.emoteBubble{
+    position:absolute;
+    background:#020617;
+    border:2px solid #38bdf8;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:28px;
+    animation:emotePop 1.8s ease-out forwards;
+    z-index:20;
+}
+
+@keyframes emotePop{
+    0%{transform:translateY(20px) scale(.5);opacity:0}
+    25%{transform:translateY(0) scale(1.2);opacity:1}
+    100%{transform:translateY(-55px) scale(1);opacity:0}
+}
+
+.opponentBox{
+    position:relative;
+}
+
+.disconnectWarn{
+    color:#f87171;
+    font-size:13px;
+    margin-top:5px;
+}
+
+#turnTimer{
+    margin-top:7px;
+    color:#facc15;
+    font-size:14px;
+    font-weight:bold;
+}
+
+#replayStatus{
+    color:#cbd5e1;
+    font-size:14px;
+    margin:8px 0;
+}
+
+.fancyWin{
+    animation:fancyWinAnim .8s ease-out infinite alternate;
+}
+
+@keyframes fancyWinAnim{
+    from{transform:scale(1);filter:drop-shadow(0 0 6px #38bdf8)}
+    to{transform:scale(1.04);filter:drop-shadow(0 0 18px #facc15)}
+}
+
+.playCard{
+    border-color:#fff7ed;
+}
+
+.playCard::after{
+    content:"";
+    position:absolute;
+    inset:8px;
+    border:2px solid rgba(255,255,255,.4);
+    border-radius:10px;
+    pointer-events:none;
+}
+
+#centerZone{
+    position:relative;
+}
+
+.flyingCard{
+    position:fixed;
+    width:72px;
+    height:105px;
+    border-radius:14px;
+    border:3px solid white;
+    background:#dc2626;
+    color:#facc15;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    z-index:150;
+    animation:flyingCardAnim .6s ease-in-out forwards;
+}
+
+@keyframes flyingCardAnim{
+    0%{transform:translateY(0) scale(.8);opacity:.2}
+    50%{transform:translateY(-60px) scale(1.1);opacity:1}
+    100%{transform:translateY(-120px) scale(.4);opacity:0}
+}
+
 </style>
 </head>
 
 <body>
+<div id="unoSplash">UNO!</div>
+<div id="confettiLayer"></div>
 
 <header>
     <div>
@@ -596,6 +817,24 @@ h1{font-size:42px}
                         <button class="actionBtn" onclick="sayUno()">🔔 UNO</button>
                         <button class="actionBtn redBtn" onclick="callCounterUno()">🚨 Contre UNO</button>
                     </div>
+
+                    <div id="quickActions">
+                        <button onclick="sendEmote('😂')">😂</button>
+                        <button onclick="sendEmote('😡')">😡</button>
+                        <button onclick="sendEmote('😎')">😎</button>
+                        <button onclick="sendEmote('👏')">👏</button>
+                        <button onclick="sendEmote('😱')">😱</button>
+                        <button onclick="sendQuickChat('Bien joué !')">Bien joué !</button>
+                        <button onclick="sendQuickChat('Mdr')">Mdr</button>
+                        <button onclick="sendQuickChat('Noooon')">Noooon</button>
+                    </div>
+
+                    <div id="gameChat">
+                        <strong>💬 Chat de partie</strong>
+                        <div id="gameChatMessages"></div>
+                        <input id="gameChatInput" placeholder="Message libre...">
+                        <button id="sendGameChatBtn" onclick="sendGameChat()">Envoyer</button>
+                    </div>
                 </div>
             </div>
 
@@ -625,8 +864,9 @@ h1{font-size:42px}
 
 <div id="endOverlay">
     <div id="endWinCard">
-        <h2 id="winnerText">Fin de partie</h2>
-        <button class="actionBtn" onclick="restartGame()">🔁 Rejouer</button>
+        <h2 id="winnerText" class="fancyWin">Fin de partie</h2>
+        <div id="replayStatus">En attente des joueurs...</div>
+        <button class="actionBtn" onclick="requestReplay()">🔁 Demander revanche</button>
         <button class="actionBtn redBtn" onclick="leaveRoom()">🚪 Quitter</button>
     </div>
 </div>
@@ -686,6 +926,10 @@ let lastTopCardId = "";
 let lastHandCount = 0;
 let unoDeclared = false;
 let unoPenaltyTimer = null;
+let presenceTimer = null;
+let disconnectTimer = null;
+let lastEmoteId = "";
+let lastChatCount = 0;
 
 function goHome(){
     window.location.href = "index.html";
@@ -778,6 +1022,7 @@ function listenRoom(id){
         }
 
         room = {id:snap.id, ...snap.data()};
+        startPresence();
         applyRoom();
     });
 }
@@ -836,6 +1081,10 @@ function applyRoom(){
     renderMyHand();
     renderActionLog();
     renderEndOverlay();
+    renderGameChat();
+    renderEmotes();
+    checkUnoAutoPenalty();
+    checkDisconnects();
 
     if(room.status === "waiting"){
         document.getElementById("status").innerText =
@@ -1064,6 +1313,8 @@ async function kickPlayer(uid){
     if(!confirm("Expulser ce joueur ?")) return;
 
     const players = (room.players || []).filter(p => p.uid !== uid);
+    createFlyingCard();
+
     await updateDoc(doc(db,"unoRooms",roomId),{players});
 }
 window.kickPlayer = kickPlayer;
@@ -1156,7 +1407,12 @@ async function startGame(){
         actionLog:["🎮 Partie UNO lancée !"],
         unoDeclaredBy:"",
         canCounterUnoUid:"",
-        winnerUid:""
+        winnerUid:"",
+        replayVotes:[],
+        chatMessages:[],
+        emotes:[],
+        disconnected:{},
+        unoDeadline:null
     });
 }
 window.startGame = startGame;
@@ -1235,14 +1491,223 @@ function renderOpponents(){
             cardsHTML += "<span style='margin-left:5px;'>+" + (count-12) + "</span>";
         }
 
+        const disconnected = room.disconnected && room.disconnected[p.uid];
+        const leftAt = disconnected && disconnected.toDate ? disconnected.toDate().getTime() : 0;
+        const secondsLeft = leftAt ? Math.max(0, 15 - Math.floor((Date.now() - leftAt) / 1000)) : 0;
+
         box.innerHTML += `
-            <div class="opponentBox">
+            <div class="opponentBox" id="opponent_${p.uid}">
                 <div class="opponentName">${p.pseudo}</div>
                 <div>${count} carte${count>1?"s":""}</div>
                 <div class="hiddenCards">${cardsHTML}</div>
                 ${room.currentPlayerUid === p.uid ? "<div style='color:#facc15;margin-top:6px;'>👉 Joue</div>" : ""}
+                ${leftAt ? "<div class='disconnectWarn'>⚠️ Déconnecté, retour possible : " + secondsLeft + "s</div>" : ""}
             </div>
         `;
+    });
+}
+
+function showUnoSplash(){
+    const s = document.getElementById("unoSplash");
+    if(!s) return;
+    s.classList.remove("show");
+    void s.offsetWidth;
+    s.classList.add("show");
+
+    if(navigator.vibrate){
+        navigator.vibrate([120,70,120]);
+    }
+}
+
+function launchConfetti(){
+    const layer = document.getElementById("confettiLayer");
+    if(!layer) return;
+
+    layer.innerHTML = "";
+
+    const emojis = ["🎉","✨","🃏","🏆","🔥"];
+
+    for(let i=0;i<35;i++){
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.innerText = emojis[Math.floor(Math.random()*emojis.length)];
+        c.style.left = Math.random()*100 + "%";
+        c.style.animationDelay = Math.random()*0.6 + "s";
+        layer.appendChild(c);
+    }
+
+    setTimeout(()=>layer.innerHTML="",2600);
+}
+
+function createFlyingCard(){
+    const c = document.createElement("div");
+    c.className = "flyingCard";
+    c.innerText = "UNO";
+    c.style.left = (window.innerWidth/2 - 36) + "px";
+    c.style.top = (window.innerHeight/2 - 52) + "px";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),650);
+}
+
+function renderGameChat(){
+    const box = document.getElementById("gameChatMessages");
+    if(!box || !room) return;
+
+    const messages = room.chatMessages || [];
+
+    box.innerHTML = "";
+
+    messages.slice(-30).forEach(m=>{
+        box.innerHTML += `<div class="gameChatLine"><strong>${m.pseudo} :</strong> ${m.text}</div>`;
+    });
+
+    if(messages.length !== lastChatCount){
+        lastChatCount = messages.length;
+        box.scrollTop = box.scrollHeight;
+    }
+}
+
+async function addGameChat(text){
+    if(!room || !text.trim()) return;
+
+    const messages = room.chatMessages || [];
+
+    messages.push({
+        uid:user.uid,
+        pseudo:getMyPseudo(),
+        text:text.trim(),
+        time:Date.now()
+    });
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        chatMessages:messages.slice(-40)
+    });
+}
+
+window.sendQuickChat = function(text){
+    addGameChat(text);
+};
+
+window.sendGameChat = function(){
+    const input = document.getElementById("gameChatInput");
+    const text = input.value.trim();
+
+    if(text === "") return;
+
+    addGameChat(text);
+    input.value = "";
+};
+
+window.sendEmote = async function(emote){
+    if(!room) return;
+
+    const emotes = room.emotes || [];
+
+    emotes.push({
+        id:crypto.randomUUID(),
+        uid:user.uid,
+        pseudo:getMyPseudo(),
+        emote,
+        time:Date.now()
+    });
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        emotes:emotes.slice(-20),
+        actionLog:addLog(emote + " " + getMyPseudo())
+    });
+};
+
+function renderEmotes(){
+    if(!room || !room.emotes) return;
+
+    const last = room.emotes[room.emotes.length - 1];
+
+    if(!last || last.id === lastEmoteId) return;
+
+    lastEmoteId = last.id;
+
+    let target = null;
+
+    if(last.uid === user.uid){
+        target = document.getElementById("myArea");
+    }else{
+        target = document.getElementById("opponent_" + last.uid);
+    }
+
+    if(!target) return;
+
+    const bubble = document.createElement("div");
+    bubble.className = "emoteBubble";
+    bubble.innerText = last.emote;
+    target.appendChild(bubble);
+
+    setTimeout(()=>bubble.remove(),1900);
+}
+
+async function heartbeatPresence(){
+    if(!user || !roomId || !room) return;
+
+    const disconnected = {...(room.disconnected || {})};
+    delete disconnected[user.uid];
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        disconnected
+    }).catch(()=>{});
+}
+
+function startPresence(){
+    if(presenceTimer) clearInterval(presenceTimer);
+    presenceTimer = setInterval(heartbeatPresence,5000);
+    heartbeatPresence();
+}
+
+function checkDisconnects(){
+    if(!room || !room.disconnected) return;
+
+    const disconnected = room.disconnected;
+    const now = Date.now();
+
+    Object.keys(disconnected).forEach(uid=>{
+        const t = disconnected[uid] && disconnected[uid].toDate ? disconnected[uid].toDate().getTime() : 0;
+
+        if(t && now - t > 15000 && room.hostUid === user.uid && room.status === "playing"){
+            handleDisconnectedTooLong(uid);
+        }
+    });
+}
+
+async function handleDisconnectedTooLong(uid){
+    const players = room.players || [];
+
+    if(players.length <= 2){
+        const winner = players.find(p=>p.uid !== uid);
+
+        if(winner){
+            await updateDoc(doc(db,"unoRooms",roomId),{
+                status:"ended",
+                winnerUid:winner.uid,
+                actionLog:addLog("⚠️ Un joueur a quitté trop longtemps. " + winner.pseudo + " gagne.")
+            });
+        }
+
+        return;
+    }
+
+    const remaining = players.filter(p=>p.uid !== uid);
+    const hands = {...(room.hands || {})};
+    delete hands[uid];
+
+    let currentUid = room.currentPlayerUid;
+
+    if(currentUid === uid){
+        currentUid = remaining[0].uid;
+    }
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        players:remaining,
+        hands,
+        currentPlayerUid:currentUid,
+        actionLog:addLog("⚠️ Un joueur a été retiré après 15 secondes de déconnexion.")
     });
 }
 
@@ -1256,8 +1721,20 @@ function renderEndOverlay(){
         const winner = (room.players || []).find(p=>p.uid === room.winnerUid);
         text.innerText = "🏆 " + (winner ? winner.pseudo : "Un joueur") + " gagne !";
         overlay.style.display = "flex";
+
+        const replayStatus = document.getElementById("replayStatus");
+        const votes = room.replayVotes || [];
+        if(replayStatus){
+            replayStatus.innerText = votes.length + "/" + (room.players || []).length + " joueurs veulent rejouer";
+        }
+
+        if(!overlay.dataset.confetti){
+            overlay.dataset.confetti = "1";
+            launchConfetti();
+        }
     }else{
         overlay.style.display = "none";
+        overlay.dataset.confetti = "";
     }
 }
 
@@ -1470,8 +1947,11 @@ async function playCardsWithColor(cards, chosenColor){
     let unoDeclaredBy = room.unoDeclaredBy || "";
 
     // Si tu passes à 1 carte sans avoir dit UNO, les autres peuvent te contrer.
+    let unoDeadline = room.unoDeadline || null;
+
     if(myHand.length === 1 && unoDeclaredBy !== user.uid){
         canCounterUnoUid = user.uid;
+        unoDeadline = Date.now() + 3000;
         log = [...log, "⚠️ " + getMyPseudo() + " n'a plus qu'une carte !"];
     }
 
@@ -1492,6 +1972,7 @@ async function playCardsWithColor(cards, chosenColor){
         currentPlayerUid:nextUid,
         unoDeclaredBy,
         canCounterUnoUid,
+        unoDeadline,
         actionLog:log
     };
 
@@ -1503,6 +1984,7 @@ async function playCardsWithColor(cards, chosenColor){
     }
 
     selectedCards = [];
+    createFlyingCard();
     await updateDoc(doc(db,"unoRooms",roomId), updates);
 }
 
@@ -1557,6 +2039,42 @@ window.drawCard = async function(){
     });
 };
 
+async function checkUnoAutoPenalty(){
+    if(!room || !room.canCounterUnoUid || !room.unoDeadline) return;
+
+    if(room.canCounterUnoUid !== user.uid) return;
+
+    if(Date.now() < room.unoDeadline) return;
+
+    const hands = {...(room.hands || {})};
+    let deck = [...(room.deck || [])];
+
+    if(deck.length < 2) return;
+
+    const myHand = [...(hands[user.uid] || [])];
+
+    // Si le joueur a dit UNO entre-temps, pas de pénalité.
+    if(room.unoDeclaredBy === user.uid) return;
+
+    myHand.push(...deck.splice(0,2));
+    hands[user.uid] = myHand;
+
+    const players = (room.players || []).map(p=>({
+        ...p,
+        cards:hands[p.uid] ? hands[p.uid].length : 0
+    }));
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        deck,
+        hands,
+        players,
+        canCounterUnoUid:"",
+        unoDeclaredBy:"",
+        unoDeadline:null,
+        actionLog:addLog("⏱️ " + getMyPseudo() + " a oublié UNO et pioche 2 cartes.")
+    });
+}
+
 window.callCounterUno = async function(){
     if(!room || !room.canCounterUnoUid){
         alert("Personne à contrer pour l'instant.");
@@ -1595,8 +2113,28 @@ window.callCounterUno = async function(){
         players,
         canCounterUnoUid:"",
         unoDeclaredBy:"",
+        unoDeadline:null,
         actionLog:addLog("🚨 " + caller + " contre UNO ! " + (target ? target.pseudo : "Le joueur") + " pioche 2 cartes.")
     });
+};
+
+window.requestReplay = async function(){
+    if(!room || room.status !== "ended") return;
+
+    const votes = room.replayVotes || [];
+
+    if(!votes.includes(user.uid)){
+        votes.push(user.uid);
+    }
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        replayVotes:votes,
+        actionLog:addLog("🔁 " + getMyPseudo() + " veut rejouer.")
+    });
+
+    if(votes.length >= (room.players || []).length && room.hostUid === user.uid){
+        restartGame();
+    }
 };
 
 window.restartGame = async function(){
@@ -1621,6 +2159,11 @@ window.restartGame = async function(){
         pendingDraw:0,
         pendingType:"",
         winnerUid:"",
+        replayVotes:[],
+        chatMessages:[],
+        emotes:[],
+        disconnected:{},
+        unoDeadline:null,
         unoDeclaredBy:"",
         canCounterUnoUid:"",
         actionLog:["🔁 Nouvelle partie prête."]
@@ -1634,9 +2177,11 @@ window.sayUno = function(){
 
     if(room.hands[user.uid].length === 1){
         alert("🔔 UNO !");
+        showUnoSplash();
         updateDoc(doc(db,"unoRooms",roomId),{
             unoDeclaredBy:user.uid,
             canCounterUnoUid:"",
+            unoDeadline:null,
             actionLog:addLog("🔔 " + getMyPseudo() + " dit UNO !")
         });
     }else{
@@ -1668,6 +2213,16 @@ async function leaveRoom(){
     document.getElementById("status").innerText = "Tu as quitté le salon UNO.";
 }
 window.leaveRoom = leaveRoom;
+
+window.addEventListener("beforeunload", () => {
+    if(user && roomId && room){
+        const disconnected = {...(room.disconnected || {})};
+        disconnected[user.uid] = new Date();
+        updateDoc(doc(db,"unoRooms",roomId),{
+            disconnected
+        });
+    }
+});
 
 resetView();
 </script>
