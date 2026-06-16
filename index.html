@@ -691,6 +691,77 @@ button:hover{
     margin-left:6px;
 }
 
+
+.seenStatus{
+    font-size:11px;
+    color:#94a3b8;
+    margin-top:4px;
+}
+
+.chatMsg.mine .seenStatus{
+    color:#bbf7d0;
+}
+
+.conversationUnreadCount{
+    background:#ef4444;
+    color:white;
+    border-radius:999px;
+    padding:2px 7px;
+    font-size:12px;
+    margin-left:6px;
+}
+
+
+/* NOTIFICATION CENTER V2 */
+#notifPanel{
+    display:none !important;
+}
+
+#notifOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.82);
+    backdrop-filter:blur(5px);
+    z-index:9998;
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+#notifCenter{
+    width:min(520px,92%);
+    max-height:78vh;
+    background:#0f172a;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:20px;
+    box-shadow:0 25px 60px rgba(0,0,0,0.55);
+    overflow:auto;
+}
+
+#notifHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+}
+
+#notifHeader h2{
+    font-size:28px;
+}
+
+#closeNotifBtn{
+    background:#ef4444;
+    color:white;
+    padding:9px 13px;
+    font-size:16px;
+    margin:0;
+}
+
+.notifItem{
+    cursor:default !important;
+}
+
 </style>
 </head>
 
@@ -712,14 +783,25 @@ button:hover{
             <div id="accountText">Hors ligne</div>
         </div>
 
-        <button id="notifBtn" onclick="toggleNotifPanel()">🔔<span id="notifCount">0</span></button>
+        <button id="notifBtn" onclick="openNotifCenter()">🔔<span id="notifCount">0</span></button>
         <button id="accountBtn" onclick="toggleAccountPanel()">⚙️</button>
     </div>
 </div>
 
 <div id="notifPanel">
     <h2>🔔 Notifications</h2>
-    <div id="notifList">Aucune notification.</div>
+    <div id="notifList">Chargement des notifications...</div>
+</div>
+
+<div id="notifOverlay">
+    <div id="notifCenter">
+        <div id="notifHeader">
+            <h2>🔔 Notifications</h2>
+            <button id="closeNotifBtn" onclick="closeNotifCenter()">Fermer</button>
+        </div>
+
+        <div id="notifListBig">Chargement des notifications...</div>
+    </div>
 </div>
 
 <div id="sideMenu">
@@ -1018,6 +1100,15 @@ function togglePlayMode(){
     }else{
         openLoginOverlay();
     }
+}
+
+const notifOverlay = document.getElementById("notifOverlay");
+if(notifOverlay){
+    notifOverlay.addEventListener("click", function(e){
+        if(e.target === notifOverlay){
+            closeNotifCenter();
+        }
+    });
 }
 
 window.addEventListener("load", () => {
@@ -1443,6 +1534,14 @@ window.acceptFriendRequest = async function(requestId, fromUid){
                 [user.uid]:false,
                 [fromUid]:false
             },
+            unreadCount:{
+                [user.uid]:0,
+                [fromUid]:0
+            },
+            seenBy:{
+                [user.uid]:serverTimestamp(),
+                [fromUid]:serverTimestamp()
+            },
             createdAt:serverTimestamp()
         }, { merge:true });
 
@@ -1578,69 +1677,155 @@ function timeAgo(date){
     return "il y a " + days + " j";
 }
 
+function timeAgo(date){
+    if(!date) return "à l'instant";
+
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+
+    if(seconds < 60) return "à l'instant";
+
+    const minutes = Math.floor(seconds / 60);
+    if(minutes < 60) return "il y a " + minutes + " min";
+
+    const hours = Math.floor(minutes / 60);
+    if(hours < 24) return "il y a " + hours + " h";
+
+    const days = Math.floor(hours / 24);
+    return "il y a " + days + " j";
+}
+
+let cachedNotifications = [];
+
+function timeAgo(date){
+    if(!date) return "à l'instant";
+
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+
+    if(seconds < 60) return "à l'instant";
+
+    const minutes = Math.floor(seconds / 60);
+    if(minutes < 60) return "il y a " + minutes + " min";
+
+    const hours = Math.floor(minutes / 60);
+    if(hours < 24) return "il y a " + hours + " h";
+
+    const days = Math.floor(hours / 24);
+    return "il y a " + days + " j";
+}
+
+function notificationHTML(n){
+    const date = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null;
+    const icon = n.type === "friendRequest" ? "👥 Demande d'ami" : n.type === "message" ? "💬 Message" : "🔔 Notification";
+
+    return `
+        <div class="notifItem">
+            <strong>${icon}</strong>${n.read ? "" : " <span class='unreadDot'>●</span>"}<br>
+            ${n.text}
+            <div class="notifTime">${timeAgo(date)}</div>
+        </div>
+    `;
+}
+
+window.renderNotificationHistory = function(){
+    const big = document.getElementById("notifListBig");
+
+    if(!big) return;
+
+    if(cachedNotifications.length === 0){
+        big.innerHTML = "Aucune notification.";
+        return;
+    }
+
+    big.innerHTML = "";
+    cachedNotifications.forEach(n=>{
+        big.innerHTML += notificationHTML(n);
+    });
+};
+
 window.listenNotifications = function(){
     const user = auth.currentUser;
-    if(!user) return;
+    const smallList = document.getElementById("notifList");
+    const bigList = document.getElementById("notifListBig");
+    const count = document.getElementById("notifCount");
+
+    if(!count){
+        return;
+    }
+
+    if(!user){
+        if(smallList) smallList.innerHTML = "Connecte-toi pour voir tes notifications.";
+        if(bigList) bigList.innerHTML = "Connecte-toi pour voir tes notifications.";
+        count.style.display = "none";
+        return;
+    }
 
     if(notifUnsubscribe){
         notifUnsubscribe();
     }
 
-    const q = query(
-        collection(db, "notifications"),
-        where("toUid","==",user.uid)
-    );
+    if(smallList) smallList.innerHTML = "Chargement des notifications...";
+    if(bigList) bigList.innerHTML = "Chargement des notifications...";
 
-    notifUnsubscribe = onSnapshot(q, snap=>{
-        const list = document.getElementById("notifList");
-        const count = document.getElementById("notifCount");
+    try{
+        const q = query(
+            collection(db, "notifications"),
+            where("toUid","==",user.uid)
+        );
 
-        let unread = 0;
-        let items = [];
+        notifUnsubscribe = onSnapshot(q, snap=>{
+            let unread = 0;
+            let items = [];
 
-        snap.forEach(docSnap=>{
-            const n = docSnap.data();
-            items.push({id:docSnap.id, ...n});
+            snap.forEach(docSnap=>{
+                const n = docSnap.data();
+                items.push({id:docSnap.id, ...n});
 
-            if(!n.read){
-                unread++;
+                if(!n.read){
+                    unread++;
+                }
+            });
+
+            items.sort((a,b)=>{
+                const ta = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : 0;
+                const tb = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : 0;
+                return tb - ta;
+            });
+
+            cachedNotifications = items;
+
+            if(items.length === 0){
+                if(smallList) smallList.innerHTML = "Aucune notification.";
+                if(bigList) bigList.innerHTML = "Aucune notification.";
+                count.style.display = "none";
+                return;
             }
-        });
 
-        items.sort((a,b)=>{
-            const ta = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : 0;
-            const tb = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : 0;
-            return tb - ta;
-        });
+            if(smallList){
+                smallList.innerHTML = "";
+                items.slice(0,5).forEach(n=>{
+                    smallList.innerHTML += notificationHTML(n);
+                });
+            }
 
-        if(items.length === 0){
-            list.innerHTML = "Aucune notification.";
+            renderNotificationHistory();
+
+            if(unread > 0){
+                count.innerText = unread;
+                count.style.display = "flex";
+            }else{
+                count.style.display = "none";
+            }
+        }, error=>{
+            if(smallList) smallList.innerHTML = "Erreur notifications : " + error.message;
+            if(bigList) bigList.innerHTML = "Erreur notifications : " + error.message;
             count.style.display = "none";
-            return;
-        }
-
-        list.innerHTML = "";
-
-        items.slice(0,30).forEach(n=>{
-            const date = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null;
-            const icon = n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : "🔔 Notification";
-
-            list.innerHTML += `
-                <div class="notifItem" onclick="openNotification('${n.type}')">
-                    <strong>${icon}</strong>${n.read ? "" : " <span class='unreadDot'>●</span>"}<br>
-                    ${n.text}
-                    <div class="notifTime">${timeAgo(date)}</div>
-                </div>
-            `;
         });
 
-        if(unread > 0){
-            count.innerText = unread;
-            count.style.display = "flex";
-        }else{
-            count.style.display = "none";
-        }
-    });
+    }catch(error){
+        if(smallList) smallList.innerHTML = "Erreur notifications : " + error.message;
+        if(bigList) bigList.innerHTML = "Erreur notifications : " + error.message;
+        count.style.display = "none";
+    }
 };
 
 window.markNotificationsRead = async function(){
@@ -1692,6 +1877,8 @@ window.loadConversations = async function(){
     const user = auth.currentUser;
     const box = document.getElementById("conversationList");
 
+    if(!box) return;
+
     if(!user){
         box.innerHTML = "Connecte-toi pour utiliser le chat.";
         return;
@@ -1715,23 +1902,28 @@ window.loadConversations = async function(){
             const chatId = chatIdFor(user.uid, friendUid);
             const chatSnap = await getDoc(doc(db, "chats", chatId));
 
-            let unread = false;
+            let unreadCount = 0;
             let last = "Aucun message";
+            let lastAt = 0;
 
             if(chatSnap.exists()){
                 const chat = chatSnap.data();
-                unread = chat.unreadBy && chat.unreadBy[user.uid] === true;
                 last = chat.lastMessage || "Aucun message";
+                unreadCount = chat.unreadCount && chat.unreadCount[user.uid] ? chat.unreadCount[user.uid] : 0;
+                lastAt = chat.lastMessageAt && chat.lastMessageAt.toDate ? chat.lastMessageAt.toDate().getTime() : 0;
             }
 
             conversations.push({
                 uid:friendUid,
                 pseudo:f.pseudo,
-                unread,
-                last
+                unreadCount,
+                last,
+                lastAt
             });
         }
     }
+
+    conversations.sort((a,b)=>b.lastAt-a.lastAt);
 
     if(conversations.length === 0){
         box.innerHTML = "<div class='friendItem'>Aucune conversation.</div>";
@@ -1743,7 +1935,10 @@ window.loadConversations = async function(){
     conversations.forEach(c=>{
         box.innerHTML += `
             <div class="conversationItem" onclick="openConversation('${c.uid}','${c.pseudo}')">
-                <div class="conversationTitle">${c.unread ? "🔴 " : ""}${c.pseudo}</div>
+                <div class="conversationTitle">
+                    ${c.pseudo}
+                    ${c.unreadCount > 0 ? "<span class='conversationUnreadCount'>" + c.unreadCount + "</span>" : ""}
+                </div>
                 <div class="conversationLast">${c.last}</div>
             </div>
         `;
@@ -1769,6 +1964,12 @@ window.openConversation = async function(friendUid, friendPseudo){
         participants:[user.uid, friendUid],
         unreadBy:{
             [user.uid]:false
+        },
+        unreadCount:{
+            [user.uid]:0
+        },
+        seenBy:{
+            [user.uid]:serverTimestamp()
         }
     }, { merge:true });
 
@@ -1789,24 +1990,43 @@ window.listenChat = function(friendUid){
     const q = query(
         collection(db, "chats", chatId, "messages"),
         orderBy("createdAt","asc"),
-        limit(60)
+        limit(80)
     );
 
     chatUnsubscribe = onSnapshot(q, async snap=>{
         const box = document.getElementById("chatBox");
         box.innerHTML = "";
 
-        if(snap.empty){
+        const chatSnap = await getDoc(doc(db, "chats", chatId));
+        const chat = chatSnap.exists() ? chatSnap.data() : {};
+        const friendSeenTime = chat.seenBy && chat.seenBy[friendUid] && chat.seenBy[friendUid].toDate
+            ? chat.seenBy[friendUid].toDate().getTime()
+            : 0;
+
+        let myLastMessageId = "";
+        let messages = [];
+
+        snap.forEach(docSnap=>{
+            const msg = docSnap.data();
+            messages.push({id:docSnap.id, ...msg});
+            if(msg.fromUid === user.uid){
+                myLastMessageId = docSnap.id;
+            }
+        });
+
+        if(messages.length === 0){
             box.innerHTML = "Aucun message pour l'instant.";
         }else{
-            snap.forEach(docSnap=>{
-                const msg = docSnap.data();
+            messages.forEach(msg=>{
                 const mine = msg.fromUid === user.uid;
+                const msgTime = msg.createdAt && msg.createdAt.toDate ? msg.createdAt.toDate().getTime() : 0;
+                const seen = mine && msg.id === myLastMessageId && friendSeenTime >= msgTime;
 
                 box.innerHTML += `
                     <div class="chatMsg ${mine ? "mine" : ""}">
                         <div class="chatSender">${mine ? "Moi" : msg.fromPseudo}</div>
                         ${msg.text}
+                        ${seen ? "<div class='seenStatus'>Vu</div>" : ""}
                     </div>
                 `;
             });
@@ -1817,6 +2037,12 @@ window.listenChat = function(friendUid){
         await setDoc(doc(db, "chats", chatId), {
             unreadBy:{
                 [user.uid]:false
+            },
+            unreadCount:{
+                [user.uid]:0
+            },
+            seenBy:{
+                [user.uid]:serverTimestamp()
             }
         }, { merge:true });
 
@@ -1849,6 +2075,10 @@ window.sendChatMessage = async function(){
     const myPseudo = me.pseudo || user.displayName || "Joueur";
     const chatId = chatIdFor(user.uid, currentChatFriendUid);
 
+    const chatSnap = await getDoc(doc(db, "chats", chatId));
+    const oldChat = chatSnap.exists() ? chatSnap.data() : {};
+    const oldUnread = oldChat.unreadCount && oldChat.unreadCount[currentChatFriendUid] ? oldChat.unreadCount[currentChatFriendUid] : 0;
+
     await setDoc(doc(db, "chats", chatId), {
         participants:[user.uid, currentChatFriendUid],
         lastMessage:text,
@@ -1857,6 +2087,10 @@ window.sendChatMessage = async function(){
         unreadBy:{
             [currentChatFriendUid]:true,
             [user.uid]:false
+        },
+        unreadCount:{
+            [currentChatFriendUid]:oldUnread + 1,
+            [user.uid]:0
         }
     }, { merge:true });
 
