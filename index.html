@@ -751,6 +751,30 @@ button:hover{
     }
 }
 
+#unoCard{
+    position:relative;
+}
+
+#unoCard.locked{
+    opacity:0.55;
+}
+
+#unoLock{
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:rgba(0,0,0,0.75);
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:14px;
+}
+
+#unoCard:not(.locked) #unoLock{
+    display:none;
+}
+
+
+
 </style>
 </head>
 
@@ -950,6 +974,17 @@ button:hover{
     </div>
 </div>
 
+<div class="card" id="unoCard" onclick="openUno()">
+    <div class="icon">🃏</div>
+    <div class="title">UNO Online</div>
+    <div class="desc">Invite tes amis et joue au UNO en ligne !</div>
+
+    <div id="unoLock">🔒 En ligne requis</div>
+</div>
+
+
+
+
 <script>
 const input = document.getElementById("pseudo");
 input.value = localStorage.getItem("pseudo") || "";
@@ -1146,6 +1181,9 @@ window.addEventListener("load", () => {
     }else{
         document.getElementById("loginOverlay").style.display = "flex";
     }
+
+updateUnoCard(); // ← AJOUTE ÇA
+
 });
 </script>
 
@@ -1889,7 +1927,6 @@ window.openNotification = function(type, fromUid = "", fromPseudo = ""){
         showSettingsPage("account");
     }
 };
-
 window.openChatFromFriend = function(friendUid, friendPseudo){
     document.getElementById("accountPanel").classList.add("open");
     showSettingsPage("chat");
@@ -2145,6 +2182,32 @@ window.addEventListener("beforeunload", () => {
         }, { merge:true });
     }
 });
+
+function updateUnoCard(){
+    const uno = document.getElementById("unoCard");
+
+    if(!uno) return;
+
+    const mode = localStorage.getItem("playMode");
+
+    if(mode === "online"){
+        uno.classList.remove("locked");
+    }else{
+        uno.classList.add("locked");
+    }
+}
+
+function openUno(){
+    const mode = localStorage.getItem("playMode");
+
+    if(mode !== "online"){
+        alert("🔒 Tu dois être connecté en ligne pour jouer au UNO.");
+        return;
+    }
+
+    window.location.href = "uno_online.html";
+}
+
 </script>
 
 </body>

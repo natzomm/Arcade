@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNO Online</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#7f1d1d,#ca8a04,#166534,#1e3a8a);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{transform:scale(1.04)}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{font-size:42px}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1100px,95%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:330px 1fr;
+    gap:22px;
+}
+
+.panel{
+    background:rgba(15,23,42,0.88);
+    border:1px solid rgba(148,163,184,0.25);
+    border-radius:22px;
+    padding:22px;
+    box-shadow:0 20px 45px rgba(0,0,0,0.3);
+}
+
+.scoreLine,.playerSlot,.info{
+    background:#020617;
+    padding:13px;
+    margin:10px 0;
+    border-radius:12px;
+    font-size:18px;
+}
+
+.info{
+    color:#cbd5e1;
+    line-height:1.4;
+    font-size:15px;
+}
+
+.playerSlot{
+    border:2px dashed #475569;
+    color:#94a3b8;
+}
+
+.playerSlot.filled{
+    border-style:solid;
+    border-color:#22c55e;
+    color:white;
+}
+
+.hostBadge{
+    color:#facc15;
+    font-weight:bold;
+}
+
+.actionBtn{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:17px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+.blueBtn{
+    background:#38bdf8;
+    color:#082f49;
+}
+
+.redBtn{
+    background:#ef4444;
+    color:white;
+}
+
+.yellowBtn{
+    background:#facc15;
+    color:#422006;
+}
+
+.kickBtn{
+    padding:8px 10px;
+    font-size:13px;
+    background:#ef4444;
+    color:white;
+    margin-top:8px;
+}
+
+#gamePanel{
+    text-align:center;
+}
+
+#status{
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:18px;
+    color:#facc15;
+    min-height:35px;
+}
+
+#table{
+    min-height:390px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:25px;
+}
+
+#deckArea{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:25px;
+    flex-wrap:wrap;
+}
+
+.card{
+    width:105px;
+    height:155px;
+    border-radius:18px;
+    border:4px solid white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:38px;
+    font-weight:bold;
+    box-shadow:0 15px 30px rgba(0,0,0,0.35);
+}
+
+.back{
+    background:#111827;
+    color:white;
+}
+
+.red{background:#dc2626}
+.blue{background:#2563eb}
+.green{background:#16a34a}
+.yellow{background:#eab308;color:#422006}
+.wild{background:linear-gradient(135deg,#dc2626,#2563eb,#16a34a,#eab308)}
+
+#playersPreview{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+    gap:12px;
+}
+
+.playerPreview{
+    background:#020617;
+    border-radius:14px;
+    padding:12px;
+    color:#cbd5e1;
+}
+
+#inviteList{
+    margin-top:15px;
+    max-height:210px;
+    overflow:auto;
+}
+
+.friendItem{
+    background:#020617;
+    border-radius:12px;
+    padding:10px;
+    margin:8px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+}
+
+.friendItem button{
+    padding:9px 12px;
+    font-size:14px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+#inviteOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:60;
+}
+
+#inviteCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+}
+
+#inviteCard h2{
+    font-size:32px;
+    margin-bottom:15px;
+}
+
+@media(max-width:800px){
+    #container{grid-template-columns:1fr}
+    h1{font-size:34px}
+    .card{width:88px;height:132px;font-size:32px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>🃏 UNO Online</h1>
+        <div>👤 Joueur : <span id="player">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+
+<aside class="panel">
+    <h2>👥 Salon UNO</h2>
+
+    <div id="playersSlots"></div>
+
+    <div class="info">
+        Crée un salon, invite tes amis, puis lance la partie quand vous êtes au moins 2.
+        Pour cette première version, on teste surtout le salon.
+    </div>
+
+    <button class="actionBtn" onclick="createRoom()">➕ Créer salon</button>
+    <button class="actionBtn blueBtn" onclick="loadFriends()">👥 Inviter un ami</button>
+    <button class="actionBtn yellowBtn" onclick="startGame()">▶️ Commencer</button>
+    <button class="actionBtn redBtn" onclick="leaveRoom()">🚪 Quitter salon</button>
+
+    <div id="inviteList"></div>
+</aside>
+
+<section class="panel" id="gamePanel">
+    <div id="status">Connecte-toi depuis l'accueil puis crée un salon.</div>
+
+    <div id="table">
+        <div id="playersPreview"></div>
+
+        <div id="deckArea">
+            <div class="card back">UNO</div>
+            <div class="card wild" id="centerCard">?</div>
+        </div>
+
+        <div class="info" id="gameInfo">
+            En attente d'un salon...
+        </div>
+    </div>
+</section>
+
+</div>
+
+<div id="inviteOverlay">
+    <div id="inviteCard">
+        <h2>🃏 Invitation UNO</h2>
+        <p id="inviteText">Quelqu'un t'invite.</p>
+        <div style="margin-top:18px;">
+            <button class="actionBtn" onclick="acceptInvite()">Accepter</button>
+            <button class="actionBtn redBtn" onclick="refuseInvite()">Refuser</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    onSnapshot,
+    serverTimestamp,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCicpzlFc-WfbmBjzu8y-bWYPaXu6Mnt24",
+    authDomain: "arcade-fbd7c.firebaseapp.com",
+    projectId: "arcade-fbd7c",
+    storageBucket: "arcade-fbd7c.firebasestorage.app",
+    messagingSenderId: "648897624519",
+    appId: "1:648897624519:web:bffd2e9d3023362f8781e2"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+let userData = null;
+let roomId = localStorage.getItem("uno_room") || "";
+let room = null;
+let roomUnsub = null;
+let inviteUnsub = null;
+let pendingInvite = null;
+
+function goHome(){
+    window.location.href = "index.html";
+}
+window.goHome = goHome;
+
+onAuthStateChanged(auth, async u=>{
+    user = u;
+
+    if(!user){
+        document.getElementById("status").innerText = "Tu dois être connecté en ligne depuis l'accueil.";
+        return;
+    }
+
+    const snap = await getDoc(doc(db,"users",user.uid));
+    userData = snap.exists() ? snap.data() : {pseudo:localStorage.getItem("pseudo") || "Joueur"};
+
+    document.getElementById("player").innerText = userData.pseudo || "Joueur";
+
+    listenInvites();
+    await checkPendingInviteOnLoad();
+
+    if(roomId){
+        listenRoom(roomId);
+    }else{
+        resetView();
+        document.getElementById("status").innerText = "Crée un salon UNO ou accepte une invitation.";
+    }
+});
+
+function resetView(){
+    document.getElementById("playersSlots").innerHTML = `
+        <div class="playerSlot">Joueur 1 : vide</div>
+        <div class="playerSlot">Joueur 2 : vide</div>
+        <div class="playerSlot">Joueur 3 : vide</div>
+        <div class="playerSlot">Joueur 4 : vide</div>
+    `;
+    document.getElementById("playersPreview").innerHTML = "";
+    document.getElementById("gameInfo").innerText = "En attente d'un salon...";
+}
+
+async function createRoom(){
+    if(!user){
+        alert("Connecte-toi depuis l'accueil.");
+        return;
+    }
+
+    if(roomId){
+        if(!confirm("Tu as déjà un salon UNO. En créer un nouveau ?")) return;
+        await leaveRoom();
+    }
+
+    const roomRef = doc(collection(db,"unoRooms"));
+    roomId = roomRef.id;
+    localStorage.setItem("uno_room",roomId);
+
+    const me = {
+        uid:user.uid,
+        pseudo:userData.pseudo || "Joueur",
+        host:true,
+        cards:0
+    };
+
+    await setDoc(roomRef,{
+        hostUid:user.uid,
+        status:"waiting",
+        players:[me],
+        maxPlayers:4,
+        currentPlayerUid:"",
+        direction:1,
+        topCard:null,
+        createdAt:serverTimestamp()
+    });
+
+    listenRoom(roomId);
+}
+window.createRoom = createRoom;
+
+function listenRoom(id){
+    if(roomUnsub) roomUnsub();
+
+    roomUnsub = onSnapshot(doc(db,"unoRooms",id), snap=>{
+        if(!snap.exists()){
+            roomId = "";
+            localStorage.removeItem("uno_room");
+            room = null;
+            resetView();
+            document.getElementById("status").innerText = "Le salon UNO a été fermé.";
+            return;
+        }
+
+        room = {id:snap.id, ...snap.data()};
+        applyRoom();
+    });
+}
+
+function applyRoom(){
+    if(!room) return;
+
+    const players = room.players || [];
+    const isHost = room.hostUid === user.uid;
+
+    const slots = document.getElementById("playersSlots");
+    slots.innerHTML = "";
+
+    for(let i=0;i<4;i++){
+        const p = players[i];
+
+        if(p){
+            slots.innerHTML += `
+                <div class="playerSlot filled">
+                    <strong>${p.pseudo}</strong>
+                    ${p.host ? "<span class='hostBadge'> 👑 Hôte</span>" : ""}
+                    <br>
+                    ${room.status === "playing" ? "🃏 " + (p.cards || 0) + " cartes" : "En attente"}
+                    ${isHost && !p.host && room.status === "waiting" ? `<br><button class="kickBtn" onclick="kickPlayer('${p.uid}')">Expulser</button>` : ""}
+                </div>
+            `;
+        }else{
+            slots.innerHTML += `<div class="playerSlot">Joueur ${i+1} : vide</div>`;
+        }
+    }
+
+    const preview = document.getElementById("playersPreview");
+    preview.innerHTML = "";
+
+    players.forEach(p=>{
+        preview.innerHTML += `
+            <div class="playerPreview">
+                <strong>${p.pseudo}</strong><br>
+                ${room.status === "playing" ? "🃏 " + (p.cards || 0) + " cartes" : "Prêt"}
+            </div>
+        `;
+    });
+
+    if(room.status === "waiting"){
+        document.getElementById("status").innerText =
+        isHost ? "Salon créé. Invite tes amis." : "En attente du lancement par l'hôte.";
+        document.getElementById("gameInfo").innerText = players.length + "/4 joueurs dans le salon.";
+    }
+
+    if(room.status === "playing"){
+        document.getElementById("status").innerText = "Partie lancée ! Prochaine étape : les vraies cartes.";
+        document.getElementById("gameInfo").innerText = "Pour l'instant, le salon fonctionne. Ensuite on ajoute les mains, la pioche et les règles.";
+        document.getElementById("centerCard").innerText = "UNO";
+    }
+}
+
+async function loadFriends(){
+    if(!user){
+        alert("Connecte-toi.");
+        return;
+    }
+
+    if(!roomId || !room){
+        alert("Crée d'abord un salon UNO.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut inviter.");
+        return;
+    }
+
+    const snap = await getDoc(doc(db,"users",user.uid));
+
+    if(!snap.exists() || !snap.data().friends || snap.data().friends.length === 0){
+        document.getElementById("inviteList").innerHTML = "<div class='info'>Tu n'as pas encore d'amis.</div>";
+        return;
+    }
+
+    const friends = snap.data().friends;
+    const box = document.getElementById("inviteList");
+    box.innerHTML = "<h3 style='margin-top:15px;'>Inviter</h3>";
+
+    for(const fuid of friends){
+        const fsnap = await getDoc(doc(db,"users",fuid));
+
+        if(fsnap.exists()){
+            const f = fsnap.data();
+
+            box.innerHTML += `
+                <div class="friendItem">
+                    <span>${f.online ? "🟢" : "⚫"} ${f.pseudo}</span>
+                    <button onclick="inviteFriend('${fuid}','${f.pseudo}')">Inviter</button>
+                </div>
+            `;
+        }
+    }
+}
+window.loadFriends = loadFriends;
+
+async function inviteFriend(friendUid, friendPseudo){
+    if(!roomId || !room) return;
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut inviter.");
+        return;
+    }
+
+    const alreadyHere = (room.players || []).some(p => p.uid === friendUid);
+    if(alreadyHere){
+        alert("Ce joueur est déjà dans le salon.");
+        return;
+    }
+
+    if((room.players || []).length >= 4){
+        alert("Le salon est plein.");
+        return;
+    }
+
+    await addDoc(collection(db,"gameInvites"),{
+        game:"uno",
+        roomId,
+        fromUid:user.uid,
+        fromPseudo:userData.pseudo || "Joueur",
+        toUid:friendUid,
+        toPseudo:friendPseudo,
+        status:"pending",
+        createdAt:serverTimestamp()
+    });
+
+    await addDoc(collection(db,"notifications"),{
+        toUid:friendUid,
+        type:"gameInvite",
+        game:"uno",
+        text:(userData.pseudo || "Joueur") + " t'invite à jouer au UNO.",
+        read:false,
+        createdAt:serverTimestamp()
+    });
+
+    alert("Invitation UNO envoyée à " + friendPseudo);
+}
+window.inviteFriend = inviteFriend;
+
+function listenInvites(){
+    if(inviteUnsub) inviteUnsub();
+
+    const q = query(
+        collection(db,"gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","uno"),
+        where("status","==","pending")
+    );
+
+    inviteUnsub = onSnapshot(q, snap=>{
+        if(snap.empty) return;
+
+        const first = snap.docs[0];
+        pendingInvite = {id:first.id, ...first.data()};
+
+        document.getElementById("inviteText").innerText =
+        pendingInvite.fromPseudo + " t'invite à jouer au UNO.";
+
+        document.getElementById("inviteOverlay").style.display = "flex";
+    });
+}
+
+async function checkPendingInviteOnLoad(){
+    if(!user) return;
+
+    const q = query(
+        collection(db,"gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","uno"),
+        where("status","==","pending")
+    );
+
+    const snap = await getDocs(q);
+
+    if(snap.empty) return;
+
+    const first = snap.docs[0];
+    pendingInvite = {id:first.id, ...first.data()};
+
+    document.getElementById("inviteText").innerText =
+    pendingInvite.fromPseudo + " t'invite à jouer au UNO.";
+
+    document.getElementById("inviteOverlay").style.display = "flex";
+}
+
+async function acceptInvite(){
+    if(!pendingInvite) return;
+
+    const roomRef = doc(db,"unoRooms",pendingInvite.roomId);
+    const roomSnap = await getDoc(roomRef);
+
+    if(!roomSnap.exists()){
+        alert("Le salon n'existe plus.");
+        await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"expired"});
+        document.getElementById("inviteOverlay").style.display = "none";
+        return;
+    }
+
+    const r = roomSnap.data();
+    const players = r.players || [];
+
+    if(players.length >= 4){
+        alert("Le salon est plein.");
+        await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"full"});
+        document.getElementById("inviteOverlay").style.display = "none";
+        return;
+    }
+
+    if(!players.some(p => p.uid === user.uid)){
+        players.push({
+            uid:user.uid,
+            pseudo:userData.pseudo || "Joueur",
+            host:false,
+            cards:0
+        });
+    }
+
+    await updateDoc(roomRef,{players});
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"accepted"});
+
+    roomId = pendingInvite.roomId;
+    localStorage.setItem("uno_room",roomId);
+
+    document.getElementById("inviteOverlay").style.display = "none";
+    listenRoom(roomId);
+}
+window.acceptInvite = acceptInvite;
+
+async function refuseInvite(){
+    if(!pendingInvite) return;
+
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"refused"});
+    document.getElementById("inviteOverlay").style.display = "none";
+    pendingInvite = null;
+}
+window.refuseInvite = refuseInvite;
+
+async function kickPlayer(uid){
+    if(!room || room.hostUid !== user.uid) return;
+    if(room.status !== "waiting") return;
+
+    if(!confirm("Expulser ce joueur ?")) return;
+
+    const players = (room.players || []).filter(p => p.uid !== uid);
+    await updateDoc(doc(db,"unoRooms",roomId),{players});
+}
+window.kickPlayer = kickPlayer;
+
+async function startGame(){
+    if(!room){
+        alert("Crée un salon UNO.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut lancer.");
+        return;
+    }
+
+    const players = room.players || [];
+
+    if(players.length < 2){
+        alert("Il faut au moins 2 joueurs.");
+        return;
+    }
+
+    const updatedPlayers = players.map(p => ({
+        ...p,
+        cards:7
+    }));
+
+    const randomPlayer = updatedPlayers[Math.floor(Math.random()*updatedPlayers.length)];
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        status:"playing",
+        players:updatedPlayers,
+        currentPlayerUid:randomPlayer.uid,
+        direction:1,
+        topCard:{
+            color:"red",
+            value:"5"
+        }
+    });
+}
+window.startGame = startGame;
+
+async function leaveRoom(){
+    if(!roomId){
+        goHome();
+        return;
+    }
+
+    if(room && room.hostUid === user.uid){
+        if(confirm("Tu es hôte. Quitter va fermer le salon UNO.")){
+            await deleteDoc(doc(db,"unoRooms",roomId));
+        }else{
+            return;
+        }
+    }else if(room){
+        const players = (room.players || []).filter(p => p.uid !== user.uid);
+        await updateDoc(doc(db,"unoRooms",roomId),{players});
+    }
+
+    roomId = "";
+    localStorage.removeItem("uno_room");
+    room = null;
+    resetView();
+    document.getElementById("status").innerText = "Tu as quitté le salon UNO.";
+}
+window.leaveRoom = leaveRoom;
+
+resetView();
+</script>
+
+</body>
+</html>
