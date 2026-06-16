@@ -692,6 +692,65 @@ button:hover{
     margin-left:6px;
 }
 
+
+/* TOAST NOTIFICATION */
+#toastNotif{
+    position:fixed;
+    top:75px;
+    right:-380px;
+    width:340px;
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:18px;
+    padding:14px 42px 14px 14px;
+    z-index:10000;
+    box-shadow:0 15px 35px rgba(0,0,0,0.45);
+    transition:0.35s;
+    cursor:pointer;
+}
+
+#toastNotif.show{
+    right:18px;
+}
+
+#toastTitle{
+    font-weight:bold;
+    color:white;
+    margin-bottom:5px;
+}
+
+#toastText{
+    color:#cbd5e1;
+    font-size:14px;
+    line-height:1.35;
+}
+
+#toastClose{
+    position:absolute;
+    top:8px;
+    right:10px;
+    background:#ef4444;
+    color:white;
+    border-radius:50%;
+    width:25px;
+    height:25px;
+    padding:0;
+    margin:0;
+    font-size:15px;
+}
+
+@media(max-width:750px){
+    #toastNotif{
+        top:105px;
+        width:calc(100% - 24px);
+        right:-100%;
+    }
+
+    #toastNotif.show{
+        right:12px;
+    }
+}
+
 </style>
 </head>
 
@@ -721,6 +780,12 @@ button:hover{
 <div id="notifPanel">
     <h2>🔔 Notifications</h2>
     <div id="notifList">Aucune notification.</div>
+</div>
+
+<div id="toastNotif" onclick="openToastTarget()">
+    <button id="toastClose" onclick="closeToast(event)">×</button>
+    <div id="toastTitle">🔔 Notification</div>
+    <div id="toastText"></div>
 </div>
 
 <div id="sideMenu">
@@ -908,8 +973,29 @@ function openPenalty(){
     window.location.href = "penalty.html";
 }
 
+function closeAllPanels(except){
+    if(except !== "menu"){
+        document.getElementById("sideMenu").classList.remove("open");
+    }
+
+    if(except !== "account"){
+        document.getElementById("accountPanel").classList.remove("open");
+    }
+
+    if(except !== "notif"){
+        document.getElementById("notifPanel").classList.remove("open");
+    }
+}
+
 function toggleMenu(){
-    document.getElementById("sideMenu").classList.toggle("open");
+    const menu = document.getElementById("sideMenu");
+    const willOpen = !menu.classList.contains("open");
+
+    closeAllPanels("menu");
+
+    if(willOpen){
+        menu.classList.add("open");
+    }
 }
 
 function goToGame(page){
@@ -918,14 +1004,25 @@ function goToGame(page){
 }
 
 function toggleAccountPanel(){
-    document.getElementById("accountPanel").classList.toggle("open");
+    const panel = document.getElementById("accountPanel");
+    const willOpen = !panel.classList.contains("open");
+
+    closeAllPanels("account");
+
+    if(willOpen){
+        panel.classList.add("open");
+    }
 }
 
 function toggleNotifPanel(){
     const panel = document.getElementById("notifPanel");
-    panel.classList.toggle("open");
+    const willOpen = !panel.classList.contains("open");
 
-    if(panel.classList.contains("open")){
+    closeAllPanels("notif");
+
+    if(willOpen){
+        panel.classList.add("open");
+
         setTimeout(() => {
             if(typeof markNotificationsRead === "function"){
                 markNotificationsRead();
@@ -1234,6 +1331,8 @@ window.logout = async function(){
         document.getElementById("loginPassword").value = "";
 
         if(notifUnsubscribe){ notifUnsubscribe(); notifUnsubscribe = null; }
+        knownNotificationIds = new Set();
+        notificationsReady = false;
         if(chatUnsubscribe){ chatUnsubscribe(); chatUnsubscribe = null; }
         document.getElementById("notifCount").style.display = "none";
         document.getElementById("notifList").innerHTML = "Aucune notification.";
@@ -1379,7 +1478,11 @@ window.sendFriendRequest = async function(){
         await createNotification(
             target.uid,
             "friendRequest",
-            myPseudo + " t'a envoyé une demande d'ami."
+            myPseudo + " t'a envoyé une demande d'ami.",
+            {
+                fromUid:user.uid,
+                fromPseudo:myPseudo
+            }
         );
 
         document.getElementById("friendSearchResult").innerHTML = "<div class='friendItem'>✅ Demande envoyée à " + target.pseudo + ".</div>";
@@ -1463,7 +1566,11 @@ window.acceptFriendRequest = async function(requestId, fromUid){
         await createNotification(
             fromUid,
             "friendRequest",
-            "Ta demande d'ami a été acceptée."
+            "Ta demande d'ami a été acceptée.",
+            {
+                fromUid:user.uid,
+                fromPseudo:""
+            }
         );
 
         await loadFriendRequests();
@@ -1565,15 +1672,62 @@ function chatIdFor(uid1, uid2){
     return [uid1, uid2].sort().join("_");
 }
 
-async function createNotification(toUid, type, text){
+async function createNotification(toUid, type, text, extra = {}){
     await addDoc(collection(db, "notifications"), {
         toUid,
         type,
         text,
         read:false,
-        createdAt:serverTimestamp()
+        createdAt:serverTimestamp(),
+        ...extra
     });
 }
+
+
+let lastToastData = null;
+let toastTimer = null;
+let knownNotificationIds = new Set();
+let notificationsReady = false;
+
+window.showToastNotification = function(notif){
+    const toast = document.getElementById("toastNotif");
+    const title = document.getElementById("toastTitle");
+    const text = document.getElementById("toastText");
+
+    if(!toast || !title || !text) return;
+
+    lastToastData = notif;
+
+    title.innerText = notif.type === "friendRequest" ? "👥 Demande d'ami" : notif.type === "message" ? "💬 Nouveau message" : "🔔 Notification";
+    text.innerText = notif.text;
+
+    toast.classList.add("show");
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3200);
+};
+
+window.closeToast = function(e){
+    if(e){
+        e.stopPropagation();
+    }
+
+    document.getElementById("toastNotif").classList.remove("show");
+};
+
+window.openToastTarget = function(){
+    if(!lastToastData) return;
+
+    closeToast();
+    openNotification(
+        lastToastData.type,
+        lastToastData.fromUid || "",
+        lastToastData.fromPseudo || ""
+    );
+};
+
 
 function timeAgo(date){
     if(!date) return "à l'instant";
@@ -1627,6 +1781,17 @@ window.listenNotifications = function(){
             return tb - ta;
         });
 
+        if(notificationsReady){
+            const fresh = items.find(n => !knownNotificationIds.has(n.id) && !n.read);
+
+            if(fresh){
+                showToastNotification(fresh);
+            }
+        }
+
+        knownNotificationIds = new Set(items.map(n => n.id));
+        notificationsReady = true;
+
         if(items.length === 0){
             list.innerHTML = "Aucune notification.";
             count.style.display = "none";
@@ -1639,8 +1804,11 @@ window.listenNotifications = function(){
             const date = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null;
             const icon = n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : "🔔 Notification";
 
+            const fromUid = n.fromUid || "";
+            const fromPseudo = n.fromPseudo || "";
+
             list.innerHTML += `
-                <div class="notifItem" onclick="openNotification('${n.type}')">
+                <div class="notifItem" onclick="openNotification('${n.type}','${fromUid}','${fromPseudo}')">
                     <strong>${icon}</strong>${n.read ? "" : " <span class='unreadDot'>●</span>"}<br>
                     ${n.text}
                     <div class="notifTime">${timeAgo(date)}</div>
@@ -1688,14 +1856,18 @@ window.markNotificationsRead = async function(){
 
 
 
-window.openNotification = function(type){
-    document.getElementById("notifPanel").classList.remove("open");
+window.openNotification = function(type, fromUid = "", fromPseudo = ""){
+    closeAllPanels("account");
     document.getElementById("accountPanel").classList.add("open");
 
     if(type === "friendRequest"){
         showSettingsPage("requests");
     }else if(type === "message"){
         showSettingsPage("chat");
+
+        if(fromUid && fromPseudo && typeof openConversation === "function"){
+            openConversation(fromUid, fromPseudo);
+        }
     }else{
         showSettingsPage("account");
     }
@@ -1894,7 +2066,11 @@ window.sendChatMessage = async function(){
     await createNotification(
         currentChatFriendUid,
         "message",
-        myPseudo + " t'a envoyé un message."
+        myPseudo + " t'a envoyé un message.",
+        {
+            fromUid:user.uid,
+            fromPseudo:myPseudo
+        }
     );
 
     inputMsg.value = "";
