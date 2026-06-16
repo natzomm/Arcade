@@ -161,6 +161,15 @@ body{
 
 
 
+<div id="loginBox">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Mot de passe">
+    <button onclick="signup()">Créer un compte</button>
+    <button onclick="login()">Se connecter</button>
+    <button onclick="logout()">Se déconnecter</button>
+    <p id="userStatus">Non connecté</p>
+</div>
+
 <script>
 const input = document.getElementById("pseudo");
 input.value = localStorage.getItem("pseudo") || "";
@@ -196,9 +205,16 @@ function goToGame(page){
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCicpzlFc-WfbmBjzu8y-bWYPaXu6Mnt24",
+  apiKey: "TON_API_KEY",
   authDomain: "arcade-fbd7c.firebaseapp.com",
   projectId: "arcade-fbd7c",
   storageBucket: "arcade-fbd7c.firebasestorage.app",
@@ -207,8 +223,40 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-</script>
+const auth = getAuth(app);
 
+window.signup = function(){
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    createUserWithEmailAndPassword(auth, email, password)
+    .then(() => alert("Compte créé !"))
+    .catch(error => alert(error.message));
+}
+
+window.login = function(){
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    signInWithEmailAndPassword(auth, email, password)
+    .then(() => alert("Connecté !"))
+    .catch(error => alert(error.message));
+}
+
+window.logout = function(){
+    signOut(auth);
+}
+
+onAuthStateChanged(auth, user => {
+    const status = document.getElementById("userStatus");
+
+    if(user){
+        status.innerText = "Connecté : " + user.email;
+    }else{
+        status.innerText = "Non connecté";
+    }
+});
+</script>
 
 </body>
 </html>
