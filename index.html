@@ -572,7 +572,7 @@ button:hover{
     border:1px solid rgba(148,163,184,0.35);
     border-radius:0 0 0 22px;
     padding:16px;
-    z-index:997;
+    z-index:1002;
     box-shadow:-8px 8px 25px rgba(0,0,0,0.4);
     transition:0.25s;
     max-height:75vh;
@@ -589,6 +589,7 @@ button:hover{
     padding:10px;
     margin:8px 0;
     color:#cbd5e1;
+    cursor:pointer;
 }
 
 .notifItem strong{
@@ -918,6 +919,19 @@ function goToGame(page){
 
 function toggleAccountPanel(){
     document.getElementById("accountPanel").classList.toggle("open");
+}
+
+function toggleNotifPanel(){
+    const panel = document.getElementById("notifPanel");
+    panel.classList.toggle("open");
+
+    if(panel.classList.contains("open")){
+        setTimeout(() => {
+            if(typeof markNotificationsRead === "function"){
+                markNotificationsRead();
+            }
+        }, 500);
+    }
 }
 
 function showSettingsPage(page){
@@ -1647,6 +1661,12 @@ window.markNotificationsRead = async function(){
     const user = auth.currentUser;
     if(!user) return;
 
+    const count = document.getElementById("notifCount");
+    if(count){
+        count.style.display = "none";
+        count.innerText = "0";
+    }
+
     const q = query(
         collection(db, "notifications"),
         where("toUid","==",user.uid),
@@ -1655,11 +1675,14 @@ window.markNotificationsRead = async function(){
 
     const snap = await getDocs(q);
 
-    snap.forEach(async docSnap=>{
-        await updateDoc(doc(db, "notifications", docSnap.id), {
+    const promises = [];
+    snap.forEach(docSnap=>{
+        promises.push(updateDoc(doc(db, "notifications", docSnap.id), {
             read:true
-        });
+        }));
     });
+
+    await Promise.all(promises);
 };
 
 
