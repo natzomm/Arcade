@@ -1863,18 +1863,29 @@ window.markNotificationsRead = async function(){
 
 
 window.openNotification = function(type, fromUid = "", fromPseudo = ""){
-    closeAllPanels("account");
-    document.getElementById("accountPanel").classList.add("open");
+    closeAllPanels();
 
     if(type === "friendRequest"){
+        document.getElementById("accountPanel").classList.add("open");
         showSettingsPage("requests");
-    }else if(type === "message"){
+    }
+
+    else if(type === "message"){
+        document.getElementById("accountPanel").classList.add("open");
         showSettingsPage("chat");
 
-        if(fromUid && fromPseudo && typeof openConversation === "function"){
+        if(fromUid && fromPseudo){
             openConversation(fromUid, fromPseudo);
         }
-    }else{
+    }
+
+    else if(type === "gameInvite"){
+        // ouvre directement le Morpion online
+        window.location.href = "morpion_online.html";
+    }
+
+    else{
+        document.getElementById("accountPanel").classList.add("open");
         showSettingsPage("account");
     }
 };
