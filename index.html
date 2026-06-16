@@ -24,6 +24,25 @@ button:hover{transform:scale(1.05)}
 .title{font-size:30px;font-weight:bold}
 .desc{margin-top:10px;color:#cbd5e1;padding:0 15px}
 .footer{margin-top:45px;color:#94a3b8;font-size:15px}
+
+#quickMenu{
+    margin-bottom:30px;
+}
+
+#quickMenu select{
+    width:min(420px,90%);
+    padding:15px;
+    font-size:18px;
+    border:none;
+    border-radius:14px;
+    background:#1e293b;
+    color:white;
+    text-align:center;
+    cursor:pointer;
+}
+
+
+
 </style>
 </head>
 <body>
@@ -81,12 +100,36 @@ button:hover{transform:scale(1.05)}
 </div>
 <div class="footer">Ton pseudo est sauvegardé automatiquement dans le navigateur.</div>
 </div>
+
+<div id="quickMenu">
+    <select onchange="goToGame(this.value)">
+        <option value="">🎮 Choisir un jeu rapidement...</option>
+        <option value="cible.html">🎯 Jeu de la cible</option>
+        <option value="penalité.html">⚽ Penalty Master</option>
+        <option value="morpion.html">❌⭕ Morpion</option>
+        <option value="rps.html">✊✋✌️ Pierre Papier Ciseaux</option>
+        <option value="puissance4.html">🔴🟡 Puissance 4</option>
+        <option value="2048.html">🔢 2048 Deluxe</option>
+        <option value="mole.html">🔨 Whack-a-Mole</option>
+        <option value="fruit.html">🍉 Fruit Slice</option>
+    </select>
+</div>
+
+
+
 <script>
 const input=document.getElementById("pseudo");
 input.value=localStorage.getItem("pseudo")||"";
 function savePseudo(){let p=input.value.trim();if(p===""){p="Joueur"}localStorage.setItem("pseudo",p);input.value=p}
 function openTarget(){savePseudo();window.location.href="cible.html"}
 function openPenalty(){savePseudo();window.location.href="penalty.html"}
+
+function goToGame(page){
+    if(page === "") return;
+    savePseudo();
+    window.location.href = page;
+}
+
 </script>
 </body>
 </html>
