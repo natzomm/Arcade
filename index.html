@@ -751,6 +751,189 @@ button:hover{
     }
 }
 
+
+/* UNO LOCK */
+#unoCard{
+    position:relative;
+}
+#unoCard.locked{
+    opacity:0.55;
+}
+#unoLock{
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:rgba(0,0,0,0.75);
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:14px;
+}
+#unoCard:not(.locked) #unoLock{
+    display:none;
+}
+
+/* ACCUEIL + PARAMÈTRES AVANCÉS */
+#homeDashboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+    margin:25px 0 35px;
+}
+.homeWidget{
+    background:rgba(15,23,42,0.88);
+    border:1px solid rgba(148,163,184,0.25);
+    border-radius:18px;
+    padding:16px;
+    text-align:left;
+    box-shadow:0 12px 28px rgba(0,0,0,.22);
+}
+.homeWidget h3{
+    margin-bottom:10px;
+    color:#facc15;
+}
+.homeWidget p,.homeWidget div{
+    color:#cbd5e1;
+    line-height:1.45;
+}
+.homeWidget button{
+    width:100%;
+    margin:8px 0 0 0;
+    padding:10px;
+    font-size:15px;
+    background:#38bdf8;
+    color:#082f49;
+}
+.profileAvatar{
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    background:#38bdf8;
+    color:#082f49;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+.statusPill{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:999px;
+    background:#14532d;
+    color:#bbf7d0 !important;
+    font-size:13px;
+    margin-top:5px;
+}
+.favoriteStar{
+    position:absolute;
+    top:10px;
+    left:10px;
+    background:rgba(0,0,0,.55);
+    color:#facc15;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:19px;
+    margin:0;
+    padding:0;
+    z-index:5;
+}
+.card{
+    position:relative;
+}
+#favoriteGamesHome button{
+    background:#1e293b;
+    color:white;
+    text-align:left;
+}
+.settingGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+.settingBox{
+    background:#020617;
+    border-radius:12px;
+    padding:12px;
+    color:#cbd5e1;
+    margin:8px 0;
+}
+.settingBox strong{
+    color:white;
+}
+.settingSelect{
+    width:100%;
+    padding:11px;
+    border-radius:10px;
+    border:none;
+    background:#020617;
+    color:white;
+    margin:8px 0;
+    font-size:15px;
+}
+.badgeList{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+}
+.badge{
+    background:#020617;
+    border:1px solid rgba(250,204,21,.4);
+    border-radius:999px;
+    padding:8px 10px;
+    color:#facc15;
+    font-size:14px;
+}
+.badge.locked{
+    color:#64748b;
+    border-color:#334155;
+}
+.rankingItem{
+    background:#020617;
+    border-radius:12px;
+    padding:10px;
+    margin:7px 0;
+    color:#cbd5e1;
+}
+.themeBlue{background:linear-gradient(135deg,#0f172a,#1e3a8a)!important}
+.themePurple{background:linear-gradient(135deg,#1e1b4b,#581c87,#1e3a8a)!important}
+.themeRed{background:linear-gradient(135deg,#450a0a,#7f1d1d,#111827)!important}
+.themeDark{background:#020617!important}
+
+/* PARAMÈTRES PLUS GRANDS */
+#accountPanel{
+    width:min(760px,92vw) !important;
+    right:-800px !important;
+    max-height:82vh;
+    overflow:auto;
+    grid-template-columns:190px 1fr !important;
+}
+#accountPanel.open{
+    right:0 !important;
+}
+#settingsTabs{
+    max-height:72vh;
+    overflow:auto;
+}
+@media(max-width:750px){
+    #accountPanel{
+        width:100% !important;
+        right:-100% !important;
+        grid-template-columns:1fr !important;
+    }
+    #homeDashboard{
+        grid-template-columns:1fr;
+    }
+    .settingGrid{
+        grid-template-columns:1fr;
+    }
+}
+
 </style>
 </head>
 
@@ -791,21 +974,29 @@ button:hover{
 <div id="sideMenu">
     <button onclick="goToGame('cible.html')">🎯 Jeu de la cible</button>
     <button onclick="goToGame('penalty.html')">⚽ Penalty Master</button>
-    <button onclick="goToGame('morpion.html')">❌⭕ Morpion</button>
+    <button onclick="openMorpion()">❌⭕ Morpion</button>
     <button onclick="goToGame('rps.html')">✊ Pierre Papier Ciseaux</button>
     <button onclick="goToGame('puissance4.html')">🔴🟡 Puissance 4</button>
     <button onclick="goToGame('2048.html')">🔢 2048</button>
     <button onclick="goToGame('mole.html')">🔨 Whack-a-Mole</button>
     <button onclick="goToGame('fruit.html')">🍉 Fruit Slice</button>
-<button onclick="goToGame('uno_online.html')">🃏 Uno</button>
+<button onclick="openUno()">🃏 Uno</button>
 </div>
 
 <div id="accountPanel">
     <div id="settingsTabs">
         <button class="settingsTab active" onclick="showSettingsPage('account')">👤 Compte</button>
+        <button class="settingsTab" onclick="showSettingsPage('profile')">🌐 Profil public</button>
+        <button class="settingsTab" onclick="showSettingsPage('status')">🟢 Statut</button>
+        <button class="settingsTab" onclick="showSettingsPage('theme')">🎨 Thème</button>
+        <button class="settingsTab" onclick="showSettingsPage('notifications')">🔔 Notifications</button>
         <button class="settingsTab" onclick="showSettingsPage('friends')">👥 Amis</button>
         <button class="settingsTab" onclick="showSettingsPage('requests')">📨 Demandes</button>
         <button class="settingsTab" onclick="showSettingsPage('chat')">💬 Chat</button>
+        <button class="settingsTab" onclick="showSettingsPage('stats')">🏆 Stats</button>
+        <button class="settingsTab" onclick="showSettingsPage('rankings')">🥇 Classements</button>
+        <button class="settingsTab" onclick="showSettingsPage('badges')">🎖️ Badges</button>
+        <button class="settingsTab" onclick="showSettingsPage('privacy')">🔐 Confidentialité</button>
     </div>
 
     <div>
@@ -820,6 +1011,46 @@ button:hover{
             <button onclick="changeAccountPseudo()">Changer le pseudo</button>
 
             <button class="dangerBtn" onclick="logout()">Se déconnecter</button>
+        </div>
+
+        <div id="settings_profile" class="settingsPage">
+            <h2>🌐 Profil public</h2>
+            <div class="settingBox">
+                <strong>Aperçu</strong><br>
+                <span id="publicProfilePreview">Ton profil apparaîtra ici.</span>
+            </div>
+            <input id="profileAvatar" placeholder="Emoji avatar ex: 😎">
+            <input id="profileBio" placeholder="Petite bio publique">
+            <button onclick="savePublicProfile()">Sauvegarder le profil</button>
+        </div>
+
+        <div id="settings_status" class="settingsPage">
+            <h2>🟢 Statut</h2>
+            <select id="statusSelect" class="settingSelect">
+                <option value="online">🟢 En ligne</option>
+                <option value="away">🟠 Absent</option>
+                <option value="dnd">🔴 Ne pas déranger</option>
+                <option value="invisible">⚫ Invisible</option>
+            </select>
+            <button onclick="saveStatusSetting()">Mettre à jour</button>
+            <div class="settingBox">Ton statut sera visible par tes amis.</div>
+        </div>
+
+        <div id="settings_theme" class="settingsPage">
+            <h2>🎨 Thème</h2>
+            <div class="settingBox">Oui : ça change la couleur de l’arrière-plan du site.</div>
+            <button onclick="setTheme('blue')">🔵 Bleu</button>
+            <button onclick="setTheme('purple')">🟣 Violet</button>
+            <button onclick="setTheme('red')">🔴 Rouge</button>
+            <button onclick="setTheme('dark')">⚫ Sombre</button>
+        </div>
+
+        <div id="settings_notifications" class="settingsPage">
+            <h2>🔔 Notifications</h2>
+            <label><input type="checkbox" id="notifSound"> Sons de notifications</label><br>
+            <label><input type="checkbox" id="notifInvites" checked> Invitations de jeu</label><br>
+            <label><input type="checkbox" id="notifMessages" checked> Messages</label><br>
+            <button onclick="saveNotifSettings()">Sauvegarder</button>
         </div>
 
         <div id="settings_friends" class="settingsPage">
@@ -850,12 +1081,81 @@ button:hover{
             <input id="chatInput" placeholder="Écris un message...">
             <button onclick="sendChatMessage()">Envoyer</button>
         </div>
+
+        <div id="settings_stats" class="settingsPage">
+            <h2>🏆 Statistiques</h2>
+            <div class="settingGrid">
+                <div class="settingBox"><strong>Parties jouées</strong><br><span id="statGames">0</span></div>
+                <div class="settingBox"><strong>Victoires</strong><br><span id="statWins">0</span></div>
+                <div class="settingBox"><strong>Défaites</strong><br><span id="statLosses">0</span></div>
+                <div class="settingBox"><strong>Jeu préféré</strong><br><span id="statFavGame">Aucun</span></div>
+            </div>
+        </div>
+
+        <div id="settings_rankings" class="settingsPage">
+            <h2>🥇 Classements</h2>
+            <div id="rankingsList">
+                <div class="rankingItem">Classements bientôt chargés...</div>
+            </div>
+        </div>
+
+        <div id="settings_badges" class="settingsPage">
+            <h2>🎖️ Badges</h2>
+            <div class="badgeList" id="badgesList">
+                <span class="badge">👤 Compte créé</span>
+                <span class="badge locked">👥 Premier ami</span>
+                <span class="badge locked">🏆 Première victoire</span>
+                <span class="badge locked">🃏 Joueur UNO</span>
+                <span class="badge locked">🔥 Série de 5</span>
+            </div>
+        </div>
+
+        <div id="settings_privacy" class="settingsPage">
+            <h2>🔐 Confidentialité</h2>
+            <label><input type="checkbox" id="privacyAdd" checked> Autoriser les demandes d’amis</label><br>
+            <label><input type="checkbox" id="privacyInvite" checked> Autoriser les invitations de jeu</label><br>
+            <label><input type="checkbox" id="privacyOnline" checked> Montrer mon statut en ligne</label><br>
+            <button onclick="savePrivacySettings()">Sauvegarder</button>
+        </div>
     </div>
 </div>
 
 <div id="container">
     <h1>🎮 Mini Games</h1>
     <div class="subtitle">Bienvenue sur ta plateforme de mini-jeux !</div>
+
+    <div id="homeDashboard">
+        <div class="homeWidget">
+            <h3>👤 Profil</h3>
+            <div class="profileAvatar" id="homeAvatar">?</div>
+            <div><strong id="homePseudo">Joueur</strong></div>
+            <div id="homeStatus" class="statusPill">Hors ligne</div>
+            <button onclick="toggleAccountPanel();showSettingsPage('profile')">Voir le profil</button>
+        </div>
+
+        <div class="homeWidget">
+            <h3>🕹️ Dernier jeu</h3>
+            <div id="lastGameText">Aucun jeu lancé récemment.</div>
+            <button onclick="openLastGame()">Reprendre</button>
+        </div>
+
+        <div class="homeWidget">
+            <h3>⭐ Favoris</h3>
+            <div id="favoriteGamesHome">Aucun favori.</div>
+        </div>
+
+        <div class="homeWidget">
+            <h3>👥 Amis en ligne</h3>
+            <div id="onlineFriendsHome">Connecte-toi pour voir tes amis.</div>
+            <button onclick="toggleAccountPanel();showSettingsPage('friends')">Gérer mes amis</button>
+        </div>
+
+        <div class="homeWidget">
+            <h3>🏆 Stats rapides</h3>
+            <div id="quickStatsHome">Parties jouées : 0<br>Victoires : 0<br>Jeu préféré : aucun</div>
+            <button onclick="toggleAccountPanel();showSettingsPage('stats')">Voir les stats</button>
+        </div>
+    </div>
 
     <div id="pseudoBox">
         <input id="pseudo" placeholder="Pseudo hors ligne..." maxlength="20">
@@ -864,54 +1164,63 @@ button:hover{
 
     <div id="games">
         <div class="card" onclick="openTarget()">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Jeu de la cible','cible.html','🎯')">☆</button>
             <div class="icon">🎯</div>
             <div class="title">Jeu de la cible</div>
             <div class="desc">Teste ta précision !</div>
         </div>
 
         <div class="card" onclick="openPenalty()">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Penalty Master','penalty.html','⚽')">☆</button>
             <div class="icon">⚽</div>
             <div class="title">Penalty Master</div>
             <div class="desc">Tire, marque et bats le gardien !</div>
         </div>
 
        <div class="card" onclick="openMorpion()">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Morpion','morpion','❌')">☆</button>
     <div class="icon">❌</div>
     <div class="title">Morpion</div>
     <div class="desc">Joue en local ou en ligne avec tes amis !</div>
 </div>
 
         <div class="card" onclick="goToGame('rps.html')">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Pierre Papier Ciseaux','rps.html','✊')">☆</button>
             <div class="icon">✊</div>
             <div class="title">Pierre Papier Ciseaux</div>
             <div class="desc">Premier à 3, 5 ou 10 contre le bot !</div>
         </div>
 
         <div class="card" onclick="goToGame('puissance4.html')">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Puissance 4','puissance4.html','🔴')">☆</button>
             <div class="icon">🔴</div>
             <div class="title">Puissance 4</div>
             <div class="desc">Aligne 4 pions contre un ami ou un bot !</div>
         </div>
 
         <div class="card" onclick="goToGame('2048.html')">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('2048 Deluxe','2048.html','🔢')">☆</button>
             <div class="icon">🔢</div>
             <div class="title">2048 Deluxe</div>
             <div class="desc">Fusionne les nombres en 4×4, 5×5 ou 6×6 !</div>
         </div>
 
         <div class="card" onclick="goToGame('mole.html')">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Whack-a-Mole','mole.html','🔨')">☆</button>
             <div class="icon">🔨</div>
             <div class="title">Whack-a-Mole</div>
             <div class="desc">Tape les taupes, évite les bombes et fais des combos !</div>
         </div>
 
         <div class="card" onclick="goToGame('fruit.html')">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Fruit Slice','fruit.html','🍉')">☆</button>
             <div class="icon">🍉</div>
             <div class="title">Fruit Slice</div>
             <div class="desc">Tranche les fruits, évite les bombes et fais des combos !</div>
         </div>
 
         <div class="card" id="unoCard" onclick="openUno()">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('UNO Online','uno_online.html','🃏')">☆</button>
             <div class="icon">🃏</div>
             <div class="title">UNO Online</div>
             <div class="desc">Invite tes amis et joue au UNO en ligne !</div>
@@ -977,8 +1286,10 @@ function openMorpion(){
     const mode = localStorage.getItem("playMode");
 
     if(mode === "online"){
+        trackGame("Morpion Online","morpion_online.html");
         window.location.href = "morpion_online.html";
     }else{
+        trackGame("Morpion","morpion.html");
         window.location.href = "morpion.html";
     }
 }
@@ -986,11 +1297,13 @@ function openMorpion(){
 
 function openTarget(){
     savePseudo();
+    trackGame("Jeu de la cible","cible.html");
     window.location.href = "cible.html";
 }
 
 function openPenalty(){
     savePseudo();
+    trackGame("Penalty Master","penalty.html");
     window.location.href = "penalty.html";
 }
 
@@ -1013,6 +1326,7 @@ function toggleMenu(){
 
 function goToGame(page){
     savePseudo();
+    trackGame(page,page);
     window.location.href = page;
 }
 
@@ -1049,17 +1363,20 @@ function showSettingsPage(page){
     document.querySelectorAll(".settingsPage").forEach(p => p.classList.remove("active"));
     document.querySelectorAll(".settingsTab").forEach(b => b.classList.remove("active"));
 
-    document.getElementById("settings_" + page).classList.add("active");
+    const pageEl = document.getElementById("settings_" + page);
+    if(pageEl) pageEl.classList.add("active");
 
-    const buttons = document.querySelectorAll(".settingsTab");
-    if(page === "account") buttons[0].classList.add("active");
-    if(page === "friends") buttons[1].classList.add("active");
-    if(page === "requests") buttons[2].classList.add("active");
-    if(page === "chat") buttons[3].classList.add("active");
+    document.querySelectorAll(".settingsTab").forEach(btn=>{
+        if(btn.getAttribute("onclick") && btn.getAttribute("onclick").includes("'" + page + "'")){
+            btn.classList.add("active");
+        }
+    });
 
     if(page === "friends" && typeof loadFriends === "function") loadFriends();
     if(page === "requests" && typeof loadFriendRequests === "function") loadFriendRequests();
     if(page === "chat" && typeof loadChatFriends === "function") loadChatFriends();
+    if(page === "rankings" && typeof loadRankings === "function") loadRankings();
+    if(page === "stats") renderStats();
 }
 
 function showAuthPage(page){
@@ -1115,6 +1432,12 @@ function setModeVisual(mode){
     if(document.getElementById("accountMode")){
         updateAccountPanel();
     }
+
+    renderHomeDashboard();
+
+    if(typeof updateUnoCard === "function"){
+        updateUnoCard();
+    }
 }
 
 function playOffline(){
@@ -1168,7 +1491,191 @@ function openUno(){
         return;
     }
 
+    trackGame("UNO Online","uno_online.html");
     window.location.href = "uno_online.html";
+}
+
+
+function trackGame(name,page){
+    localStorage.setItem("lastGame", JSON.stringify({name,page}));
+
+    const stats = JSON.parse(localStorage.getItem("miniStats") || '{"games":0,"wins":0,"losses":0,"plays":{}}');
+    stats.games++;
+    stats.plays[name] = (stats.plays[name] || 0) + 1;
+    localStorage.setItem("miniStats", JSON.stringify(stats));
+
+    renderHomeDashboard();
+}
+
+function openLastGame(){
+    const last = JSON.parse(localStorage.getItem("lastGame") || "null");
+
+    if(!last){
+        alert("Aucun dernier jeu.");
+        return;
+    }
+
+    window.location.href = last.page;
+}
+
+function getFavorites(){
+    return JSON.parse(localStorage.getItem("favorites") || "[]");
+}
+
+function toggleFavorite(name,page,emoji){
+    let favs = getFavorites();
+    const exists = favs.some(f=>f.name===name);
+
+    if(exists){
+        favs = favs.filter(f=>f.name!==name);
+    }else{
+        favs.push({name,page,emoji});
+    }
+
+    localStorage.setItem("favorites", JSON.stringify(favs));
+    renderHomeDashboard();
+}
+
+function renderHomeDashboard(){
+    const pseudo = localStorage.getItem("pseudo") || "Joueur";
+    const mode = localStorage.getItem("playMode") === "online" ? "En ligne" : "Hors ligne";
+    const avatar = localStorage.getItem("profileAvatar") || pseudo[0] || "?";
+    const bio = localStorage.getItem("profileBio") || "";
+
+    if(document.getElementById("homePseudo")) document.getElementById("homePseudo").innerText = pseudo;
+    if(document.getElementById("homeAvatar")) document.getElementById("homeAvatar").innerText = avatar;
+    if(document.getElementById("homeStatus")) document.getElementById("homeStatus").innerText = mode;
+    if(document.getElementById("publicProfilePreview")) document.getElementById("publicProfilePreview").innerText = avatar + " " + pseudo + (bio ? " — " + bio : "");
+
+    const last = JSON.parse(localStorage.getItem("lastGame") || "null");
+    if(document.getElementById("lastGameText")){
+        document.getElementById("lastGameText").innerText = last ? last.name : "Aucun jeu lancé récemment.";
+    }
+
+    const favBox = document.getElementById("favoriteGamesHome");
+    if(favBox){
+        const favs = getFavorites();
+        favBox.innerHTML = favs.length ? "" : "Aucun favori.";
+        favs.forEach(f=>{
+            favBox.innerHTML += `<button onclick="window.location.href='${f.page}'">${f.emoji} ${f.name}</button>`;
+        });
+    }
+
+    renderStats();
+}
+
+function renderStats(){
+    const stats = JSON.parse(localStorage.getItem("miniStats") || '{"games":0,"wins":0,"losses":0,"plays":{}}');
+
+    let fav = "Aucun";
+    let max = 0;
+
+    Object.keys(stats.plays || {}).forEach(k=>{
+        if(stats.plays[k] > max){
+            max = stats.plays[k];
+            fav = k;
+        }
+    });
+
+    if(document.getElementById("statGames")) document.getElementById("statGames").innerText = stats.games || 0;
+    if(document.getElementById("statWins")) document.getElementById("statWins").innerText = stats.wins || 0;
+    if(document.getElementById("statLosses")) document.getElementById("statLosses").innerText = stats.losses || 0;
+    if(document.getElementById("statFavGame")) document.getElementById("statFavGame").innerText = fav;
+
+    if(document.getElementById("quickStatsHome")){
+        document.getElementById("quickStatsHome").innerHTML =
+        "Parties jouées : " + (stats.games || 0) + "<br>Victoires : " + (stats.wins || 0) + "<br>Jeu préféré : " + fav;
+    }
+}
+
+function setTheme(theme){
+    localStorage.setItem("theme", theme);
+    applyTheme();
+}
+
+function applyTheme(){
+    document.body.classList.remove("themeBlue","themePurple","themeRed","themeDark");
+
+    const theme = localStorage.getItem("theme") || "blue";
+    document.body.classList.add("theme" + theme.charAt(0).toUpperCase() + theme.slice(1));
+}
+
+function savePublicProfile(){
+    const avatar = document.getElementById("profileAvatar").value.trim() || "🎮";
+    const bio = document.getElementById("profileBio").value.trim();
+
+    localStorage.setItem("profileAvatar", avatar);
+    localStorage.setItem("profileBio", bio);
+
+    if(typeof savePublicProfileFirebase === "function"){
+        savePublicProfileFirebase(avatar,bio);
+    }
+
+    renderHomeDashboard();
+    alert("Profil sauvegardé !");
+}
+
+function saveStatusSetting(){
+    const status = document.getElementById("statusSelect").value;
+    localStorage.setItem("customStatus", status);
+
+    if(typeof saveStatusFirebase === "function"){
+        saveStatusFirebase(status);
+    }
+
+    alert("Statut mis à jour !");
+}
+
+function saveNotifSettings(){
+    const settings = {
+        sound:document.getElementById("notifSound").checked,
+        invites:document.getElementById("notifInvites").checked,
+        messages:document.getElementById("notifMessages").checked
+    };
+
+    localStorage.setItem("notifSettings", JSON.stringify(settings));
+    alert("Notifications sauvegardées !");
+}
+
+function savePrivacySettings(){
+    const settings = {
+        allowAdd:document.getElementById("privacyAdd").checked,
+        allowInvite:document.getElementById("privacyInvite").checked,
+        showOnline:document.getElementById("privacyOnline").checked
+    };
+
+    localStorage.setItem("privacySettings", JSON.stringify(settings));
+
+    if(typeof savePrivacyFirebase === "function"){
+        savePrivacyFirebase(settings);
+    }
+
+    alert("Confidentialité sauvegardée !");
+}
+
+function loadLocalSettings(){
+    applyTheme();
+
+    const avatar = localStorage.getItem("profileAvatar") || "";
+    const bio = localStorage.getItem("profileBio") || "";
+
+    if(document.getElementById("profileAvatar")) document.getElementById("profileAvatar").value = avatar;
+    if(document.getElementById("profileBio")) document.getElementById("profileBio").value = bio;
+
+    const notif = JSON.parse(localStorage.getItem("notifSettings") || '{"sound":false,"invites":true,"messages":true}');
+    if(document.getElementById("notifSound")) document.getElementById("notifSound").checked = notif.sound;
+    if(document.getElementById("notifInvites")) document.getElementById("notifInvites").checked = notif.invites;
+    if(document.getElementById("notifMessages")) document.getElementById("notifMessages").checked = notif.messages;
+
+    const privacy = JSON.parse(localStorage.getItem("privacySettings") || '{"allowAdd":true,"allowInvite":true,"showOnline":true}');
+    if(document.getElementById("privacyAdd")) document.getElementById("privacyAdd").checked = privacy.allowAdd;
+    if(document.getElementById("privacyInvite")) document.getElementById("privacyInvite").checked = privacy.allowInvite;
+    if(document.getElementById("privacyOnline")) document.getElementById("privacyOnline").checked = privacy.showOnline;
+
+    const status = localStorage.getItem("customStatus") || "online";
+    if(document.getElementById("statusSelect")) document.getElementById("statusSelect").value = status;
+
+    renderHomeDashboard();
 }
 
 window.addEventListener("load", () => {
@@ -1179,6 +1686,12 @@ window.addEventListener("load", () => {
         document.getElementById("loginOverlay").style.display = "none";
     }else{
         document.getElementById("loginOverlay").style.display = "flex";
+    }
+
+    loadLocalSettings();
+
+    if(typeof updateUnoCard === "function"){
+        updateUnoCard();
     }
 });
 </script>
@@ -1279,6 +1792,18 @@ async function loadUserProfile(user){
             localStorage.setItem("pseudo", data.pseudo);
             input.value = data.pseudo;
             document.getElementById("accountPseudo").value = data.pseudo;
+        }
+
+        if(data.avatar){
+            localStorage.setItem("profileAvatar", data.avatar);
+        }
+
+        if(data.bio){
+            localStorage.setItem("profileBio", data.bio);
+        }
+
+        if(data.customStatus){
+            localStorage.setItem("customStatus", data.customStatus);
         }
     }
 }
@@ -2132,6 +2657,102 @@ window.sendChatMessage = async function(){
     loadConversations();
 };
 
+
+window.savePublicProfileFirebase = async function(avatar,bio){
+    if(!auth.currentUser) return;
+
+    await setDoc(doc(db, "users", auth.currentUser.uid), {
+        avatar,
+        bio
+    }, { merge:true });
+};
+
+window.saveStatusFirebase = async function(status){
+    if(!auth.currentUser) return;
+
+    await setDoc(doc(db, "users", auth.currentUser.uid), {
+        customStatus:status
+    }, { merge:true });
+};
+
+window.savePrivacyFirebase = async function(settings){
+    if(!auth.currentUser) return;
+
+    await setDoc(doc(db, "users", auth.currentUser.uid), {
+        privacy:settings
+    }, { merge:true });
+};
+
+window.loadRankings = async function(){
+    const box = document.getElementById("rankingsList");
+
+    if(!box) return;
+
+    box.innerHTML = "<div class='rankingItem'>Chargement...</div>";
+
+    try{
+        const q = query(collection(db, "users"), limit(10));
+        const snap = await getDocs(q);
+
+        let users = [];
+
+        snap.forEach(d=>{
+            const u = d.data();
+            users.push({
+                pseudo:u.pseudo || "Joueur",
+                wins:u.stats && u.stats.wins ? u.stats.wins : 0
+            });
+        });
+
+        users.sort((a,b)=>b.wins-a.wins);
+
+        box.innerHTML = "";
+
+        users.forEach((u,i)=>{
+            box.innerHTML += `<div class="rankingItem">${i+1}. ${u.pseudo} — ${u.wins} victoire(s)</div>`;
+        });
+    }catch(error){
+        box.innerHTML = "<div class='rankingItem'>Impossible de charger les classements.</div>";
+    }
+};
+
+window.loadOnlineFriendsHome = async function(){
+    const user = auth.currentUser;
+    const box = document.getElementById("onlineFriendsHome");
+
+    if(!box) return;
+
+    if(!user){
+        box.innerHTML = "Connecte-toi pour voir tes amis.";
+        return;
+    }
+
+    const meSnap = await getDoc(doc(db, "users", user.uid));
+
+    if(!meSnap.exists() || !meSnap.data().friends || meSnap.data().friends.length === 0){
+        box.innerHTML = "Aucun ami pour l’instant.";
+        return;
+    }
+
+    const friends = meSnap.data().friends;
+    let online = [];
+
+    for(const uid of friends){
+        const fs = await getDoc(doc(db, "users", uid));
+
+        if(fs.exists()){
+            const f = fs.data();
+
+            if(f.online){
+                online.push(f.pseudo || "Ami");
+            }
+        }
+    }
+
+    box.innerHTML = online.length ? online.map(p=>"🟢 " + p).join("<br>") : "Aucun ami en ligne.";
+};
+
+
 onAuthStateChanged(auth,async user=>{
     const status = document.getElementById("userStatus");
     const accountEmail = document.getElementById("accountEmail");
@@ -2142,14 +2763,16 @@ onAuthStateChanged(auth,async user=>{
 
         await loadUserProfile(user);
 
+        const privacy = JSON.parse(localStorage.getItem("privacySettings") || '{"showOnline":true}');
         await setDoc(doc(db, "users", user.uid), {
-            online:true,
+            online:privacy.showOnline !== false,
             lastSeen:serverTimestamp()
         }, { merge:true });
 
         loadFriends();
         loadFriendRequests();
         listenNotifications();
+        if(typeof loadOnlineFriendsHome === "function") loadOnlineFriendsHome();
 
         if(user.displayName && !localStorage.getItem("pseudo")){
             localStorage.setItem("pseudo",user.displayName);
