@@ -651,6 +651,19 @@ button:hover{
     }
 }
 
+
+.notifTime{
+    font-size:12px;
+    color:#94a3b8;
+    margin-top:5px;
+}
+
+.unreadDot{
+    color:#ef4444;
+    font-weight:bold;
+    margin-left:6px;
+}
+
 </style>
 </head>
 
@@ -1397,6 +1410,22 @@ window.acceptFriendRequest = async function(requestId, fromUid){
             status:"accepted"
         });
 
+        const chatId = chatIdFor(user.uid, fromUid);
+        await setDoc(doc(db, "chats", chatId), {
+            participants:[user.uid, fromUid],
+            unreadBy:{
+                [user.uid]:false,
+                [fromUid]:false
+            },
+            createdAt:serverTimestamp()
+        }, { merge:true });
+
+        await createNotification(
+            fromUid,
+            "friendRequest",
+            "Ta demande d'ami a été acceptée."
+        );
+
         await loadFriendRequests();
         await loadFriends();
 
@@ -1505,6 +1534,23 @@ async function createNotification(toUid, type, text){
     });
 }
 
+function timeAgo(date){
+    if(!date) return "à l'instant";
+
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+
+    if(seconds < 60) return "à l'instant";
+
+    const minutes = Math.floor(seconds / 60);
+    if(minutes < 60) return "il y a " + minutes + " min";
+
+    const hours = Math.floor(minutes / 60);
+    if(hours < 24) return "il y a " + hours + " h";
+
+    const days = Math.floor(hours / 24);
+    return "il y a " + days + " j";
+}
+
 window.listenNotifications = function(){
     const user = auth.currentUser;
     if(!user) return;
@@ -1515,9 +1561,7 @@ window.listenNotifications = function(){
 
     const q = query(
         collection(db, "notifications"),
-        where("toUid","==",user.uid),
-        orderBy("createdAt","desc"),
-        limit(20)
+        where("toUid","==",user.uid)
     );
 
     notifUnsubscribe = onSnapshot(q, snap=>{
@@ -1525,22 +1569,40 @@ window.listenNotifications = function(){
         const count = document.getElementById("notifCount");
 
         let unread = 0;
-        list.innerHTML = "";
+        let items = [];
 
-        if(snap.empty){
+        snap.forEach(docSnap=>{
+            const n = docSnap.data();
+            items.push({id:docSnap.id, ...n});
+
+            if(!n.read){
+                unread++;
+            }
+        });
+
+        items.sort((a,b)=>{
+            const ta = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : 0;
+            const tb = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : 0;
+            return tb - ta;
+        });
+
+        if(items.length === 0){
             list.innerHTML = "Aucune notification.";
             count.style.display = "none";
             return;
         }
 
-        snap.forEach(docSnap=>{
-            const n = docSnap.data();
-            if(!n.read) unread++;
+        list.innerHTML = "";
+
+        items.slice(0,30).forEach(n=>{
+            const date = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null;
+            const icon = n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : "🔔 Notification";
 
             list.innerHTML += `
                 <div class="notifItem">
-                    <strong>${n.type === "friendRequest" ? "👥 Ami" : n.type === "message" ? "💬 Message" : "🔔 Notification"}</strong><br>
+                    <strong>${icon}</strong>${n.read ? "" : " <span class='unreadDot'>●</span>"}<br>
                     ${n.text}
+                    <div class="notifTime">${timeAgo(date)}</div>
                 </div>
             `;
         });
@@ -1598,16 +1660,26 @@ window.loadChatFriends = async function(){
 
         if(fSnap.exists()){
             const f = fSnap.data();
+            const chatId = chatIdFor(user.uid, friendUid);
+            const chatSnap = await getDoc(doc(db, "chats", chatId));
+
+            let unread = false;
+
+            if(chatSnap.exists()){
+                const chat = chatSnap.data();
+                unread = chat.unreadBy && chat.unreadBy[user.uid] === true;
+            }
+
             const opt = document.createElement("option");
             opt.value = friendUid;
-            opt.textContent = f.pseudo;
+            opt.textContent = unread ? "🔴 " + f.pseudo : f.pseudo;
             opt.dataset.pseudo = f.pseudo;
             select.appendChild(opt);
         }
     }
 };
 
-window.openChatWithSelectedFriend = function(){
+window.openChatWithSelectedFriend = async function(){
     const select = document.getElementById("chatFriendSelect");
     const friendUid = select.value;
 
@@ -1617,9 +1689,20 @@ window.openChatWithSelectedFriend = function(){
     }
 
     currentChatFriendUid = friendUid;
-    currentChatFriendPseudo = select.options[select.selectedIndex].textContent;
+    currentChatFriendPseudo = select.options[select.selectedIndex].dataset.pseudo || select.options[select.selectedIndex].textContent.replace("🔴 ","");
+
+    const user = auth.currentUser;
+    const chatId = chatIdFor(user.uid, friendUid);
+
+    await setDoc(doc(db, "chats", chatId), {
+        participants:[user.uid, friendUid],
+        unreadBy:{
+            [user.uid]:false
+        }
+    }, { merge:true });
 
     listenChat(friendUid);
+    loadChatFriends();
 };
 
 window.listenChat = function(friendUid){
@@ -1638,28 +1721,35 @@ window.listenChat = function(friendUid){
         limit(60)
     );
 
-    chatUnsubscribe = onSnapshot(q, snap=>{
+    chatUnsubscribe = onSnapshot(q, async snap=>{
         const box = document.getElementById("chatBox");
         box.innerHTML = "";
 
         if(snap.empty){
             box.innerHTML = "Aucun message pour l'instant.";
-            return;
+        }else{
+            snap.forEach(docSnap=>{
+                const msg = docSnap.data();
+                const mine = msg.fromUid === user.uid;
+
+                box.innerHTML += `
+                    <div class="chatMsg ${mine ? "mine" : ""}">
+                        <div class="chatSender">${mine ? "Moi" : msg.fromPseudo}</div>
+                        ${msg.text}
+                    </div>
+                `;
+            });
+
+            box.scrollTop = box.scrollHeight;
         }
 
-        snap.forEach(docSnap=>{
-            const msg = docSnap.data();
-            const mine = msg.fromUid === user.uid;
+        await setDoc(doc(db, "chats", chatId), {
+            unreadBy:{
+                [user.uid]:false
+            }
+        }, { merge:true });
 
-            box.innerHTML += `
-                <div class="chatMsg ${mine ? "mine" : ""}">
-                    <div class="chatSender">${mine ? "Moi" : msg.fromPseudo}</div>
-                    ${msg.text}
-                </div>
-            `;
-        });
-
-        box.scrollTop = box.scrollHeight;
+        loadChatFriends();
     });
 };
 
@@ -1688,6 +1778,17 @@ window.sendChatMessage = async function(){
     const myPseudo = me.pseudo || user.displayName || "Joueur";
     const chatId = chatIdFor(user.uid, currentChatFriendUid);
 
+    await setDoc(doc(db, "chats", chatId), {
+        participants:[user.uid, currentChatFriendUid],
+        lastMessage:text,
+        lastMessageAt:serverTimestamp(),
+        lastMessageFrom:user.uid,
+        unreadBy:{
+            [currentChatFriendUid]:true,
+            [user.uid]:false
+        }
+    }, { merge:true });
+
     await addDoc(collection(db, "chats", chatId, "messages"), {
         fromUid:user.uid,
         fromPseudo:myPseudo,
@@ -1703,8 +1804,8 @@ window.sendChatMessage = async function(){
     );
 
     inputMsg.value = "";
+    loadChatFriends();
 };
-
 
 onAuthStateChanged(auth,async user=>{
     const status = document.getElementById("userStatus");
