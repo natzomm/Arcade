@@ -431,6 +431,108 @@ button:hover{
         border-radius:0 0 22px 22px;
     }
 }
+
+/* PARAMÈTRES + AMIS */
+#accountPanel{
+    width:560px !important;
+    right:-590px !important;
+    display:grid;
+    grid-template-columns:160px 1fr;
+    gap:14px;
+}
+
+#accountPanel.open{
+    right:0 !important;
+}
+
+#settingsTabs{
+    background:#020617;
+    border-radius:16px;
+    padding:10px;
+}
+
+.settingsTab{
+    width:100% !important;
+    margin:6px 0 !important;
+    padding:12px !important;
+    background:#1e293b !important;
+    color:white !important;
+    text-align:left;
+    font-size:15px !important;
+}
+
+.settingsTab.active{
+    background:#22c55e !important;
+    color:#052e16 !important;
+}
+
+.settingsPage{display:none}
+.settingsPage.active{display:block}
+
+.smallBtn{
+    padding:8px 10px !important;
+    font-size:14px !important;
+    margin:4px !important;
+    width:auto !important;
+}
+
+.friendItem{
+    background:#020617;
+    border-radius:12px;
+    padding:10px;
+    margin:8px 0;
+    color:#cbd5e1;
+}
+
+.friendName{
+    font-weight:bold;
+    color:white;
+}
+
+#friendSearchResult,#requestsList,#friendsList{
+    margin-top:10px;
+}
+
+#loginTabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+}
+
+#loginTabs button{
+    flex:1;
+    margin:0;
+    background:#334155;
+    color:white;
+}
+
+#loginTabs button.active{
+    background:#22c55e;
+    color:#052e16;
+}
+
+.authPage{display:none}
+.authPage.active{display:block}
+
+@media(max-width:750px){
+    #accountPanel{
+        grid-template-columns:1fr !important;
+        width:100% !important;
+        right:-100% !important;
+    }
+
+    #settingsTabs{
+        display:flex;
+        gap:6px;
+        overflow-x:auto;
+    }
+
+    .settingsTab{
+        min-width:130px;
+        text-align:center;
+    }
+}
+
 </style>
 </head>
 
@@ -452,7 +554,7 @@ button:hover{
             <div id="accountText">Hors ligne</div>
         </div>
 
-        <button id="accountBtn" onclick="toggleAccountPanel()">👤</button>
+        <button id="accountBtn" onclick="toggleAccountPanel()">⚙️</button>
     </div>
 </div>
 
@@ -468,16 +570,43 @@ button:hover{
 </div>
 
 <div id="accountPanel">
-    <h2>👤 Compte</h2>
+    <div id="settingsTabs">
+        <button class="settingsTab active" onclick="showSettingsPage('account')">👤 Compte</button>
+        <button class="settingsTab" onclick="showSettingsPage('friends')">👥 Amis</button>
+        <button class="settingsTab" onclick="showSettingsPage('requests')">📨 Demandes</button>
+    </div>
 
-    <div class="accountLine">📧 Email : <span id="accountEmail">Non connecté</span></div>
-    <div class="accountLine">🔒 Mot de passe : ********</div>
-    <div class="accountLine">🎮 Mode : <span id="accountMode">Hors ligne</span></div>
+    <div>
+        <div id="settings_account" class="settingsPage active">
+            <h2>👤 Compte</h2>
 
-    <input id="accountPseudo" placeholder="Nouveau pseudo">
-    <button onclick="changeAccountPseudo()">Changer le pseudo</button>
+            <div class="accountLine">📧 Email : <span id="accountEmail">Non connecté</span></div>
+            <div class="accountLine">🔒 Mot de passe : ********</div>
+            <div class="accountLine">🎮 Mode : <span id="accountMode">Hors ligne</span></div>
 
-    <button class="dangerBtn" onclick="logout()">Se déconnecter</button>
+            <input id="accountPseudo" placeholder="Nouveau pseudo">
+            <button onclick="changeAccountPseudo()">Changer le pseudo</button>
+
+            <button class="dangerBtn" onclick="logout()">Se déconnecter</button>
+        </div>
+
+        <div id="settings_friends" class="settingsPage">
+            <h2>👥 Amis</h2>
+
+            <input id="friendPseudo" placeholder="Pseudo de ton ami">
+            <button onclick="sendFriendRequest()">➕ Envoyer une demande</button>
+
+            <div id="friendSearchResult"></div>
+
+            <h3 style="margin-top:18px;">✅ Mes amis</h3>
+            <div id="friendsList">Connecte-toi pour voir tes amis.</div>
+        </div>
+
+        <div id="settings_requests" class="settingsPage">
+            <h2>📨 Demandes reçues</h2>
+            <div id="requestsList">Connecte-toi pour voir tes demandes.</div>
+        </div>
+    </div>
 </div>
 
 <div id="container">
@@ -555,13 +684,23 @@ button:hover{
         </p>
 
         <div id="onlineBox">
-            <input id="signupPseudo" placeholder="Pseudo unique">
-            <input id="email" placeholder="Email">
-            <input id="password" type="password" placeholder="Mot de passe">
+            <div id="loginTabs">
+                <button id="loginTabBtn" class="active" onclick="showAuthPage('login')">Se connecter</button>
+                <button id="signupTabBtn" onclick="showAuthPage('signup')">Créer un compte</button>
+            </div>
 
-            <button onclick="signup()">Créer un compte</button>
-            <button onclick="login()">Se connecter</button>
-            <button class="logoutBtn" onclick="logout()">Se déconnecter</button>
+            <div id="authLogin" class="authPage active">
+                <input id="loginEmail" placeholder="Email">
+                <input id="loginPassword" type="password" placeholder="Mot de passe">
+                <button onclick="login()">Se connecter</button>
+            </div>
+
+            <div id="authSignup" class="authPage">
+                <input id="signupPseudo" placeholder="Pseudo unique">
+                <input id="signupEmail" placeholder="Email">
+                <input id="signupPassword" type="password" placeholder="Mot de passe">
+                <button onclick="signup()">Créer un compte</button>
+            </div>
 
             <p id="userStatus">Non connecté</p>
         </div>
@@ -603,6 +742,30 @@ function goToGame(page){
 function toggleAccountPanel(){
     document.getElementById("accountPanel").classList.toggle("open");
 }
+
+function showSettingsPage(page){
+    document.querySelectorAll(".settingsPage").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".settingsTab").forEach(b => b.classList.remove("active"));
+
+    document.getElementById("settings_" + page).classList.add("active");
+
+    const buttons = document.querySelectorAll(".settingsTab");
+    if(page === "account") buttons[0].classList.add("active");
+    if(page === "friends") buttons[1].classList.add("active");
+    if(page === "requests") buttons[2].classList.add("active");
+
+    if(page === "friends" && typeof loadFriends === "function") loadFriends();
+    if(page === "requests" && typeof loadFriendRequests === "function") loadFriendRequests();
+}
+
+function showAuthPage(page){
+    document.getElementById("authLogin").classList.toggle("active", page === "login");
+    document.getElementById("authSignup").classList.toggle("active", page === "signup");
+
+    document.getElementById("loginTabBtn").classList.toggle("active", page === "login");
+    document.getElementById("signupTabBtn").classList.toggle("active", page === "signup");
+}
+
 
 function updateAccountPanel(){
     const mode = localStorage.getItem("playMode") === "online" ? "En ligne" : "Hors ligne";
@@ -658,11 +821,7 @@ function playOffline(){
 
 function showOnlineLogin(){
     document.getElementById("onlineBox").style.display = "block";
-
-    const savedPseudo = localStorage.getItem("pseudo") || input.value || "";
-    if(document.getElementById("signupPseudo").value === ""){
-        document.getElementById("signupPseudo").value = savedPseudo;
-    }
+    showAuthPage("login");
 }
 
 function openLoginOverlay(){
@@ -710,7 +869,16 @@ import {
     doc,
     getDoc,
     setDoc,
-    deleteDoc
+    deleteDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    updateDoc,
+    arrayUnion,
+    arrayRemove,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -784,8 +952,8 @@ async function loadUserProfile(user){
 
 window.signup = async function(){
     const pseudo = document.getElementById("signupPseudo").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
 
     if(pseudo === ""){
         alert("Choisis un pseudo.");
@@ -828,8 +996,8 @@ window.signup = async function(){
 };
 
 window.login = async function(){
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
     if(email === "" || password === ""){
         alert("Entre ton email et ton mot de passe.");
@@ -849,7 +1017,14 @@ window.login = async function(){
     }
 };
 
-window.logout = function(){
+window.logout = async function(){
+    if(auth.currentUser){
+        await setDoc(doc(db, "users", auth.currentUser.uid), {
+            online:false,
+            lastSeen:serverTimestamp()
+        }, { merge:true });
+    }
+
     signOut(auth).then(() => {
         localStorage.removeItem("playMode");
         localStorage.removeItem("pseudo");
@@ -857,8 +1032,10 @@ window.logout = function(){
         input.value = "";
 
         document.getElementById("signupPseudo").value = "";
-        document.getElementById("email").value = "";
-        document.getElementById("password").value = "";
+        document.getElementById("signupEmail").value = "";
+        document.getElementById("signupPassword").value = "";
+        document.getElementById("loginEmail").value = "";
+        document.getElementById("loginPassword").value = "";
 
         document.getElementById("accountEmail").innerText = "Non connecté";
         document.getElementById("accountPseudo").value = "";
@@ -932,6 +1109,225 @@ window.updateFirebasePseudo = async function(newPseudo){
     }
 };
 
+
+window.sendFriendRequest = async function(){
+    const user = auth.currentUser;
+
+    if(!user){
+        alert("Connecte-toi pour ajouter des amis.");
+        return;
+    }
+
+    const pseudo = document.getElementById("friendPseudo").value.trim();
+    const pseudoKey = cleanPseudo(pseudo);
+
+    if(pseudoKey.length < 3){
+        alert("Entre un pseudo valide.");
+        return;
+    }
+
+    try{
+        const pseudoSnap = await getDoc(doc(db, "pseudos", pseudoKey));
+
+        if(!pseudoSnap.exists()){
+            document.getElementById("friendSearchResult").innerHTML = "<div class='friendItem'>❌ Aucun joueur avec ce pseudo.</div>";
+            return;
+        }
+
+        const target = pseudoSnap.data();
+
+        if(target.uid === user.uid){
+            alert("Tu ne peux pas t'ajouter toi-même.");
+            return;
+        }
+
+        const meSnap = await getDoc(doc(db, "users", user.uid));
+        const me = meSnap.exists() ? meSnap.data() : {};
+
+        if(me.friends && me.friends.includes(target.uid)){
+            alert("Ce joueur est déjà ton ami.");
+            return;
+        }
+
+        const existingQ = query(
+            collection(db, "friendRequests"),
+            where("fromUid","==",user.uid),
+            where("toUid","==",target.uid),
+            where("status","==","pending")
+        );
+
+        const existingSnap = await getDocs(existingQ);
+
+        if(!existingSnap.empty){
+            alert("Demande déjà envoyée.");
+            return;
+        }
+
+        await addDoc(collection(db, "friendRequests"), {
+            fromUid:user.uid,
+            fromPseudo:me.pseudo || user.displayName || "Joueur",
+            toUid:target.uid,
+            toPseudo:target.pseudo,
+            status:"pending",
+            createdAt:serverTimestamp()
+        });
+
+        document.getElementById("friendSearchResult").innerHTML = "<div class='friendItem'>✅ Demande envoyée à " + target.pseudo + ".</div>";
+        document.getElementById("friendPseudo").value = "";
+
+    }catch(error){
+        alert(error.message);
+    }
+};
+
+window.loadFriendRequests = async function(){
+    const user = auth.currentUser;
+    const box = document.getElementById("requestsList");
+
+    if(!user){
+        box.innerHTML = "Connecte-toi pour voir tes demandes.";
+        return;
+    }
+
+    try{
+        const q = query(
+            collection(db, "friendRequests"),
+            where("toUid","==",user.uid),
+            where("status","==","pending")
+        );
+
+        const snap = await getDocs(q);
+
+        if(snap.empty){
+            box.innerHTML = "<div class='friendItem'>Aucune demande.</div>";
+            return;
+        }
+
+        box.innerHTML = "";
+
+        snap.forEach(docSnap=>{
+            const req = docSnap.data();
+            box.innerHTML += `
+                <div class="friendItem">
+                    <span class="friendName">${req.fromPseudo}</span> veut t'ajouter.
+                    <br>
+                    <button class="smallBtn" onclick="acceptFriendRequest('${docSnap.id}','${req.fromUid}')">✅ Accepter</button>
+                    <button class="smallBtn dangerBtn" onclick="refuseFriendRequest('${docSnap.id}')">❌ Refuser</button>
+                </div>
+            `;
+        });
+
+    }catch(error){
+        alert(error.message);
+    }
+};
+
+window.acceptFriendRequest = async function(requestId, fromUid){
+    const user = auth.currentUser;
+
+    if(!user) return;
+
+    try{
+        await updateDoc(doc(db, "users", user.uid), {
+            friends: arrayUnion(fromUid)
+        });
+
+        await updateDoc(doc(db, "users", fromUid), {
+            friends: arrayUnion(user.uid)
+        });
+
+        await updateDoc(doc(db, "friendRequests", requestId), {
+            status:"accepted"
+        });
+
+        await loadFriendRequests();
+        await loadFriends();
+
+    }catch(error){
+        alert(error.message);
+    }
+};
+
+window.refuseFriendRequest = async function(requestId){
+    try{
+        await updateDoc(doc(db, "friendRequests", requestId), {
+            status:"refused"
+        });
+
+        await loadFriendRequests();
+
+    }catch(error){
+        alert(error.message);
+    }
+};
+
+window.loadFriends = async function(){
+    const user = auth.currentUser;
+    const box = document.getElementById("friendsList");
+
+    if(!user){
+        box.innerHTML = "Connecte-toi pour voir tes amis.";
+        return;
+    }
+
+    try{
+        const meSnap = await getDoc(doc(db, "users", user.uid));
+
+        if(!meSnap.exists() || !meSnap.data().friends || meSnap.data().friends.length === 0){
+            box.innerHTML = "<div class='friendItem'>Tu n'as pas encore d'amis.</div>";
+            return;
+        }
+
+        const friends = meSnap.data().friends;
+        box.innerHTML = "";
+
+        for(const friendUid of friends){
+            const fSnap = await getDoc(doc(db, "users", friendUid));
+
+            if(fSnap.exists()){
+                const f = fSnap.data();
+                const status = f.online ? "🟢 En ligne" : "⚫ Hors ligne";
+
+                box.innerHTML += `
+                    <div class="friendItem">
+                        <span class="friendName">${f.pseudo}</span><br>
+                        ${status}
+                        <br>
+                        <button class="smallBtn dangerBtn" onclick="removeFriend('${friendUid}')">Retirer</button>
+                    </div>
+                `;
+            }
+        }
+
+    }catch(error){
+        alert(error.message);
+    }
+};
+
+window.removeFriend = async function(friendUid){
+    const user = auth.currentUser;
+
+    if(!user) return;
+
+    if(!confirm("Retirer cet ami ?")) return;
+
+    try{
+        await updateDoc(doc(db, "users", user.uid), {
+            friends: arrayRemove(friendUid)
+        });
+
+        await updateDoc(doc(db, "users", friendUid), {
+            friends: arrayRemove(user.uid)
+        });
+
+        await loadFriends();
+
+    }catch(error){
+        alert(error.message);
+    }
+};
+
+
 onAuthStateChanged(auth,async user=>{
     const status = document.getElementById("userStatus");
     const accountEmail = document.getElementById("accountEmail");
@@ -941,6 +1337,14 @@ onAuthStateChanged(auth,async user=>{
         accountEmail.innerText = user.email;
 
         await loadUserProfile(user);
+
+        await setDoc(doc(db, "users", user.uid), {
+            online:true,
+            lastSeen:serverTimestamp()
+        }, { merge:true });
+
+        loadFriends();
+        loadFriendRequests();
 
         if(user.displayName && !localStorage.getItem("pseudo")){
             localStorage.setItem("pseudo",user.displayName);
@@ -964,6 +1368,15 @@ onAuthStateChanged(auth,async user=>{
     }
 
     updateAccountPanel();
+});
+
+window.addEventListener("beforeunload", () => {
+    if(auth.currentUser){
+        setDoc(doc(db, "users", auth.currentUser.uid), {
+            online:false,
+            lastSeen:serverTimestamp()
+        }, { merge:true });
+    }
 });
 </script>
 
