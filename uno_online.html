@@ -315,6 +315,30 @@ h1{font-size:42px}
     .playCard{width:64px;height:98px;font-size:21px}
 }
 
+
+#actionLog{
+    width:100%;
+    max-height:140px;
+    overflow:auto;
+    background:#020617;
+    border-radius:14px;
+    padding:10px;
+    text-align:left;
+    color:#cbd5e1;
+    font-size:14px;
+}
+
+.logItem{
+    padding:5px 0;
+    border-bottom:1px solid rgba(148,163,184,0.15);
+}
+
+#penaltyInfo{
+    color:#facc15;
+    font-weight:bold;
+    margin-top:8px;
+}
+
 </style>
 </head>
 
@@ -370,7 +394,10 @@ h1{font-size:42px}
 
         <div class="info" id="gameInfo">
             En attente d'un salon...
+            <div id="penaltyInfo"></div>
         </div>
+
+        <div id="actionLog"></div>
     </div>
 </section>
 
@@ -581,6 +608,7 @@ function applyRoom(){
 
     renderCenterCard();
     renderMyHand();
+    renderActionLog();
 
     if(room.status === "waiting"){
         document.getElementById("status").innerText =
@@ -591,16 +619,18 @@ function applyRoom(){
     if(room.status === "playing"){
         const currentPlayer = players.find(p=>p.uid === room.currentPlayerUid);
         const pending = room.pendingDraw || 0;
-        let extra = pending > 0 ? " | Pioche cumulée : +" + pending : "";
+        const pendingType = room.pendingType || "";
+        let extra = pending > 0 ? " | Malus : +" + pending + " (" + pendingType + ")" : "";
 
         if(room.currentPlayerUid === user.uid){
             document.getElementById("status").innerText = "À toi de jouer !" + extra;
         }else{
-            document.getElementById("status").innerText = "Tour de " + (currentPlayer ? currentPlayer.pseudo : "...");
+            document.getElementById("status").innerText = "Tour de " + (currentPlayer ? currentPlayer.pseudo : "...") + extra;
         }
 
-        document.getElementById("gameInfo").innerText =
-        "Tu peux poser une carte compatible, ou plusieurs cartes du même chiffre/symbole.";
+        document.getElementById("gameInfo").innerHTML =
+        "Tu peux poser une carte compatible, ou plusieurs cartes du même chiffre/symbole." +
+        "<div id='penaltyInfo'>" + (pending > 0 ? "⚠️ Tu dois répondre avec un " + pendingType + " ou piocher +" + pending + "." : "") + "</div>";
     }
 
     if(room.status === "ended"){
@@ -892,10 +922,44 @@ async function startGame(){
         currentPlayerUid:randomPlayer.uid,
         direction:1,
         pendingDraw:0,
+        pendingType:"",
+        actionLog:["🎮 Partie UNO lancée !"],
         winnerUid:""
     });
 }
 window.startGame = startGame;
+
+function addLog(text){
+    const logs = room && room.actionLog ? [...room.actionLog] : [];
+    logs.push(text);
+    return logs.slice(-20);
+}
+
+function renderActionLog(){
+    const box = document.getElementById("actionLog");
+    if(!box) return;
+
+    const logs = room && room.actionLog ? room.actionLog : [];
+
+    if(logs.length === 0){
+        box.innerHTML = "";
+        return;
+    }
+
+    box.innerHTML = "<strong>📜 Historique</strong>";
+    logs.slice().reverse().forEach(log=>{
+        box.innerHTML += `<div class="logItem">${log}</div>`;
+    });
+}
+
+function getMyPseudo(){
+    const p = (room.players || []).find(p=>p.uid === user.uid);
+    return p ? p.pseudo : "Joueur";
+}
+
+function hasPenaltyResponse(hand, type){
+    return hand.some(c => c.value === type);
+}
 
 function cardText(card){
     if(!card) return "?";
@@ -940,6 +1004,15 @@ function renderMyHand(){
 
     const hand = room.hands[user.uid];
 
+    if(room.currentPlayerUid === user.uid && (room.pendingDraw || 0) > 0){
+        const canRespond = hasPenaltyResponse(hand, room.pendingType || "");
+        if(!canRespond){
+            handBox.innerHTML += "<div class='info'>⚠️ Tu n'as pas de " + room.pendingType + ". Clique sur piocher pour prendre +" + room.pendingDraw + ".</div>";
+        }else{
+            handBox.innerHTML += "<div class='info'>⚠️ Tu dois poser un " + room.pendingType + " ou piocher +" + room.pendingDraw + ".</div>";
+        }
+    }
+
     hand.forEach(card=>{
         const selected = selectedCards.includes(card.id);
 
@@ -975,8 +1048,19 @@ function isPlayable(card){
 
 function selectedCardsValid(cards){
     if(cards.length === 0) return false;
+
+    const pending = room.pendingDraw || 0;
+    const pendingType = room.pendingType || "";
+
+    // Si un +2 ou +4 est en cours, tu dois répondre avec EXACTEMENT le même type.
+    // +2 répond seulement à +2, +4 répond seulement à +4.
+    if(pending > 0){
+        return cards.every(c => c.value === pendingType);
+    }
+
     if(!isPlayable(cards[0])) return false;
 
+    // Règle personnalisée : tu peux poser plusieurs cartes du même chiffre/symbole.
     return cards.every(c => c.value === cards[0].value);
 }
 
@@ -1004,7 +1088,11 @@ window.playSelectedCards = async function(){
     const cards = selectedCards.map(id=>hand.find(c=>c.id===id)).filter(Boolean);
 
     if(!selectedCardsValid(cards)){
-        alert("Tu ne peux pas jouer cette sélection.");
+        if((room.pendingDraw || 0) > 0){
+            alert("Tu dois poser un " + room.pendingType + " ou piocher +" + room.pendingDraw + ".");
+        }else{
+            alert("Tu ne peux pas jouer cette sélection.");
+        }
         return;
     }
 
@@ -1038,6 +1126,7 @@ async function playCardsWithColor(cards, chosenColor){
 
     let direction = room.direction || 1;
     let pendingDraw = room.pendingDraw || 0;
+    let pendingType = room.pendingType || "";
     let skipAmount = 1;
 
     const value = cards[0].value;
@@ -1053,10 +1142,12 @@ async function playCardsWithColor(cards, chosenColor){
 
     if(value === "+2"){
         pendingDraw += 2 * cards.length;
+        pendingType = "+2";
     }
 
     if(value === "+4"){
         pendingDraw += 4 * cards.length;
+        pendingType = "+4";
     }
 
     const lastCard = cards[cards.length-1];
@@ -1069,6 +1160,10 @@ async function playCardsWithColor(cards, chosenColor){
         cards:hands[p.uid] ? hands[p.uid].length : 0
     }));
 
+    const playedText = cards.length > 1
+        ? cards.length + " cartes " + value
+        : colorEmoji(chosenColor) + " " + cardText(lastCard);
+
     const updates = {
         hands,
         players:updatedPlayers,
@@ -1077,12 +1172,15 @@ async function playCardsWithColor(cards, chosenColor){
         chosenColor,
         direction,
         pendingDraw,
-        currentPlayerUid:nextUid
+        pendingType,
+        currentPlayerUid:nextUid,
+        actionLog:addLog("🃏 " + getMyPseudo() + " joue " + playedText)
     };
 
     if(myHand.length === 0){
         updates.status = "ended";
         updates.winnerUid = user.uid;
+        updates.actionLog = addLog("🏆 " + getMyPseudo() + " gagne la partie !");
     }
 
     selectedCards = [];
@@ -1107,9 +1205,11 @@ window.drawCard = async function(){
         return;
     }
 
-    const amount = room.pendingDraw && room.pendingDraw > 0 ? room.pendingDraw : 1;
-    const drawn = deck.splice(0, amount);
+    const pending = room.pendingDraw || 0;
+    const pendingType = room.pendingType || "";
+    const amount = pending > 0 ? pending : 1;
 
+    const drawn = deck.splice(0, amount);
     myHand.push(...drawn);
     hands[user.uid] = myHand;
 
@@ -1122,12 +1222,18 @@ window.drawCard = async function(){
 
     selectedCards = [];
 
+    const logText = pending > 0
+        ? "📥 " + getMyPseudo() + " pioche +" + amount + " à cause du " + pendingType
+        : "📥 " + getMyPseudo() + " pioche 1 carte";
+
     await updateDoc(doc(db,"unoRooms",roomId),{
         deck,
         hands,
         players:updatedPlayers,
         pendingDraw:0,
-        currentPlayerUid:nextUid
+        pendingType:"",
+        currentPlayerUid:nextUid,
+        actionLog:addLog(logText)
     });
 };
 
@@ -1136,6 +1242,9 @@ window.sayUno = function(){
 
     if(room.hands[user.uid].length === 1){
         alert("🔔 UNO !");
+        updateDoc(doc(db,"unoRooms",roomId),{
+            actionLog:addLog("🔔 " + getMyPseudo() + " dit UNO !")
+        });
     }else{
         alert("Tu peux dire UNO seulement quand il te reste 1 carte.");
     }
