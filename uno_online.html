@@ -339,6 +339,202 @@ h1{font-size:42px}
     margin-top:8px;
 }
 
+
+/* UNO V4 DESIGN */
+#mainGameLayout{
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr 260px;
+    gap:18px;
+    align-items:start;
+}
+
+#unoArena{
+    min-height:470px;
+    background:radial-gradient(circle at center,#14532d,#052e16 65%);
+    border:2px solid rgba(255,255,255,0.18);
+    border-radius:28px;
+    padding:18px;
+    box-shadow:inset 0 0 45px rgba(0,0,0,0.45);
+}
+
+#opponentsArea{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    flex-wrap:wrap;
+    min-height:110px;
+}
+
+.opponentBox{
+    background:rgba(2,6,23,0.75);
+    border:1px solid rgba(148,163,184,0.35);
+    border-radius:18px;
+    padding:12px;
+    min-width:135px;
+}
+
+.opponentName{
+    font-weight:bold;
+    color:white;
+    margin-bottom:8px;
+}
+
+.hiddenCards{
+    display:flex;
+    justify-content:center;
+    gap:3px;
+    flex-wrap:wrap;
+    max-width:150px;
+}
+
+.miniBack{
+    width:24px;
+    height:36px;
+    background:#111827;
+    border:2px solid white;
+    border-radius:6px;
+    box-shadow:0 4px 8px rgba(0,0,0,0.3);
+}
+
+#centerZone{
+    margin:24px 0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:28px;
+    flex-wrap:wrap;
+}
+
+.deckPile{
+    position:relative;
+    cursor:pointer;
+}
+
+.deckPile::before,
+.deckPile::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:#111827;
+    border:4px solid white;
+    border-radius:18px;
+    transform:translate(6px,-6px);
+    z-index:-1;
+}
+
+.deckPile::after{
+    transform:translate(12px,-12px);
+    opacity:.65;
+}
+
+#centerCard{
+    transition:0.28s;
+}
+
+.cardPulse{
+    animation:cardPulse .5s ease-out;
+}
+
+@keyframes cardPulse{
+    0%{transform:scale(.75) rotate(-6deg);opacity:.4}
+    70%{transform:scale(1.12) rotate(3deg);opacity:1}
+    100%{transform:scale(1) rotate(0)}
+}
+
+.drawAnim{
+    animation:drawAnim .45s ease-out;
+}
+
+@keyframes drawAnim{
+    0%{transform:translateY(-35px) scale(.7);opacity:.3}
+    100%{transform:translateY(0) scale(1);opacity:1}
+}
+
+.playAnim{
+    animation:playAnim .45s ease-out;
+}
+
+@keyframes playAnim{
+    0%{transform:translateY(40px) scale(.75);opacity:.4}
+    100%{transform:translateY(0) scale(1);opacity:1}
+}
+
+#myArea{
+    border-top:1px solid rgba(255,255,255,0.15);
+    padding-top:15px;
+}
+
+#myNameTag{
+    font-weight:bold;
+    color:#facc15;
+    margin-bottom:8px;
+}
+
+#actionLog{
+    max-height:470px !important;
+    height:470px;
+    margin-top:0 !important;
+}
+
+#actionLog strong{
+    display:block;
+    color:white;
+    margin-bottom:8px;
+}
+
+#gameInfo{
+    margin-top:14px;
+}
+
+#endOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,0.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:80;
+}
+
+#endWinCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+}
+
+#endWinCard h2{
+    font-size:34px;
+    margin-bottom:14px;
+}
+
+#endWinCard button{
+    width:100%;
+    margin:8px 0;
+    padding:13px;
+    font-size:17px;
+}
+
+#unoWarning{
+    color:#facc15;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+@media(max-width:950px){
+    #mainGameLayout{
+        grid-template-columns:1fr;
+    }
+
+    #actionLog{
+        height:auto;
+        max-height:180px !important;
+    }
+}
+
 </style>
 </head>
 
@@ -376,25 +572,38 @@ h1{font-size:42px}
 <section class="panel" id="gamePanel">
     <div id="status">Connecte-toi depuis l'accueil puis crée un salon.</div>
 
-    <div id="table">
-        <div id="playersPreview"></div>
+    <div id="mainGameLayout">
+        <div>
+            <div id="unoArena">
+                <div id="opponentsArea"></div>
 
-        <div id="deckArea">
-            <div class="card back" onclick="drawCard()">PIOCHE</div>
-            <div class="card wild" id="centerCard">?</div>
-        </div>
+                <div id="centerZone">
+                    <div class="deckPile" onclick="drawCard()">
+                        <div class="card back">UNO</div>
+                    </div>
 
-        <div id="actionBar">
-            <button class="actionBtn blueBtn" onclick="drawCard()">📥 Piocher</button>
-            <button class="actionBtn yellowBtn" onclick="playSelectedCards()">▶️ Jouer sélection</button>
-            <button class="actionBtn" onclick="sayUno()">🔔 UNO</button>
-        </div>
+                    <div class="card wild" id="centerCard">?</div>
+                </div>
 
-        <div id="myHand"></div>
+                <div id="myArea">
+                    <div id="myNameTag">Tes cartes</div>
 
-        <div class="info" id="gameInfo">
-            En attente d'un salon...
-            <div id="penaltyInfo"></div>
+                    <div id="myHand"></div>
+
+                    <div id="actionBar">
+                        <button class="actionBtn blueBtn" onclick="drawCard()">📥 Piocher</button>
+                        <button class="actionBtn yellowBtn" onclick="playSelectedCards()">▶️ Jouer sélection</button>
+                        <button class="actionBtn" onclick="sayUno()">🔔 UNO</button>
+                        <button class="actionBtn redBtn" onclick="callCounterUno()">🚨 Contre UNO</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info" id="gameInfo">
+                En attente d'un salon...
+                <div id="penaltyInfo"></div>
+                <div id="unoWarning"></div>
+            </div>
         </div>
 
         <div id="actionLog"></div>
@@ -411,6 +620,14 @@ h1{font-size:42px}
             <button class="actionBtn" onclick="acceptInvite()">Accepter</button>
             <button class="actionBtn redBtn" onclick="refuseInvite()">Refuser</button>
         </div>
+    </div>
+</div>
+
+<div id="endOverlay">
+    <div id="endWinCard">
+        <h2 id="winnerText">Fin de partie</h2>
+        <button class="actionBtn" onclick="restartGame()">🔁 Rejouer</button>
+        <button class="actionBtn redBtn" onclick="leaveRoom()">🚪 Quitter</button>
     </div>
 </div>
 
@@ -465,6 +682,10 @@ let inviteUnsub = null;
 let pendingInvite = null;
 let selectedCards = [];
 let pendingWildCards = [];
+let lastTopCardId = "";
+let lastHandCount = 0;
+let unoDeclared = false;
+let unoPenaltyTimer = null;
 
 function goHome(){
     window.location.href = "index.html";
@@ -592,23 +813,29 @@ function applyRoom(){
     }
 
     const preview = document.getElementById("playersPreview");
-    preview.innerHTML = "";
+    if(preview){
+        preview.innerHTML = "";
+    }
 
     players.forEach(p=>{
         const handCount = room.hands && room.hands[p.uid] ? room.hands[p.uid].length : (p.cards || 0);
 
-        preview.innerHTML += `
-            <div class="playerPreview">
-                <strong>${p.pseudo}</strong><br>
-                ${room.status === "playing" ? "🃏 " + handCount + " cartes" : "Prêt"}
-                ${room.currentPlayerUid === p.uid ? "<br>👉 Tour actuel" : ""}
-            </div>
-        `;
+        if(preview){
+            preview.innerHTML += `
+                <div class="playerPreview">
+                    <strong>${p.pseudo}</strong><br>
+                    ${room.status === "playing" ? "🃏 " + handCount + " cartes" : "Prêt"}
+                    ${room.currentPlayerUid === p.uid ? "<br>👉 Tour actuel" : ""}
+                </div>
+            `;
+        }
     });
 
     renderCenterCard();
+    renderOpponents();
     renderMyHand();
     renderActionLog();
+    renderEndOverlay();
 
     if(room.status === "waiting"){
         document.getElementById("status").innerText =
@@ -628,9 +855,12 @@ function applyRoom(){
             document.getElementById("status").innerText = "Tour de " + (currentPlayer ? currentPlayer.pseudo : "...") + extra;
         }
 
+        const counterTarget = room.canCounterUnoUid ? players.find(p=>p.uid === room.canCounterUnoUid) : null;
+
         document.getElementById("gameInfo").innerHTML =
         "Tu peux poser une carte compatible, ou plusieurs cartes du même chiffre/symbole." +
-        "<div id='penaltyInfo'>" + (pending > 0 ? "⚠️ Tu dois répondre avec un " + pendingType + " ou piocher +" + pending + "." : "") + "</div>";
+        "<div id='penaltyInfo'>" + (pending > 0 ? "⚠️ Tu dois répondre avec un " + pendingType + " ou piocher +" + pending + "." : "") + "</div>" +
+        "<div id='unoWarning'>" + (counterTarget ? "🚨 " + counterTarget.pseudo + " peut être contré UNO !" : "") + "</div>";
     }
 
     if(room.status === "ended"){
@@ -924,6 +1154,8 @@ async function startGame(){
         pendingDraw:0,
         pendingType:"",
         actionLog:["🎮 Partie UNO lancée !"],
+        unoDeclaredBy:"",
+        canCounterUnoUid:"",
         winnerUid:""
     });
 }
@@ -977,6 +1209,58 @@ function colorEmoji(color){
     return "⬛";
 }
 
+function renderOpponents(){
+    const box = document.getElementById("opponentsArea");
+    if(!box || !room) return;
+
+    const players = room.players || [];
+    const others = players.filter(p=>p.uid !== user.uid);
+
+    if(others.length === 0){
+        box.innerHTML = "<div class='info'>En attente d'un adversaire...</div>";
+        return;
+    }
+
+    box.innerHTML = "";
+
+    others.forEach(p=>{
+        const count = room.hands && room.hands[p.uid] ? room.hands[p.uid].length : (p.cards || 0);
+        let cardsHTML = "";
+
+        for(let i=0;i<Math.min(count,12);i++){
+            cardsHTML += "<div class='miniBack'></div>";
+        }
+
+        if(count > 12){
+            cardsHTML += "<span style='margin-left:5px;'>+" + (count-12) + "</span>";
+        }
+
+        box.innerHTML += `
+            <div class="opponentBox">
+                <div class="opponentName">${p.pseudo}</div>
+                <div>${count} carte${count>1?"s":""}</div>
+                <div class="hiddenCards">${cardsHTML}</div>
+                ${room.currentPlayerUid === p.uid ? "<div style='color:#facc15;margin-top:6px;'>👉 Joue</div>" : ""}
+            </div>
+        `;
+    });
+}
+
+function renderEndOverlay(){
+    const overlay = document.getElementById("endOverlay");
+    const text = document.getElementById("winnerText");
+
+    if(!overlay || !text || !room) return;
+
+    if(room.status === "ended"){
+        const winner = (room.players || []).find(p=>p.uid === room.winnerUid);
+        text.innerText = "🏆 " + (winner ? winner.pseudo : "Un joueur") + " gagne !";
+        overlay.style.display = "flex";
+    }else{
+        overlay.style.display = "none";
+    }
+}
+
 function renderCenterCard(){
     const center = document.getElementById("centerCard");
     if(!center) return;
@@ -988,6 +1272,13 @@ function renderCenterCard(){
 
     if(top && top.color === "wild" && room.chosenColor){
         center.innerText = colorEmoji(room.chosenColor) + " " + cardText(top);
+    }
+
+    if(top && top.id && top.id !== lastTopCardId){
+        lastTopCardId = top.id;
+        center.classList.remove("cardPulse");
+        void center.offsetWidth;
+        center.classList.add("cardPulse");
     }
 }
 
@@ -1004,6 +1295,15 @@ function renderMyHand(){
 
     const hand = room.hands[user.uid];
 
+    const me = (room.players || []).find(p=>p.uid === user.uid);
+    const myNameTag = document.getElementById("myNameTag");
+    if(myNameTag && me){
+        myNameTag.innerText = "Tes cartes - " + me.pseudo + " (" + hand.length + ")";
+    }
+
+    const handGrew = hand.length > lastHandCount;
+    lastHandCount = hand.length;
+
     if(room.currentPlayerUid === user.uid && (room.pendingDraw || 0) > 0){
         const canRespond = hasPenaltyResponse(hand, room.pendingType || "");
         if(!canRespond){
@@ -1017,7 +1317,7 @@ function renderMyHand(){
         const selected = selectedCards.includes(card.id);
 
         handBox.innerHTML += `
-            <div class="playCard ${card.color} ${selected ? "selected" : ""}" onclick="toggleCard('${card.id}')">
+            <div class="playCard ${card.color} ${selected ? "selected" : ""} ${handGrew ? "drawAnim" : ""}" onclick="toggleCard('${card.id}')">
                 ${cardText(card)}
             </div>
         `;
@@ -1164,6 +1464,22 @@ async function playCardsWithColor(cards, chosenColor){
         ? cards.length + " cartes " + value
         : colorEmoji(chosenColor) + " " + cardText(lastCard);
 
+    let log = addLog("🃏 " + getMyPseudo() + " joue " + playedText);
+
+    let canCounterUnoUid = "";
+    let unoDeclaredBy = room.unoDeclaredBy || "";
+
+    // Si tu passes à 1 carte sans avoir dit UNO, les autres peuvent te contrer.
+    if(myHand.length === 1 && unoDeclaredBy !== user.uid){
+        canCounterUnoUid = user.uid;
+        log = [...log, "⚠️ " + getMyPseudo() + " n'a plus qu'une carte !"];
+    }
+
+    // Dès que tu joues et que tu n'es plus à 1 carte, ton UNO se reset.
+    if(myHand.length !== 1 && unoDeclaredBy === user.uid){
+        unoDeclaredBy = "";
+    }
+
     const updates = {
         hands,
         players:updatedPlayers,
@@ -1174,13 +1490,16 @@ async function playCardsWithColor(cards, chosenColor){
         pendingDraw,
         pendingType,
         currentPlayerUid:nextUid,
-        actionLog:addLog("🃏 " + getMyPseudo() + " joue " + playedText)
+        unoDeclaredBy,
+        canCounterUnoUid,
+        actionLog:log
     };
 
     if(myHand.length === 0){
         updates.status = "ended";
         updates.winnerUid = user.uid;
-        updates.actionLog = addLog("🏆 " + getMyPseudo() + " gagne la partie !");
+        updates.canCounterUnoUid = "";
+        updates.actionLog = [...log, "🏆 " + getMyPseudo() + " gagne la partie !"];
     }
 
     selectedCards = [];
@@ -1233,8 +1552,81 @@ window.drawCard = async function(){
         pendingDraw:0,
         pendingType:"",
         currentPlayerUid:nextUid,
+        canCounterUnoUid: room.canCounterUnoUid === user.uid ? "" : (room.canCounterUnoUid || ""),
         actionLog:addLog(logText)
     });
+};
+
+window.callCounterUno = async function(){
+    if(!room || !room.canCounterUnoUid){
+        alert("Personne à contrer pour l'instant.");
+        return;
+    }
+
+    if(room.canCounterUnoUid === user.uid){
+        alert("Tu ne peux pas te contrer toi-même.");
+        return;
+    }
+
+    const targetUid = room.canCounterUnoUid;
+    const hands = {...room.hands};
+    let deck = [...(room.deck || [])];
+
+    if(deck.length < 2){
+        alert("La pioche n'a pas assez de cartes.");
+        return;
+    }
+
+    const targetHand = [...(hands[targetUid] || [])];
+    targetHand.push(...deck.splice(0,2));
+    hands[targetUid] = targetHand;
+
+    const players = (room.players || []).map(p=>({
+        ...p,
+        cards:hands[p.uid] ? hands[p.uid].length : 0
+    }));
+
+    const target = players.find(p=>p.uid === targetUid);
+    const caller = getMyPseudo();
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        deck,
+        hands,
+        players,
+        canCounterUnoUid:"",
+        unoDeclaredBy:"",
+        actionLog:addLog("🚨 " + caller + " contre UNO ! " + (target ? target.pseudo : "Le joueur") + " pioche 2 cartes.")
+    });
+};
+
+window.restartGame = async function(){
+    if(!room){
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut relancer.");
+        return;
+    }
+
+    await updateDoc(doc(db,"unoRooms",roomId),{
+        status:"waiting",
+        players:(room.players || []).map(p=>({...p,cards:0})),
+        hands:{},
+        deck:[],
+        discardPile:[],
+        topCard:null,
+        chosenColor:"",
+        currentPlayerUid:"",
+        pendingDraw:0,
+        pendingType:"",
+        winnerUid:"",
+        unoDeclaredBy:"",
+        canCounterUnoUid:"",
+        actionLog:["🔁 Nouvelle partie prête."]
+    });
+
+    document.getElementById("endOverlay").style.display = "none";
 };
 
 window.sayUno = function(){
@@ -1243,6 +1635,8 @@ window.sayUno = function(){
     if(room.hands[user.uid].length === 1){
         alert("🔔 UNO !");
         updateDoc(doc(db,"unoRooms",roomId),{
+            unoDeclaredBy:user.uid,
+            canCounterUnoUid:"",
             actionLog:addLog("🔔 " + getMyPseudo() + " dit UNO !")
         });
     }else{
