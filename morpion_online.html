@@ -395,8 +395,8 @@ input{
 <aside class="panel" id="scorePanel">
     <h2>🏆 Partie</h2>
 
-    <div class="scoreLine">❌ X : <span id="scoreX">0</span></div>
-    <div class="scoreLine">⭕ O : <span id="scoreO">0</span></div>
+    <div class="scoreLine"><span id="labelX">❌ X</span> : <span id="scoreX">0</span></div>
+    <div class="scoreLine"><span id="labelO">⭕ O</span> : <span id="scoreO">0</span></div>
     <div class="scoreLine">🤝 Égalités : <span id="scoreDraw">0</span></div>
 
     <h2 style="margin-top:25px;">👥 Salon</h2>
@@ -448,6 +448,7 @@ input{
         <button class="playBtn" onclick="createRoom()">➕ Créer salon</button>
         <button class="clearBtn" onclick="loadFriends()">👥 Inviter un ami</button>
         <button class="playBtn" onclick="startMatch()">▶️ Commencer</button>
+        <button class="clearBtn" onclick="hostClearGrid()">🧹 Vider grille</button>
     </div>
 
     <div id="inviteList"></div>
@@ -554,6 +555,9 @@ onAuthStateChanged(auth, async u => {
     document.getElementById("player").innerText = userData.pseudo || "Joueur";
 
     listenInvites();
+
+    // Si on arrive ici depuis une notification, on vérifie directement s'il y a une invitation en attente.
+    await checkPendingInviteOnLoad();
 
     if(roomId){
         listenRoom(roomId);
@@ -701,6 +705,17 @@ function updateScores(r){
     document.getElementById("scoreX").innerText = r.scoreX || 0;
     document.getElementById("scoreO").innerText = r.scoreO || 0;
     document.getElementById("scoreDraw").innerText = r.draw || 0;
+
+    if(room){
+        const xName = room.xUid === room.hostUid ? room.hostPseudo : room.guestPseudo;
+        const oName = room.oUid === room.hostUid ? room.hostPseudo : room.guestPseudo;
+
+        document.getElementById("labelX").innerText = "❌ " + (xName || "X");
+        document.getElementById("labelO").innerText = "⭕ " + (oName || "O");
+    }else{
+        document.getElementById("labelX").innerText = "❌ X";
+        document.getElementById("labelO").innerText = "⭕ O";
+    }
 }
 
 function updateDots(results){
@@ -830,6 +845,29 @@ async function inviteFriend(friendUid, friendPseudo){
     alert("Invitation envoyée à " + friendPseudo);
 }
 window.inviteFriend = inviteFriend;
+
+async function checkPendingInviteOnLoad(){
+    if(!user) return;
+
+    const q = query(
+        collection(db, "gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","morpion"),
+        where("status","==","pending")
+    );
+
+    const snap = await getDocs(q);
+
+    if(snap.empty) return;
+
+    const first = snap.docs[0];
+    pendingInvite = {id:first.id, ...first.data()};
+
+    document.getElementById("inviteText").innerText =
+        pendingInvite.fromPseudo + " t'invite à jouer au Morpion.";
+
+    document.getElementById("inviteOverlay").style.display = "flex";
+}
 
 function listenInvites(){
     if(inviteUnsub) inviteUnsub();
@@ -1100,6 +1138,38 @@ function isMatchEnded(mode, scoreX, scoreO, results){
     if(mode === "points5") return scoreX >= 5 || scoreO >= 5;
     return false;
 }
+
+async function hostClearGrid(){
+    if(!room || !roomId){
+        alert("Crée un salon d'abord.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut vider la grille.");
+        return;
+    }
+
+    if(!confirm("Vider la grille actuelle ? Les scores restent identiques.")) return;
+
+    const xStarts = Math.random() < 0.5;
+    const xUid = xStarts ? room.hostUid : room.guestUid;
+    const oUid = xStarts ? room.guestUid : room.hostUid;
+
+    await updateDoc(doc(db, "morpionRooms", roomId), {
+        status: room.guestUid ? "playing" : "waiting",
+        board:["","","","","","","","",""],
+        current:"X",
+        xUid,
+        oUid,
+        turnUid:xUid,
+        gameOver:false,
+        winner:""
+    });
+
+    closeEnd();
+}
+window.hostClearGrid = hostClearGrid;
 
 async function newRound(){
     if(!room) return;
