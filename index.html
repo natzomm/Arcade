@@ -1698,6 +1698,141 @@ body::before{
     }
 }
 
+
+/* ================= V8.1 WIDGETS ACCUEIL ================= */
+.homeWidget{
+    position:relative;
+}
+
+.widgetClose{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:28px !important;
+    height:28px !important;
+    border-radius:50% !important;
+    padding:0 !important;
+    margin:0 !important;
+    background:rgba(239,68,68,.92) !important;
+    color:white !important;
+    font-size:15px !important;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:10;
+    box-shadow:none !important;
+}
+
+.widgetClose:hover{
+    transform:scale(1.08) !important;
+}
+
+#homeProfileCard .widgetClose{
+    display:none !important;
+}
+
+.homeWidget.hiddenByUser{
+    display:none !important;
+}
+
+#homeWidgetsSettings{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.homeWidgetSetting{
+    background:#020617;
+    border-radius:14px;
+    padding:12px;
+    color:#cbd5e1;
+    border:1px solid rgba(148,163,184,.18);
+}
+
+.homeWidgetSetting label{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    cursor:pointer;
+}
+
+.homeWidgetSetting input{
+    width:auto !important;
+}
+
+#homeLayoutCount{
+    color:#facc15;
+    margin:10px 0;
+    font-weight:bold;
+}
+
+.simpleHomeBtn{
+    background:#334155 !important;
+    color:white !important;
+}
+
+@media(max-width:760px){
+    #homeDashboard{
+        grid-template-columns:repeat(2,1fr) !important;
+        gap:12px !important;
+    }
+
+    #homeProfileCard{
+        grid-column:1/-1;
+        min-height:135px !important;
+    }
+
+    #homeDashboard .homeWidget{
+        min-height:132px !important;
+        padding:13px !important;
+        border-radius:20px !important;
+    }
+
+    #homeDashboard .homeWidget h3{
+        font-size:15px !important;
+        margin-bottom:8px !important;
+        padding-right:25px;
+    }
+
+    #homeDashboard .homeWidget button:not(.widgetClose){
+        padding:8px !important;
+        font-size:13px !important;
+    }
+
+    #favoriteGamesHome button{
+        font-size:12px !important;
+        padding:8px !important;
+    }
+
+    #lastGameText,
+    #onlineFriendsHome,
+    #quickStatsHome{
+        font-size:12px !important;
+        line-height:1.25 !important;
+    }
+
+    #activityHome{
+        display:none;
+    }
+
+    #homeMiniStats{
+        margin-top:8px !important;
+    }
+
+    .miniStat{
+        padding:7px !important;
+        font-size:11px !important;
+    }
+
+    .miniStat strong{
+        font-size:16px !important;
+    }
+
+    #homeWidgetsSettings{
+        grid-template-columns:1fr;
+    }
+}
+
 </style>
 </head>
 
@@ -1750,6 +1885,7 @@ body::before{
 <div id="accountPanel">
     <div id="settingsTabs">
         <button class="settingsTab active" onclick="showSettingsPage('account')">👤 Compte</button>
+        <button class="settingsTab" onclick="showSettingsPage('home')">🏠 Accueil</button>
         <button class="settingsTab" onclick="showSettingsPage('profile')">🌐 Profil public</button>
         <button class="settingsTab" onclick="showSettingsPage('status')">🟢 Statut</button>
         <button class="settingsTab" onclick="showSettingsPage('theme')">🎨 Thème</button>
@@ -1775,6 +1911,36 @@ body::before{
             <button onclick="changeAccountPseudo()">Changer le pseudo</button>
 
             <button class="dangerBtn" onclick="logout()">Se déconnecter</button>
+        </div>
+
+        
+        <div id="settings_home" class="settingsPage">
+            <h2>🏠 Accueil</h2>
+            <div class="settingBox">
+                Choisis les blocs que tu veux afficher sur l’écran d’accueil.
+                <div id="homeLayoutCount">0 bloc affiché</div>
+            </div>
+
+            <div id="homeWidgetsSettings">
+                <div class="homeWidgetSetting">
+                    <label><input type="checkbox" id="widget_favorites" onchange="saveHomeWidgetSettings()"> ⭐ Favoris</label>
+                </div>
+
+                <div class="homeWidgetSetting">
+                    <label><input type="checkbox" id="widget_continue" onchange="saveHomeWidgetSettings()"> ▶️ Continuer</label>
+                </div>
+
+                <div class="homeWidgetSetting">
+                    <label><input type="checkbox" id="widget_friendsOnline" onchange="saveHomeWidgetSettings()"> 👥 Amis en ligne</label>
+                </div>
+
+                <div class="homeWidgetSetting">
+                    <label><input type="checkbox" id="widget_quickStats" onchange="saveHomeWidgetSettings()"> 🏆 Stats rapides</label>
+                </div>
+            </div>
+
+            <button onclick="showAllHomeWidgets()">Tout afficher</button>
+            <button class="simpleHomeBtn" onclick="simpleHomeMode()">Mode accueil simple</button>
         </div>
 
         <div id="settings_profile" class="settingsPage">
@@ -1890,7 +2056,7 @@ body::before{
     <div class="subtitle">Bienvenue sur ta plateforme de mini-jeux !</div>
 
     <div id="homeDashboard">
-        <div class="homeWidget" id="homeProfileCard">
+        <div class="homeWidget" id="homeProfileCard" data-widget="welcome">
             <h3>👋 Bienvenue</h3>
             <div class="profileAvatar" id="homeAvatar">?</div>
             <div id="homeProfileText">
@@ -1904,25 +2070,29 @@ body::before{
             </div>
         </div>
 
-        <div class="homeWidget">
+        <div class="homeWidget" data-widget="favorites">
+            <button class="widgetClose" onclick="hideHomeWidget('favorites')">×</button>
             <h3>⭐ Favoris</h3>
             <div id="favoriteGamesHome">Aucun favori.</div>
         </div>
 
-        <div class="homeWidget">
+        <div class="homeWidget" data-widget="continue">
+            <button class="widgetClose" onclick="hideHomeWidget('continue')">×</button>
             <h3>▶️ Continuer</h3>
             <div id="lastGameText">Aucun jeu lancé récemment.</div>
             <button onclick="openLastGame()">Reprendre</button>
             <div id="activityHome"></div>
         </div>
 
-        <div class="homeWidget">
+        <div class="homeWidget" data-widget="friendsOnline">
+            <button class="widgetClose" onclick="hideHomeWidget('friendsOnline')">×</button>
             <h3>👥 Amis en ligne</h3>
             <div id="onlineFriendsHome">Connecte-toi pour voir tes amis.</div>
             <button onclick="toggleAccountPanel();showSettingsPage('friends')">Gérer mes amis</button>
         </div>
 
-        <div class="homeWidget">
+        <div class="homeWidget" data-widget="quickStats">
+            <button class="widgetClose" onclick="hideHomeWidget('quickStats')">×</button>
             <h3>🏆 Stats rapides</h3>
             <div id="quickStatsHome">Parties jouées : 0<br>Victoires : 0<br>Jeu préféré : aucun</div>
             <button onclick="toggleAccountPanel();showSettingsPage('stats')">Voir les stats</button>
@@ -2445,6 +2615,7 @@ function renderStats(){
 
     renderActivity();
     if(typeof updateFavoriteStars === "function") updateFavoriteStars();
+    if(typeof applyHomeWidgetSettings === "function") applyHomeWidgetSettings();
 }
 
 function setTheme(theme){
@@ -2595,6 +2766,97 @@ function closeFriendProfile(){
 }
 
 
+
+function getHomeWidgetSettings(){
+    return JSON.parse(localStorage.getItem("homeWidgets") || '{"favorites":true,"continue":true,"friendsOnline":true,"quickStats":true}');
+}
+
+function setHomeWidgetSettings(settings){
+    localStorage.setItem("homeWidgets", JSON.stringify(settings));
+}
+
+function applyHomeWidgetSettings(){
+    const settings = getHomeWidgetSettings();
+
+    document.querySelectorAll("[data-widget]").forEach(widget=>{
+        const key = widget.dataset.widget;
+
+        if(key === "welcome"){
+            widget.classList.remove("hiddenByUser");
+            return;
+        }
+
+        widget.classList.toggle("hiddenByUser", settings[key] === false);
+    });
+
+    syncHomeWidgetSettingsUI();
+}
+
+function hideHomeWidget(key){
+    const settings = getHomeWidgetSettings();
+    settings[key] = false;
+    setHomeWidgetSettings(settings);
+    applyHomeWidgetSettings();
+}
+
+function saveHomeWidgetSettings(){
+    const settings = getHomeWidgetSettings();
+
+    ["favorites","continue","friendsOnline","quickStats"].forEach(key=>{
+        const input = document.getElementById("widget_" + key);
+        if(input){
+            settings[key] = input.checked;
+        }
+    });
+
+    setHomeWidgetSettings(settings);
+    applyHomeWidgetSettings();
+}
+
+function syncHomeWidgetSettingsUI(){
+    const settings = getHomeWidgetSettings();
+    let visible = 0;
+
+    ["favorites","continue","friendsOnline","quickStats"].forEach(key=>{
+        const input = document.getElementById("widget_" + key);
+
+        if(input){
+            input.checked = settings[key] !== false;
+        }
+
+        if(settings[key] !== false){
+            visible++;
+        }
+    });
+
+    const count = document.getElementById("homeLayoutCount");
+    if(count){
+        count.innerText = visible + " bloc" + (visible > 1 ? "s" : "") + " affiché" + (visible > 1 ? "s" : "");
+    }
+}
+
+function showAllHomeWidgets(){
+    setHomeWidgetSettings({
+        favorites:true,
+        continue:true,
+        friendsOnline:true,
+        quickStats:true
+    });
+
+    applyHomeWidgetSettings();
+}
+
+function simpleHomeMode(){
+    setHomeWidgetSettings({
+        favorites:true,
+        continue:true,
+        friendsOnline:false,
+        quickStats:false
+    });
+
+    applyHomeWidgetSettings();
+}
+
 window.addEventListener("load", () => {
     const mode = localStorage.getItem("playMode");
 
@@ -2613,6 +2875,10 @@ window.addEventListener("load", () => {
 
     if(typeof updateFavoriteStars === "function"){
         updateFavoriteStars();
+    }
+
+    if(typeof applyHomeWidgetSettings === "function"){
+        applyHomeWidgetSettings();
     }
 });
 </script>
