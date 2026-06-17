@@ -1191,12 +1191,12 @@ button:hover{
             <div class="desc">Premier à 3, 5 ou 10 contre le bot !</div>
         </div>
 
-        <div class="card" onclick="goToGame('puissance4.html')">
-            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Puissance 4','puissance4.html','🔴')">☆</button>
-            <div class="icon">🔴</div>
-            <div class="title">Puissance 4</div>
-            <div class="desc">Aligne 4 pions contre un ami ou un bot !</div>
-        </div>
+       <div class="card" onclick="openPuissance4()">
+    <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Puissance 4','puissance4.html','🔴')">☆</button>
+    <div class="icon">🔴</div>
+    <div class="title">Puissance 4</div>
+    <div class="desc">Aligne 4 pions contre un ami ou un bot !</div>
+</div>
 
         <div class="card" onclick="goToGame('2048.html')">
             <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('2048 Deluxe','2048.html','🔢')">☆</button>
@@ -2806,6 +2806,21 @@ window.addEventListener("beforeunload", () => {
         }, { merge:true });
     }
 });
+
+function openPuissance4(){
+    savePseudo();
+
+    if(localStorage.getItem("playMode") === "online"){
+        trackGame("Puissance 4 Online","puissance4_online.html");
+        window.location.href = "puissance4_online.html";
+    }else{
+        trackGame("Puissance 4","puissance4.html");
+        window.location.href = "puissance4.html";
+    }
+}
+
+
+
 </script>
 
 </body>
