@@ -817,13 +817,16 @@ function createCenterCard(cardA, cardB){
     cardA = Array.isArray(cardA) && cardA.length ? cardA : createInitialCard();
     cardB = Array.isArray(cardB) && cardB.length ? cardB : createInitialCard();
 
+    // On garantit au moins 1 symbole commun avec la carte du joueur.
     const commonA = cardA[Math.floor(Math.random() * cardA.length)];
-    const possibleB = cardB.filter(s => s !== commonA);
-    const commonB = possibleB.length
-        ? possibleB[Math.floor(Math.random() * possibleB.length)]
-        : cardB[Math.floor(Math.random() * cardB.length)];
 
-    let card = [...new Set([commonA, commonB].filter(Boolean))];
+    let card = [commonA];
+
+    // On ajoute parfois un symbole commun avec l'autre joueur aussi.
+    const possibleB = cardB.filter(s => s !== commonA);
+    if(possibleB.length > 0 && Math.random() < 0.75){
+        card.push(possibleB[Math.floor(Math.random() * possibleB.length)]);
+    }
 
     let pool = shuffle(SYMBOLS.filter(s => !card.includes(s)));
 
@@ -838,13 +841,10 @@ function createCenterCard(cardA, cardB){
         }
     }
 
-    return shuffle(card).slice(0,6);
+    return shuffle(card);
 }
 
 function buildDeck(cardA, cardB, count=24){
-    cardA = Array.isArray(cardA) && cardA.length === 6 ? cardA : createInitialCard();
-    cardB = Array.isArray(cardB) && cardB.length === 6 ? cardB : createInitialCard();
-
     let deck = [];
     let currentA = [...cardA];
     let currentB = [...cardB];
@@ -856,9 +856,9 @@ function buildDeck(cardA, cardB, count=24){
             deck.push(center);
 
             if(i % 2 === 0){
-                currentA = center;
+                currentA = [...center];
             }else{
-                currentB = center;
+                currentB = [...center];
             }
         }
     }
@@ -969,6 +969,8 @@ function listenRoom(id){
 }
 
 function applyRoom(){
+    if(!room) return;
+
     renderPlayers();
     renderLog();
 
@@ -1007,7 +1009,7 @@ function applyRoom(){
     }
 
     if(room.status === "ended"){
-        renderCard("centerCard", Array.isArray(room.centerCard) ? room.centerCard : []);
+        renderCard("centerCard", room.centerCard || []);
         renderMyCard();
         showFinal();
     }
@@ -1025,7 +1027,7 @@ function renderPlayers(){
         <div class="slot filled">
             <strong>${room.hostPseudo || "Hôte"}</strong>
             <span class="hostBadge"> 👑</span>
-            <br>${room.status === "ended" ? "Cartes gagnées : " + (room.players && room.players[room.hostUid] ? room.players[room.hostUid].won : 0) : "En jeu"}
+            <br>${room.status === "ended" ? "Cartes gagnées : " + (room.players && room...players[room.hostUid] ? room...players[room.hostUid].won : 0) : "En jeu"}
         </div>
     `;
 
@@ -1033,7 +1035,7 @@ function renderPlayers(){
         box.innerHTML += `
             <div class="slot filled">
                 <strong>${room.guestPseudo}</strong>
-                <br>${room.status === "ended" ? "Cartes gagnées : " + (room.players && room.players[room.guestUid] ? room.players[room.guestUid].won : 0) : "En jeu"}
+                <br>${room.status === "ended" ? "Cartes gagnées : " + (room.players && room...players[room.guestUid] ? room...players[room.guestUid].won : 0) : "En jeu"}
             </div>
         `;
     }else{
@@ -1111,12 +1113,12 @@ function renderCard(id, symbols){
 }
 
 function renderMyCard(){
-    if(!room || !room.players || !room.players[user.uid]){
+    if(!room || !room.players || !room...players[user.uid]){
         renderCard("myCard", []);
         return;
     }
 
-    renderCard("myCard", room.players[user.uid].card || []);
+    renderCard("myCard", room...players[user.uid].card || []);
 }
 
 function renderLog(){
@@ -1364,12 +1366,7 @@ async function startGame(){
     }
 
     let deck = buildDeck(hostCard, guestCard, 24);
-
-    if(!Array.isArray(deck)){
-        deck = [];
-    }
-
-    deck = deck.filter(card => Array.isArray(card) && card.length === 6);
+    deck = Array.isArray(deck) ? deck.filter(card => Array.isArray(card) && card.length === 6) : [];
 
     if(deck.length === 0){
         deck.push(createCenterCard(hostCard, guestCard));
@@ -1395,26 +1392,31 @@ async function startGame(){
         card:guestCard
     };
 
-    await updateDoc(doc(db,"dobbleRooms",roomId),{
-        status:"playing",
-        players:players,
-        centerCard:centerCard,
-        deck:deck,
-        lastWinner:"",
-        lastSymbol:"",
-        log:["🎮 Partie Dobble lancée !"]
-    });
+    try{
+        await updateDoc(doc(db,"dobbleRooms",roomId),{
+            status:"playing",
+            players:players,
+            centerCard:centerCard,
+            deck:deck,
+            lastWinner:"",
+            lastSymbol:"",
+            log:["🎮 Partie Dobble lancée !"]
+        });
 
-    room = {
-        ...room,
-        status:"playing",
-        players:players,
-        centerCard:centerCard,
-        deck:deck,
-        log:["🎮 Partie Dobble lancée !"]
-    };
+        // Affichage immédiat côté hôte, sans attendre Firestore.
+        room = {
+            ...room,
+            status:"playing",
+            players:players,
+            centerCard:centerCard,
+            deck:deck,
+            log:["🎮 Partie Dobble lancée !"]
+        };
+        applyRoom();
 
-    applyRoom();
+    }catch(error){
+        alert(error.message);
+    }
 }
 window.startGame = startGame;
 
@@ -1429,28 +1431,24 @@ async function repairEmptyCenterCard(){
         const hostCard = room.players[room.hostUid]?.card || createInitialCard();
         const guestCard = room.players[room.guestUid]?.card || createInitialCard();
 
-        let deck = room.deck && room.deck.length ? [...room.deck] : buildDeck(hostCard,guestCard,24);
-
-        if(!Array.isArray(deck)){
-            deck = [];
-        }
-
-        deck = deck.filter(card => Array.isArray(card) && card.length === 6);
+        let deck = room.deck && room.deck.length ? [...room.deck] : buildDeck(hostCard, guestCard, 24);
+        deck = Array.isArray(deck) ? deck.filter(card => Array.isArray(card) && card.length === 6) : [];
 
         if(deck.length === 0){
-            deck.push(createCenterCard(hostCard,guestCard));
+            deck.push(createCenterCard(hostCard, guestCard));
         }
 
         let centerCard = deck.shift();
 
         if(!Array.isArray(centerCard) || centerCard.length !== 6){
-            centerCard = createCenterCard(hostCard,guestCard);
+            centerCard = createCenterCard(hostCard, guestCard);
         }
 
         await updateDoc(doc(db,"dobbleRooms",roomId),{
             centerCard:centerCard,
             deck:deck
         });
+
     }catch(error){
         console.log(error);
     }
@@ -1461,9 +1459,9 @@ async function repairEmptyCenterCard(){
 async function chooseSymbol(sym){
     if(clickLocked) return;
     if(!room || room.status !== "playing") return;
-    if(!room.players || !room.players[user.uid]) return;
+    if(!room.players || !room...players[user.uid]) return;
 
-    const myCard = room.players[user.uid].card || [];
+    const myCard = room...players[user.uid].card || [];
     const center = room.centerCard || [];
 
     if(!myCard.includes(sym) || !center.includes(sym)){
@@ -1494,7 +1492,7 @@ async function chooseSymbol(sym){
             return;
         }
 
-        const freshMy = r.players[user.uid].card || [];
+        const freshMy = r...players[user.uid].card || [];
         const freshCenter = r.centerCard || [];
 
         if(!freshMy.includes(sym) || !freshCenter.includes(sym)){
@@ -1506,17 +1504,13 @@ async function chooseSymbol(sym){
         players[user.uid].won = (players[user.uid].won || 0) + 1;
         players[user.uid].card = freshCenter;
 
-        let deck = Array.isArray(r.deck) ? [...r.deck] : [];
-        deck = deck.filter(card => Array.isArray(card) && card.length === 6);
-
-        const logs = Array.isArray(r.log) ? [...r.log] : [];
-        logs.push("⚡ " + getMyPseudo() + " trouve " + sym);
+        const deck = r.deck || [];
 
         const updates = {
             players,
             lastWinner:user.uid,
             lastSymbol:sym,
-            log:logs.slice(-25)
+            log:addLog("⚡ " + getMyPseudo() + " trouve " + sym)
         };
 
         if(deck.length === 0){
@@ -1525,7 +1519,9 @@ async function chooseSymbol(sym){
             let nextCenter = deck.shift();
 
             if(!Array.isArray(nextCenter) || nextCenter.length !== 6){
-                nextCenter = createCenterCard(players[r.hostUid]?.card || createInitialCard(), players[r.guestUid]?.card || createInitialCard());
+                const hostCard = r.players[r.hostUid]?.card || createInitialCard();
+                const guestCard = r.players[r.guestUid]?.card || createInitialCard();
+                nextCenter = createCenterCard(hostCard, guestCard);
             }
 
             updates.centerCard = nextCenter;
@@ -1664,13 +1660,17 @@ async function restartGame(){
     players[room.guestUid].won = 0;
 
     let deck = buildDeck(players[room.hostUid].card, players[room.guestUid].card, 24);
-    deck = deck.filter(card => Array.isArray(card) && card.length === 6);
+    deck = Array.isArray(deck) ? deck.filter(card => Array.isArray(card) && card.length === 6) : [];
 
     if(deck.length === 0){
         deck.push(createCenterCard(players[room.hostUid].card, players[room.guestUid].card));
     }
 
-    const centerCard = deck.shift();
+    let centerCard = deck.shift();
+
+    if(!Array.isArray(centerCard) || centerCard.length !== 6){
+        centerCard = createCenterCard(players[room.hostUid].card, players[room.guestUid].card);
+    }
 
     await updateDoc(doc(db,"dobbleRooms",roomId),{
         status:"playing",
@@ -1680,17 +1680,7 @@ async function restartGame(){
         log:["🔁 Nouvelle partie Dobble !"]
     });
 
-    room = {
-        ...room,
-        status:"playing",
-        players,
-        centerCard,
-        deck,
-        log:["🔁 Nouvelle partie Dobble !"]
-    };
-
     document.getElementById("endOverlay").style.display = "none";
-    applyRoom();
 }
 window.restartGame = restartGame;
 
