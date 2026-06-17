@@ -934,6 +934,322 @@ button:hover{
     }
 }
 
+
+/* ================= V7 GLOBAL CLEAN ================= */
+body{
+    display:block !important;
+    align-items:initial !important;
+    justify-content:initial !important;
+    padding-top:86px !important;
+    overflow-x:hidden;
+}
+
+#container{
+    width:min(1220px,94%) !important;
+    max-width:none !important;
+    margin:0 auto 55px;
+}
+
+h1{
+    font-size:clamp(42px,5vw,66px) !important;
+    letter-spacing:-1px;
+}
+
+.subtitle{
+    margin-bottom:22px !important;
+}
+
+#topBar{
+    backdrop-filter:blur(12px);
+    background:rgba(2,6,23,.92) !important;
+}
+
+#topTitle{
+    letter-spacing:-.3px;
+}
+
+#pseudoBox{
+    background:rgba(15,23,42,.72);
+    border:1px solid rgba(148,163,184,.22);
+    border-radius:20px;
+    width:min(620px,100%);
+    margin:0 auto 28px !important;
+    padding:14px;
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+#pseudoBox input{
+    background:#020617;
+    color:white;
+    border:1px solid rgba(148,163,184,.25);
+}
+
+#pseudoBox button{
+    background:#38bdf8;
+    color:#082f49;
+    margin:0;
+}
+
+#homeDashboard{
+    grid-template-columns:1.45fr .9fr .9fr !important;
+    align-items:stretch;
+    margin:24px 0 28px !important;
+}
+
+.homeWidget{
+    border-radius:24px !important;
+    background:linear-gradient(145deg,rgba(15,23,42,.92),rgba(30,41,59,.78)) !important;
+    border:1px solid rgba(148,163,184,.22) !important;
+    box-shadow:0 18px 45px rgba(0,0,0,.28) !important;
+    overflow:hidden;
+    position:relative;
+}
+
+.homeWidget::before{
+    content:"";
+    position:absolute;
+    inset:auto -40px -55px auto;
+    width:130px;
+    height:130px;
+    background:rgba(56,189,248,.12);
+    border-radius:50%;
+}
+
+.homeWidget h3{
+    font-size:18px;
+    color:#facc15 !important;
+}
+
+.homeWidget button{
+    border-radius:12px !important;
+}
+
+#homeProfileCard{
+    min-height:188px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:14px;
+    align-items:center;
+}
+
+#homeProfileCard h3{
+    grid-column:1/-1;
+}
+
+#homeProfileText{
+    position:relative;
+    z-index:2;
+}
+
+.profileAvatar{
+    width:72px !important;
+    height:72px !important;
+    font-size:34px !important;
+    margin:0 !important;
+    box-shadow:0 0 0 5px rgba(56,189,248,.12);
+}
+
+#homeQuickLine{
+    margin-top:8px;
+    color:#94a3b8 !important;
+    font-size:14px;
+}
+
+#homeDashboard .homeWidget:nth-child(4),
+#homeDashboard .homeWidget:nth-child(5){
+    display:none;
+}
+
+#homeMiniStats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:10px;
+}
+
+.miniStat{
+    background:#020617;
+    border-radius:13px;
+    padding:10px;
+    color:#cbd5e1;
+    font-size:13px;
+}
+
+.miniStat strong{
+    display:block;
+    color:white;
+    font-size:18px;
+}
+
+#games{
+    display:grid !important;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:20px !important;
+    align-items:stretch;
+}
+
+.card{
+    width:100% !important;
+    min-height:218px;
+    height:auto !important;
+    border-radius:24px !important;
+    background:linear-gradient(145deg,#1e293b,#0f172a) !important;
+    border:1px solid rgba(148,163,184,.24) !important;
+    box-shadow:0 18px 38px rgba(0,0,0,.28);
+    overflow:hidden;
+}
+
+.card::after{
+    content:"";
+    position:absolute;
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    background:rgba(56,189,248,.08);
+    right:-55px;
+    bottom:-65px;
+    transition:.25s;
+}
+
+.card:hover{
+    border-color:#38bdf8 !important;
+    transform:translateY(-7px) scale(1.015) !important;
+}
+
+.card:hover::after{
+    transform:scale(1.25);
+}
+
+.icon,.title,.desc{
+    position:relative;
+    z-index:2;
+}
+
+.icon{
+    font-size:64px !important;
+}
+
+.title{
+    font-size:25px !important;
+}
+
+.desc{
+    font-size:15px;
+    line-height:1.35;
+}
+
+.favoriteStar{
+    backdrop-filter:blur(8px);
+    border:1px solid rgba(250,204,21,.25) !important;
+}
+
+#activityHome{
+    margin-top:8px;
+    max-height:75px;
+    overflow:auto;
+    font-size:13px;
+}
+
+.activityLine{
+    padding:4px 0;
+    border-bottom:1px solid rgba(148,163,184,.12);
+}
+
+#accountPanel{
+    width:min(860px,94vw) !important;
+    right:-900px !important;
+    grid-template-columns:210px 1fr !important;
+}
+
+#accountPanel.open{
+    right:0 !important;
+}
+
+#settingsTabs{
+    position:sticky;
+    top:0;
+    align-self:start;
+}
+
+.profileModal{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.86);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:10050;
+    backdrop-filter:blur(5px);
+}
+
+.profileModal.open{
+    display:flex;
+}
+
+.profileModalCard{
+    width:min(420px,90%);
+    background:#0f172a;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:24px;
+    text-align:center;
+    box-shadow:0 25px 70px rgba(0,0,0,.45);
+}
+
+.profileModalAvatar{
+    width:86px;
+    height:86px;
+    margin:0 auto 12px;
+    border-radius:50%;
+    background:#38bdf8;
+    color:#082f49;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:42px;
+    font-weight:bold;
+}
+
+.profileModalCard button{
+    width:100%;
+    margin:8px 0 0 0;
+}
+
+.soundBtn{
+    background:#334155 !important;
+    color:white !important;
+}
+
+@media(max-width:900px){
+    #homeDashboard{
+        grid-template-columns:1fr !important;
+    }
+
+    #homeDashboard .homeWidget:nth-child(4),
+    #homeDashboard .homeWidget:nth-child(5){
+        display:block;
+    }
+
+    #accountPanel{
+        grid-template-columns:1fr !important;
+    }
+
+    #settingsTabs{
+        position:static;
+        display:flex;
+        overflow:auto;
+        gap:7px;
+    }
+
+    .settingsTab{
+        min-width:145px !important;
+        text-align:center !important;
+    }
+}
+
 </style>
 </head>
 
@@ -1051,6 +1367,7 @@ button:hover{
             <label><input type="checkbox" id="notifInvites" checked> Invitations de jeu</label><br>
             <label><input type="checkbox" id="notifMessages" checked> Messages</label><br>
             <button onclick="saveNotifSettings()">Sauvegarder</button>
+            <button class="soundBtn" onclick="playUISound('success')">Tester le son</button>
         </div>
 
         <div id="settings_friends" class="settingsPage">
@@ -1125,23 +1442,31 @@ button:hover{
     <div class="subtitle">Bienvenue sur ta plateforme de mini-jeux !</div>
 
     <div id="homeDashboard">
-        <div class="homeWidget">
-            <h3>👤 Profil</h3>
+        <div class="homeWidget" id="homeProfileCard">
+            <h3>👤 Ton espace</h3>
             <div class="profileAvatar" id="homeAvatar">?</div>
-            <div><strong id="homePseudo">Joueur</strong></div>
-            <div id="homeStatus" class="statusPill">Hors ligne</div>
-            <button onclick="toggleAccountPanel();showSettingsPage('profile')">Voir le profil</button>
+            <div id="homeProfileText">
+                <div><strong id="homePseudo">Joueur</strong></div>
+                <div id="homeStatus" class="statusPill">Hors ligne</div>
+                <div id="homeQuickLine">Bienvenue sur Mini Games.</div>
+                <div id="homeMiniStats">
+                    <div class="miniStat"><strong id="miniStatGames">0</strong> parties</div>
+                    <div class="miniStat"><strong id="miniStatFav">—</strong> favori</div>
+                </div>
+            </div>
         </div>
 
         <div class="homeWidget">
-            <h3>🕹️ Dernier jeu</h3>
+            <h3>⭐ Accès rapide</h3>
+            <div id="favoriteGamesHome">Aucun favori.</div>
+            <div style="margin-top:10px;color:#94a3b8;font-size:13px;">Clique sur ☆ sur un jeu pour l’ajouter ici.</div>
+        </div>
+
+        <div class="homeWidget">
+            <h3>🕹️ Reprendre</h3>
             <div id="lastGameText">Aucun jeu lancé récemment.</div>
             <button onclick="openLastGame()">Reprendre</button>
-        </div>
-
-        <div class="homeWidget">
-            <h3>⭐ Favoris</h3>
-            <div id="favoriteGamesHome">Aucun favori.</div>
+            <div id="activityHome"></div>
         </div>
 
         <div class="homeWidget">
@@ -1229,6 +1554,17 @@ button:hover{
     </div>
 
     <div class="footer">Ton pseudo est sauvegardé automatiquement dans le navigateur.</div>
+</div>
+
+
+<div id="friendProfileModal" class="profileModal">
+    <div class="profileModalCard">
+        <div class="profileModalAvatar" id="friendProfileAvatar">👤</div>
+        <h2 id="friendProfileName">Profil</h2>
+        <p id="friendProfileBio" style="color:#cbd5e1;margin:10px 0;">Aucune bio.</p>
+        <div id="friendProfileStatus" class="statusPill">Statut inconnu</div>
+        <button onclick="closeFriendProfile()">Fermer</button>
+    </div>
 </div>
 
 <div id="loginOverlay">
@@ -1377,6 +1713,7 @@ function showSettingsPage(page){
     if(page === "chat" && typeof loadChatFriends === "function") loadChatFriends();
     if(page === "rankings" && typeof loadRankings === "function") loadRankings();
     if(page === "stats") renderStats();
+    if(page === "badges" && typeof renderBadges === "function") renderBadges();
 }
 
 function showAuthPage(page){
@@ -1504,6 +1841,8 @@ function trackGame(name,page){
     stats.plays[name] = (stats.plays[name] || 0) + 1;
     localStorage.setItem("miniStats", JSON.stringify(stats));
 
+    addActivity("🎮 Jeu lancé : " + name);
+    playUISound("click");
     renderHomeDashboard();
 }
 
@@ -1564,6 +1903,29 @@ function renderHomeDashboard(){
     renderStats();
 }
 
+
+function renderBadges(){
+    const box = document.getElementById("badgesList");
+    if(!box) return;
+
+    const stats = JSON.parse(localStorage.getItem("miniStats") || '{"games":0,"wins":0,"losses":0,"plays":{}}');
+    const favs = getFavorites();
+
+    const badges = [
+        {ok:true, text:"👤 Compte créé"},
+        {ok:favs.length > 0, text:"⭐ Premier favori"},
+        {ok:(stats.games || 0) >= 1, text:"🎮 Première partie"},
+        {ok:(stats.games || 0) >= 10, text:"🔥 10 parties"},
+        {ok:stats.plays && stats.plays["UNO Online"], text:"🃏 Joueur UNO"},
+        {ok:stats.plays && stats.plays["Puissance 4 Online"], text:"🔴 Joueur Puissance 4"}
+    ];
+
+    box.innerHTML = "";
+    badges.forEach(b=>{
+        box.innerHTML += `<span class="badge ${b.ok ? "" : "locked"}">${b.text}</span>`;
+    });
+}
+
 function renderStats(){
     const stats = JSON.parse(localStorage.getItem("miniStats") || '{"games":0,"wins":0,"losses":0,"plays":{}}');
 
@@ -1586,6 +1948,11 @@ function renderStats(){
         document.getElementById("quickStatsHome").innerHTML =
         "Parties jouées : " + (stats.games || 0) + "<br>Victoires : " + (stats.wins || 0) + "<br>Jeu préféré : " + fav;
     }
+
+    if(document.getElementById("miniStatGames")) document.getElementById("miniStatGames").innerText = stats.games || 0;
+    if(document.getElementById("miniStatFav")) document.getElementById("miniStatFav").innerText = fav === "Aucun" ? "—" : fav.split(" ")[0];
+
+    renderActivity();
 }
 
 function setTheme(theme){
@@ -1677,6 +2044,64 @@ function loadLocalSettings(){
 
     renderHomeDashboard();
 }
+
+
+function playUISound(type="click"){
+    const notif = JSON.parse(localStorage.getItem("notifSettings") || '{"sound":false}');
+    if(!notif.sound && type !== "success") return;
+
+    try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.frequency.value = type === "success" ? 720 : type === "error" ? 180 : 420;
+        gain.gain.value = 0.04;
+
+        osc.start();
+        setTimeout(()=>{
+            osc.stop();
+            ctx.close();
+        }, type === "success" ? 150 : 90);
+    }catch(e){}
+}
+
+function addActivity(text){
+    const list = JSON.parse(localStorage.getItem("recentActivity") || "[]");
+    list.unshift({
+        text,
+        time:Date.now()
+    });
+
+    localStorage.setItem("recentActivity", JSON.stringify(list.slice(0,8)));
+    renderActivity();
+}
+
+function renderActivity(){
+    const box = document.getElementById("activityHome");
+    if(!box) return;
+
+    const list = JSON.parse(localStorage.getItem("recentActivity") || "[]");
+
+    if(list.length === 0){
+        box.innerHTML = "";
+        return;
+    }
+
+    box.innerHTML = "<div style='margin-top:10px;color:#facc15;'>Activité récente</div>";
+
+    list.slice(0,3).forEach(a=>{
+        box.innerHTML += `<div class="activityLine">${a.text}</div>`;
+    });
+}
+
+function closeFriendProfile(){
+    document.getElementById("friendProfileModal").classList.remove("open");
+}
+
 
 window.addEventListener("load", () => {
     const mode = localStorage.getItem("playMode");
@@ -2159,6 +2584,29 @@ window.refuseFriendRequest = async function(requestId){
     }
 };
 
+
+window.openFriendProfile = async function(friendUid){
+    try{
+        const snap = await getDoc(doc(db, "users", friendUid));
+
+        if(!snap.exists()){
+            alert("Profil introuvable.");
+            return;
+        }
+
+        const f = snap.data();
+
+        document.getElementById("friendProfileAvatar").innerText = f.avatar || "👤";
+        document.getElementById("friendProfileName").innerText = f.pseudo || "Joueur";
+        document.getElementById("friendProfileBio").innerText = f.bio || "Aucune bio.";
+        document.getElementById("friendProfileStatus").innerText = f.online ? "🟢 En ligne" : "⚫ Hors ligne";
+        document.getElementById("friendProfileModal").classList.add("open");
+    }catch(error){
+        alert(error.message);
+    }
+};
+
+
 window.loadFriends = async function(){
     const user = auth.currentUser;
     const box = document.getElementById("friendsList");
@@ -2191,6 +2639,7 @@ window.loadFriends = async function(){
                         <span class="friendName">${f.pseudo}</span><br>
                         ${status}
                         <br>
+                        <button class="smallBtn" onclick="openFriendProfile('${friendUid}')">👤 Profil</button>
                         <button class="smallBtn" onclick="openChatFromFriend('${friendUid}','${f.pseudo}')">💬 Chat</button>
                         <button class="smallBtn dangerBtn" onclick="removeFriend('${friendUid}')">Retirer</button>
                     </div>
@@ -2267,6 +2716,7 @@ window.showToastNotification = function(notif){
     text.innerText = notif.text;
 
     toast.classList.add("show");
+    if(typeof playUISound === "function") playUISound("success");
 
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
