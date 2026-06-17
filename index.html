@@ -1880,7 +1880,6 @@ body::before{
     <button onclick="goToGame('mole.html')">🔨 Whack-a-Mole</button>
     <button onclick="goToGame('fruit.html')">🍉 Fruit Slice</button>
 <button onclick="openUno()">🃏 Uno</button>
-    <button onclick="openDobble()">🃏 Dobble</button>
 </div>
 
 <div id="accountPanel">
@@ -2169,18 +2168,7 @@ body::before{
             <div class="desc">Invite tes amis et joue au UNO en ligne !</div>
             <div id="unoLock">🔒 En ligne requis</div>
         </div>
-
-        <div class="card" onclick="openDobble()">
-            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Dobble Online','dobble_online.html','🃏')">☆</button>
-            <div class="icon">🃏</div>
-            <div class="title">Dobble Online</div>
-            <div class="desc">Trouve le symbole commun le plus vite possible !</div>
-        </div>
-
-
-    
-	
-	</div>
+</div>
 
     <div class="footer">Ton pseudo est sauvegardé automatiquement dans le navigateur.</div>
 </div>
@@ -2233,10 +2221,20 @@ body::before{
 </div>
 
 
-
-
-
 <script>
+
+function cleanupDobbleData(){
+    let favs = JSON.parse(localStorage.getItem("favorites") || "[]");
+    favs = favs.filter(f => f.name !== "Dobble Online" && f.page !== "dobble_online.html");
+    localStorage.setItem("favorites", JSON.stringify(favs));
+
+    const last = JSON.parse(localStorage.getItem("lastGame") || "null");
+    if(last && (last.name === "Dobble Online" || last.page === "dobble_online.html")){
+        localStorage.removeItem("lastGame");
+    }
+}
+cleanupDobbleData();
+
 const input = document.getElementById("pseudo");
 input.value = localStorage.getItem("pseudo") || "";
 
@@ -2262,22 +2260,6 @@ function openMorpion(){
         window.location.href = "morpion.html";
     }
 }
-
-
-function openDobble(){
-    savePseudo();
-
-    if(localStorage.getItem("playMode") !== "online"){
-        alert("🔒 Tu dois être connecté en ligne pour jouer à Dobble.");
-        return;
-    }
-
-    trackGame("Dobble Online","dobble_online.html");
-    window.location.href = "dobble_online.html";
-}
-
-
-
 
 
 function openTarget(){
@@ -2784,7 +2766,6 @@ function renderActivity(){
 function closeFriendProfile(){
     document.getElementById("friendProfileModal").classList.remove("open");
 }
-
 
 
 function getHomeWidgetSettings(){
@@ -3458,7 +3439,6 @@ window.removeFriend = async function(friendUid){
 };
 
 
-
 let notifUnsubscribe = null;
 let chatUnsubscribe = null;
 let currentChatFriendUid = "";
@@ -3653,8 +3633,6 @@ window.markNotificationsRead = async function(){
 };
 
 
-
-
 window.openNotification = function(type, fromUid = "", fromPseudo = "", game = ""){
     closeAllPanels();
 
@@ -3676,9 +3654,7 @@ window.openNotification = function(type, fromUid = "", fromPseudo = "", game = "
     }
 
     if(type === "gameInvite"){
-        if(game === "dobble"){
-            window.location.href = "dobble_online.html";
-        }else if(game === "connect4"){
+        ifif(game === "connect4"){
             window.location.href = "puissance4_online.html";
         }else if(game === "uno"){
             window.location.href = "uno_online.html";
