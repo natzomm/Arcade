@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dobble Online</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at top left,rgba(250,204,21,.18),transparent 30%),
+        radial-gradient(circle at top right,rgba(56,189,248,.18),transparent 30%),
+        linear-gradient(135deg,#020617,#0f172a,#7c2d12);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:13px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+h1{
+    font-size:42px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1200px,95%);
+    margin:0 auto 40px;
+    display:grid;
+    grid-template-columns:310px 1fr;
+    gap:22px;
+}
+
+.panel{
+    background:rgba(15,23,42,.88);
+    border:1px solid rgba(148,163,184,.25);
+    border-radius:24px;
+    padding:20px;
+    box-shadow:0 20px 45px rgba(0,0,0,.35);
+}
+
+.actionBtn{
+    width:100%;
+    margin:8px 0;
+    padding:13px;
+    font-size:17px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+.blueBtn{
+    background:#38bdf8 !important;
+    color:#082f49 !important;
+}
+
+.yellowBtn{
+    background:#facc15 !important;
+    color:#422006 !important;
+}
+
+.redBtn{
+    background:#ef4444 !important;
+    color:white !important;
+}
+
+.info,.slot,.scoreLine,.friendItem{
+    background:#020617;
+    border-radius:14px;
+    padding:12px;
+    margin:9px 0;
+    color:#cbd5e1;
+}
+
+.slot.filled{
+    border:2px solid #22c55e;
+    color:white;
+}
+
+.hostBadge{
+    color:#facc15;
+    font-weight:bold;
+}
+
+.friendItem{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+}
+
+.friendItem button{
+    padding:8px 11px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+#friendList{
+    max-height:210px;
+    overflow:auto;
+}
+
+#status{
+    text-align:center;
+    font-size:27px;
+    font-weight:bold;
+    color:#facc15;
+    min-height:36px;
+    margin-bottom:14px;
+}
+
+#gameArea{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+    align-items:center;
+}
+
+.cardZone{
+    text-align:center;
+}
+
+.cardTitle{
+    font-weight:bold;
+    margin-bottom:10px;
+    color:#cbd5e1;
+}
+
+.dobbleCard{
+    width:min(360px,42vw);
+    height:min(360px,42vw);
+    min-width:280px;
+    min-height:280px;
+    border-radius:50%;
+    background:
+        radial-gradient(circle at center,#fff 0%,#f8fafc 62%,#e2e8f0 100%);
+    margin:0 auto;
+    position:relative;
+    border:9px solid #facc15;
+    box-shadow:
+        0 20px 40px rgba(0,0,0,.4),
+        inset 0 0 22px rgba(15,23,42,.18);
+}
+
+.symbol{
+    position:absolute;
+    width:74px;
+    height:74px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:45px;
+    background:rgba(255,255,255,.82);
+    border:2px solid rgba(15,23,42,.12);
+    box-shadow:0 8px 16px rgba(0,0,0,.12);
+    user-select:none;
+    cursor:pointer;
+    transform:translate(-50%,-50%);
+    transition:.15s;
+}
+
+.symbol:hover{
+    transform:translate(-50%,-50%) scale(1.12);
+    background:#fef3c7;
+}
+
+.centerCard .symbol{
+    cursor:default;
+}
+
+#deckInfo{
+    text-align:center;
+    margin-top:15px;
+    font-size:18px;
+    color:#cbd5e1;
+}
+
+#log{
+    margin-top:15px;
+    background:#020617;
+    border-radius:14px;
+    padding:12px;
+    max-height:140px;
+    overflow:auto;
+    color:#cbd5e1;
+    font-size:14px;
+}
+
+.logLine{
+    padding:5px 0;
+    border-bottom:1px solid rgba(148,163,184,.15);
+}
+
+#inviteOverlay,#endOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:80;
+    backdrop-filter:blur(5px);
+}
+
+.modalCard{
+    width:min(430px,90%);
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:28px;
+    text-align:center;
+    box-shadow:0 25px 60px rgba(0,0,0,.45);
+}
+
+.modalCard h2{
+    font-size:35px;
+    margin-bottom:14px;
+}
+
+.modalCard button{
+    width:100%;
+    padding:13px;
+    margin:8px 0;
+    font-size:18px;
+}
+
+.flashWin{
+    animation:flashWin .6s ease-out;
+}
+
+@keyframes flashWin{
+    0%{transform:scale(.9);filter:brightness(1)}
+    50%{transform:scale(1.06);filter:brightness(1.35)}
+    100%{transform:scale(1);filter:brightness(1)}
+}
+
+@media(max-width:850px){
+    header h1{
+        font-size:33px;
+    }
+
+    #container{
+        grid-template-columns:1fr;
+    }
+
+    #gameArea{
+        grid-template-columns:1fr;
+        gap:18px;
+    }
+
+    .dobbleCard{
+        width:min(88vw,380px);
+        height:min(88vw,380px);
+        min-width:300px;
+        min-height:300px;
+    }
+
+    .symbol{
+        width:70px;
+        height:70px;
+        font-size:42px;
+    }
+}
+
+@media(max-width:420px){
+    .dobbleCard{
+        width:92vw;
+        height:92vw;
+        min-width:0;
+        min-height:0;
+    }
+
+    .symbol{
+        width:58px;
+        height:58px;
+        font-size:34px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>🃏 Dobble Online</h1>
+        <div>👤 Joueur : <span id="playerName">Joueur</span></div>
+    </div>
+
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+    <aside class="panel">
+        <h2>👥 Salon</h2>
+        <div id="playersBox">
+            <div class="slot">Aucun salon.</div>
+        </div>
+
+        <button class="actionBtn" onclick="createRoom()">➕ Créer salon</button>
+        <button class="actionBtn blueBtn" onclick="loadFriends()">👥 Inviter un ami</button>
+        <button class="actionBtn yellowBtn" onclick="startGame()">▶️ Commencer</button>
+        <button class="actionBtn redBtn" onclick="leaveRoom()">🚪 Quitter</button>
+
+        <div class="info">
+            Règle : clique sur le symbole commun entre ta carte et la carte centrale. La carte centrale devient ta nouvelle carte.
+        </div>
+
+        <div id="friendList"></div>
+    </aside>
+
+    <main class="panel">
+        <div id="status">Connecte-toi depuis l'accueil.</div>
+
+        <div id="gameArea">
+            <div class="cardZone">
+                <div class="cardTitle">🎯 Carte centrale</div>
+                <div class="dobbleCard centerCard" id="centerCard"></div>
+            </div>
+
+            <div class="cardZone">
+                <div class="cardTitle">🫵 Ta carte</div>
+                <div class="dobbleCard" id="myCard"></div>
+            </div>
+        </div>
+
+        <div id="deckInfo">Pioche : 0 carte</div>
+        <div id="log"></div>
+    </main>
+</div>
+
+<div id="inviteOverlay">
+    <div class="modalCard">
+        <h2>🃏 Invitation Dobble</h2>
+        <p id="inviteText">Quelqu'un t'invite.</p>
+        <button onclick="acceptInvite()">Accepter</button>
+        <button class="redBtn" onclick="refuseInvite()">Refuser</button>
+    </div>
+</div>
+
+<div id="endOverlay">
+    <div class="modalCard">
+        <h2 id="endTitle">Fin de partie</h2>
+        <div id="finalScores" class="info"></div>
+        <button onclick="restartGame()">🔁 Rejouer</button>
+        <button class="redBtn" onclick="leaveRoom()">🚪 Quitter</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    onSnapshot,
+    serverTimestamp,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCicpzlFc-WfbmBjzu8y-bWYPaXu6Mnt24",
+    authDomain: "arcade-fbd7c.firebaseapp.com",
+    projectId: "arcade-fbd7c",
+    storageBucket: "arcade-fbd7c.firebasestorage.app",
+    messagingSenderId: "648897624519",
+    appId: "1:648897624519:web:bffd2e9d3023362f8781e2"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const SYMBOLS = ["🐶","🐱","🦊","🐼","🐸","🐵","🦁","🐯","🐷","🐙","🦋","🐢","🌞","⭐","🌈","🔥","⚡","💎","🍕","🍔","🍟","🍓","🍉","🍪","⚽","🏀","🎲","🎮","🚗","🚀","🎧"];
+
+let user = null;
+let userData = null;
+let roomId = localStorage.getItem("dobble_room") || "";
+let room = null;
+let roomUnsub = null;
+let inviteUnsub = null;
+let pendingInvite = null;
+let clickLocked = false;
+
+function goHome(){
+    window.location.href = "index.html";
+}
+window.goHome = goHome;
+
+onAuthStateChanged(auth, async u=>{
+    user = u;
+
+    if(!user){
+        document.getElementById("status").innerText = "Tu dois être connecté en ligne depuis l'accueil.";
+        return;
+    }
+
+    const snap = await getDoc(doc(db,"users",user.uid));
+    userData = snap.exists() ? snap.data() : {pseudo:localStorage.getItem("pseudo") || "Joueur"};
+
+    document.getElementById("playerName").innerText = getMyPseudo();
+
+    listenInvites();
+    await checkPendingInviteOnLoad();
+
+    if(roomId){
+        listenRoom(roomId);
+    }else{
+        renderEmpty();
+        document.getElementById("status").innerText = "Crée un salon ou accepte une invitation.";
+    }
+});
+
+function getMyPseudo(){
+    return userData && userData.pseudo ? userData.pseudo : "Joueur";
+}
+
+function shuffle(arr){
+    const a = [...arr];
+
+    for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+    }
+
+    return a;
+}
+
+// Deck simplifié mais propre : chaque carte de la pioche partage exactement 1 symbole
+// avec chaque carte joueur au moment où elle est générée.
+function createInitialCard(){
+    return shuffle(SYMBOLS).slice(0,6);
+}
+
+function createCenterCard(cardA, cardB){
+    const commonA = cardA[Math.floor(Math.random()*cardA.length)];
+    const commonB = cardB[Math.floor(Math.random()*cardB.length)];
+
+    // Pour que les deux joueurs puissent jouer, la carte centrale a un symbole commun
+    // avec chacun. Parfois c'est le même, parfois non.
+    let card = [commonA, commonB];
+
+    card = [...new Set(card)];
+
+    const forbidden = new Set([...cardA, ...cardB]);
+
+    const extras = shuffle(SYMBOLS.filter(s => !forbidden.has(s))).slice(0, 6 - card.length);
+
+    card.push(...extras);
+
+    return shuffle(card);
+}
+
+function buildDeck(cardA, cardB, count=24){
+    let deck = [];
+    let a = [...cardA];
+    let b = [...cardB];
+
+    for(let i=0;i<count;i++){
+        const center = createCenterCard(a,b);
+        deck.push(center);
+
+        // Simulation légère pour garder des cartes variées.
+        if(i % 2 === 0){
+            a = center;
+        }else{
+            b = center;
+        }
+    }
+
+    return deck;
+}
+
+function renderEmpty(){
+    document.getElementById("centerCard").innerHTML = "";
+    document.getElementById("myCard").innerHTML = "";
+    document.getElementById("playersBox").innerHTML = "<div class='slot'>Aucun salon.</div>";
+    document.getElementById("deckInfo").innerText = "Pioche : 0 carte";
+}
+
+async function createRoom(){
+    if(!user){
+        alert("Connecte-toi depuis l'accueil.");
+        return;
+    }
+
+    if(roomId){
+        if(!confirm("Tu as déjà un salon. En créer un nouveau ?")) return;
+        await leaveRoom();
+    }
+
+    const roomRef = doc(collection(db,"dobbleRooms"));
+    roomId = roomRef.id;
+    localStorage.setItem("dobble_room", roomId);
+
+    await setDoc(roomRef,{
+        hostUid:user.uid,
+        hostPseudo:getMyPseudo(),
+        guestUid:"",
+        guestPseudo:"",
+        status:"waiting",
+        players:{
+            [user.uid]:{
+                pseudo:getMyPseudo(),
+                won:0,
+                card:createInitialCard()
+            }
+        },
+        centerCard:[],
+        deck:[],
+        lastWinner:"",
+        lastSymbol:"",
+        log:["Salon créé."],
+        createdAt:serverTimestamp()
+    });
+
+    listenRoom(roomId);
+}
+window.createRoom = createRoom;
+
+function listenRoom(id){
+    if(roomUnsub) roomUnsub();
+
+    roomUnsub = onSnapshot(doc(db,"dobbleRooms",id), snap=>{
+        if(!snap.exists()){
+            roomId = "";
+            localStorage.removeItem("dobble_room");
+            room = null;
+            renderEmpty();
+            document.getElementById("status").innerText = "Le salon a été fermé.";
+            return;
+        }
+
+        room = {id:snap.id, ...snap.data()};
+        applyRoom();
+    });
+}
+
+function applyRoom(){
+    renderPlayers();
+    renderLog();
+
+    if(room.status === "waiting"){
+        document.getElementById("endOverlay").style.display = "none";
+        document.getElementById("status").innerText =
+        room.hostUid === user.uid ? "Invite un ami puis lance la partie." : "En attente de l'hôte.";
+        renderCard("centerCard", []);
+        renderMyCard();
+        document.getElementById("deckInfo").innerText = "Pioche : 0 carte";
+        return;
+    }
+
+    if(room.status === "playing"){
+        document.getElementById("endOverlay").style.display = "none";
+        document.getElementById("status").innerText = "Trouve le symbole commun le plus vite possible !";
+        renderCard("centerCard", room.centerCard || []);
+        renderMyCard();
+        document.getElementById("deckInfo").innerText = "Pioche : " + ((room.deck || []).length) + " carte(s)";
+    }
+
+    if(room.status === "ended"){
+        renderCard("centerCard", room.centerCard || []);
+        renderMyCard();
+        showFinal();
+    }
+}
+
+function renderPlayers(){
+    const box = document.getElementById("playersBox");
+
+    if(!room){
+        box.innerHTML = "<div class='slot'>Aucun salon.</div>";
+        return;
+    }
+
+    box.innerHTML = `
+        <div class="slot filled">
+            <strong>${room.hostPseudo || "Hôte"}</strong>
+            <span class="hostBadge"> 👑</span>
+            <br>Cartes gagnées : ${room.players && room.players[room.hostUid] ? room.players[room.hostUid].won : 0}
+        </div>
+    `;
+
+    if(room.guestUid){
+        box.innerHTML += `
+            <div class="slot filled">
+                <strong>${room.guestPseudo}</strong>
+                <br>Cartes gagnées : ${room.players && room.players[room.guestUid] ? room.players[room.guestUid].won : 0}
+            </div>
+        `;
+    }else{
+        box.innerHTML += "<div class='slot'>Invité : vide</div>";
+    }
+}
+
+function renderCard(id, symbols){
+    const card = document.getElementById(id);
+    card.innerHTML = "";
+
+    if(!symbols || symbols.length === 0){
+        return;
+    }
+
+    const positions = [
+        [50,17],
+        [77,34],
+        [74,66],
+        [50,82],
+        [24,65],
+        [23,34]
+    ];
+
+    symbols.forEach((sym,i)=>{
+        const el = document.createElement("div");
+        el.className = "symbol";
+        el.innerText = sym;
+        el.style.left = positions[i][0] + "%";
+        el.style.top = positions[i][1] + "%";
+
+        if(id === "myCard"){
+            el.onclick = () => chooseSymbol(sym);
+        }
+
+        card.appendChild(el);
+    });
+}
+
+function renderMyCard(){
+    if(!room || !room.players || !room.players[user.uid]){
+        renderCard("myCard", []);
+        return;
+    }
+
+    renderCard("myCard", room.players[user.uid].card || []);
+}
+
+function renderLog(){
+    const box = document.getElementById("log");
+    const logs = room && room.log ? room.log : [];
+
+    box.innerHTML = "";
+
+    logs.slice().reverse().slice(0,10).forEach(line=>{
+        box.innerHTML += `<div class="logLine">${line}</div>`;
+    });
+}
+
+function addLog(text){
+    const logs = room && room.log ? [...room.log] : [];
+    logs.push(text);
+    return logs.slice(-25);
+}
+
+async function loadFriends(){
+    if(!user){
+        alert("Connecte-toi.");
+        return;
+    }
+
+    if(!room || !roomId){
+        alert("Crée d'abord un salon.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut inviter.");
+        return;
+    }
+
+    const snap = await getDoc(doc(db,"users",user.uid));
+
+    if(!snap.exists() || !snap.data().friends || snap.data().friends.length === 0){
+        document.getElementById("friendList").innerHTML = "<div class='info'>Tu n'as pas encore d'amis.</div>";
+        return;
+    }
+
+    const friends = snap.data().friends;
+    const box = document.getElementById("friendList");
+    box.innerHTML = "<h3 style='margin-top:15px;'>Inviter</h3>";
+
+    for(const fuid of friends){
+        const fsnap = await getDoc(doc(db,"users",fuid));
+
+        if(fsnap.exists()){
+            const f = fsnap.data();
+
+            box.innerHTML += `
+                <div class="friendItem">
+                    <span>${f.online ? "🟢" : "⚫"} ${f.pseudo}</span>
+                    <button onclick="inviteFriend('${fuid}','${f.pseudo}')">Inviter</button>
+                </div>
+            `;
+        }
+    }
+}
+window.loadFriends = loadFriends;
+
+async function inviteFriend(friendUid, friendPseudo){
+    if(!room || !roomId) return;
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut inviter.");
+        return;
+    }
+
+    if(room.guestUid){
+        alert("Le salon est déjà plein.");
+        return;
+    }
+
+    await addDoc(collection(db,"gameInvites"),{
+        game:"dobble",
+        roomId,
+        fromUid:user.uid,
+        fromPseudo:getMyPseudo(),
+        toUid:friendUid,
+        toPseudo:friendPseudo,
+        status:"pending",
+        createdAt:serverTimestamp()
+    });
+
+    await addDoc(collection(db,"notifications"),{
+        toUid:friendUid,
+        type:"gameInvite",
+        game:"dobble",
+        roomId,
+        text:getMyPseudo() + " t'invite à jouer au Dobble.",
+        read:false,
+        fromUid:user.uid,
+        fromPseudo:getMyPseudo(),
+        createdAt:serverTimestamp()
+    });
+
+    alert("Invitation Dobble envoyée à " + friendPseudo);
+}
+window.inviteFriend = inviteFriend;
+
+function listenInvites(){
+    if(inviteUnsub) inviteUnsub();
+
+    const q = query(
+        collection(db,"gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","dobble"),
+        where("status","==","pending")
+    );
+
+    inviteUnsub = onSnapshot(q, snap=>{
+        if(snap.empty) return;
+
+        const d = snap.docs[0];
+        pendingInvite = {id:d.id, ...d.data()};
+
+        document.getElementById("inviteText").innerText =
+        pendingInvite.fromPseudo + " t'invite à jouer au Dobble.";
+
+        document.getElementById("inviteOverlay").style.display = "flex";
+    });
+}
+
+async function checkPendingInviteOnLoad(){
+    const q = query(
+        collection(db,"gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","dobble"),
+        where("status","==","pending")
+    );
+
+    const snap = await getDocs(q);
+
+    if(snap.empty) return;
+
+    const d = snap.docs[0];
+    pendingInvite = {id:d.id, ...d.data()};
+
+    document.getElementById("inviteText").innerText =
+    pendingInvite.fromPseudo + " t'invite à jouer au Dobble.";
+
+    document.getElementById("inviteOverlay").style.display = "flex";
+}
+
+async function acceptInvite(){
+    if(!pendingInvite) return;
+
+    const roomRef = doc(db,"dobbleRooms",pendingInvite.roomId);
+    const roomSnap = await getDoc(roomRef);
+
+    if(!roomSnap.exists()){
+        alert("Le salon n'existe plus.");
+        await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"expired"});
+        document.getElementById("inviteOverlay").style.display = "none";
+        return;
+    }
+
+    const r = roomSnap.data();
+
+    if(r.guestUid && r.guestUid !== user.uid){
+        alert("Le salon est plein.");
+        await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"full"});
+        document.getElementById("inviteOverlay").style.display = "none";
+        return;
+    }
+
+    const players = r.players || {};
+    players[user.uid] = {
+        pseudo:getMyPseudo(),
+        won:0,
+        card:createInitialCard()
+    };
+
+    await updateDoc(roomRef,{
+        guestUid:user.uid,
+        guestPseudo:getMyPseudo(),
+        players
+    });
+
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"accepted"});
+
+    roomId = pendingInvite.roomId;
+    localStorage.setItem("dobble_room", roomId);
+
+    document.getElementById("inviteOverlay").style.display = "none";
+    listenRoom(roomId);
+}
+window.acceptInvite = acceptInvite;
+
+async function refuseInvite(){
+    if(!pendingInvite) return;
+
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"refused"});
+    document.getElementById("inviteOverlay").style.display = "none";
+    pendingInvite = null;
+}
+window.refuseInvite = refuseInvite;
+
+async function startGame(){
+    if(!room){
+        alert("Crée un salon.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut lancer.");
+        return;
+    }
+
+    if(!room.guestUid){
+        alert("Il faut être 2 joueurs.");
+        return;
+    }
+
+    const players = room.players || {};
+    const hostCard = players[room.hostUid].card || createInitialCard();
+    const guestCard = players[room.guestUid].card || createInitialCard();
+
+    const deck = buildDeck(hostCard, guestCard, 24);
+    const centerCard = deck.shift();
+
+    players[room.hostUid].won = 0;
+    players[room.guestUid].won = 0;
+    players[room.hostUid].card = hostCard;
+    players[room.guestUid].card = guestCard;
+
+    await updateDoc(doc(db,"dobbleRooms",roomId),{
+        status:"playing",
+        players,
+        centerCard,
+        deck,
+        lastWinner:"",
+        lastSymbol:"",
+        log:["🎮 Partie Dobble lancée !"]
+    });
+}
+window.startGame = startGame;
+
+async function chooseSymbol(sym){
+    if(clickLocked) return;
+    if(!room || room.status !== "playing") return;
+    if(!room.players || !room.players[user.uid]) return;
+
+    const myCard = room.players[user.uid].card || [];
+    const center = room.centerCard || [];
+
+    if(!myCard.includes(sym) || !center.includes(sym)){
+        document.getElementById("status").innerText = "❌ Mauvais symbole !";
+        setTimeout(()=>applyRoom(),700);
+        return;
+    }
+
+    clickLocked = true;
+
+    try{
+        const roomRef = doc(db,"dobbleRooms",roomId);
+        const fresh = await getDoc(roomRef);
+
+        if(!fresh.exists()){
+            clickLocked = false;
+            return;
+        }
+
+        const r = fresh.data();
+
+        if(r.status !== "playing"){
+            clickLocked = false;
+            return;
+        }
+
+        const freshMy = r.players[user.uid].card || [];
+        const freshCenter = r.centerCard || [];
+
+        if(!freshMy.includes(sym) || !freshCenter.includes(sym)){
+            clickLocked = false;
+            return;
+        }
+
+        const players = r.players;
+        players[user.uid].won = (players[user.uid].won || 0) + 1;
+        players[user.uid].card = freshCenter;
+
+        const deck = r.deck || [];
+
+        const updates = {
+            players,
+            lastWinner:user.uid,
+            lastSymbol:sym,
+            log:addLog("⚡ " + getMyPseudo() + " trouve " + sym)
+        };
+
+        if(deck.length === 0){
+            updates.status = "ended";
+        }else{
+            updates.centerCard = deck.shift();
+            updates.deck = deck;
+        }
+
+        await updateDoc(roomRef, updates);
+
+        document.getElementById("myCard").classList.add("flashWin");
+        setTimeout(()=>document.getElementById("myCard").classList.remove("flashWin"),650);
+
+    }catch(error){
+        alert(error.message);
+    }
+
+    setTimeout(()=>clickLocked=false,350);
+}
+window.chooseSymbol = chooseSymbol;
+
+function showFinal(){
+    const players = room.players || {};
+    const host = players[room.hostUid] || {won:0,pseudo:room.hostPseudo};
+    const guest = players[room.guestUid] || {won:0,pseudo:room.guestPseudo};
+
+    let winnerText = "🤝 Égalité !";
+
+    if((host.won || 0) > (guest.won || 0)){
+        winnerText = "🏆 " + (host.pseudo || room.hostPseudo) + " gagne !";
+    }else if((guest.won || 0) > (host.won || 0)){
+        winnerText = "🏆 " + (guest.pseudo || room.guestPseudo) + " gagne !";
+    }
+
+    document.getElementById("endTitle").innerText = winnerText;
+    document.getElementById("finalScores").innerHTML =
+        (host.pseudo || room.hostPseudo) + " : " + (host.won || 0) + " carte(s)<br>" +
+        (guest.pseudo || room.guestPseudo) + " : " + (guest.won || 0) + " carte(s)";
+
+    document.getElementById("endOverlay").style.display = "flex";
+    document.getElementById("status").innerText = "Partie terminée.";
+}
+
+async function restartGame(){
+    if(!room || room.hostUid !== user.uid){
+        alert("Seul l'hôte peut relancer.");
+        return;
+    }
+
+    const players = room.players || {};
+
+    if(!room.guestUid){
+        alert("Il faut être 2.");
+        return;
+    }
+
+    players[room.hostUid].card = createInitialCard();
+    players[room.guestUid].card = createInitialCard();
+    players[room.hostUid].won = 0;
+    players[room.guestUid].won = 0;
+
+    const deck = buildDeck(players[room.hostUid].card, players[room.guestUid].card, 24);
+    const centerCard = deck.shift();
+
+    await updateDoc(doc(db,"dobbleRooms",roomId),{
+        status:"playing",
+        players,
+        centerCard,
+        deck,
+        log:["🔁 Nouvelle partie Dobble !"]
+    });
+
+    document.getElementById("endOverlay").style.display = "none";
+}
+window.restartGame = restartGame;
+
+async function leaveRoom(){
+    if(!roomId){
+        goHome();
+        return;
+    }
+
+    if(room && room.hostUid === user.uid){
+        if(confirm("Tu es hôte. Quitter va fermer le salon.")){
+            await deleteDoc(doc(db,"dobbleRooms",roomId));
+        }else{
+            return;
+        }
+    }else if(room){
+        const players = room.players || {};
+        delete players[user.uid];
+
+        await updateDoc(doc(db,"dobbleRooms",roomId),{
+            guestUid:"",
+            guestPseudo:"",
+            status:"waiting",
+            players,
+            centerCard:[],
+            deck:[],
+            log:addLog("Un joueur a quitté le salon.")
+        });
+    }
+
+    roomId = "";
+    localStorage.removeItem("dobble_room");
+    room = null;
+    document.getElementById("endOverlay").style.display = "none";
+    renderEmpty();
+    document.getElementById("status").innerText = "Tu as quitté le salon.";
+}
+window.leaveRoom = leaveRoom;
+
+renderEmpty();
+</script>
+
+</body>
+</html>

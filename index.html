@@ -2220,6 +2220,16 @@ body::before{
     </div>
 </div>
 
+<div class="card" onclick="openDobble()">
+    <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Dobble Online','dobble_online.html','🃏')">☆</button>
+    <div class="icon">🃏</div>
+    <div class="title">Dobble Online</div>
+    <div class="desc">Trouve le symbole commun le plus vite possible !</div>
+</div>
+
+
+
+
 <script>
 const input = document.getElementById("pseudo");
 input.value = localStorage.getItem("pseudo") || "";
@@ -2246,6 +2256,22 @@ function openMorpion(){
         window.location.href = "morpion.html";
     }
 }
+
+
+function openDobble(){
+    savePseudo();
+
+    if(localStorage.getItem("playMode") !== "online"){
+        alert("🔒 Tu dois être connecté en ligne pour jouer à Dobble.");
+        return;
+    }
+
+    trackGame("Dobble Online","dobble_online.html");
+    window.location.href = "dobble_online.html";
+}
+
+
+
 
 
 function openTarget(){
