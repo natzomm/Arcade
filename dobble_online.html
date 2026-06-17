@@ -308,6 +308,123 @@ h1{
         font-size:34px;
     }
 }
+
+/* ================= DOBBLE V2 ================= */
+.dobbleCard{
+    transition:transform .45s ease, filter .35s ease;
+    transform-style:preserve-3d;
+}
+
+.dobbleCard.flip{
+    animation:cardFlip .55s ease;
+}
+
+@keyframes cardFlip{
+    0%{transform:rotateY(0deg) scale(1)}
+    50%{transform:rotateY(90deg) scale(.96);filter:brightness(1.2)}
+    100%{transform:rotateY(0deg) scale(1)}
+}
+
+.symbol{
+    animation:symbolPop .25s ease-out;
+}
+
+@keyframes symbolPop{
+    from{transform:translate(-50%,-50%) scale(.6) rotate(var(--rot))}
+    to{transform:translate(-50%,-50%) scale(1) rotate(var(--rot))}
+}
+
+.symbol:hover{
+    transform:translate(-50%,-50%) scale(1.13) rotate(var(--rot)) !important;
+}
+
+.goodFlash{
+    animation:goodFlash .55s ease-out;
+}
+
+@keyframes goodFlash{
+    0%{box-shadow:0 0 0 rgba(34,197,94,0)}
+    40%{box-shadow:0 0 40px rgba(34,197,94,.9)}
+    100%{box-shadow:0 20px 40px rgba(0,0,0,.4)}
+}
+
+.badFlash{
+    animation:badFlash .45s ease-out;
+}
+
+@keyframes badFlash{
+    0%{box-shadow:0 0 0 rgba(239,68,68,0)}
+    40%{box-shadow:0 0 40px rgba(239,68,68,.95)}
+    100%{box-shadow:0 20px 40px rgba(0,0,0,.4)}
+}
+
+#secretScoreText{
+    text-align:center;
+    margin-top:14px;
+    color:#94a3b8;
+    font-size:15px;
+}
+
+#countAnimation{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.countBox{
+    background:#020617;
+    border-radius:18px;
+    padding:15px;
+    border:1px solid rgba(148,163,184,.22);
+}
+
+.countName{
+    color:#cbd5e1;
+    font-size:15px;
+    margin-bottom:8px;
+}
+
+.countNumber{
+    font-size:46px;
+    color:#facc15;
+    font-weight:900;
+}
+
+.cardPileAnim{
+    height:54px;
+    margin:10px auto 0;
+    position:relative;
+    width:90px;
+}
+
+.pileCard{
+    position:absolute;
+    width:38px;
+    height:50px;
+    border-radius:8px;
+    background:white;
+    border:2px solid #facc15;
+    left:50%;
+    transform:translateX(-50%);
+    animation:pilePop .25s ease-out;
+}
+
+@keyframes pilePop{
+    from{transform:translateX(-50%) translateY(-18px) scale(.75);opacity:0}
+    to{transform:translateX(-50%) translateY(0) scale(1);opacity:1}
+}
+
+#endTitle.reveal{
+    animation:titleReveal .9s ease-out;
+}
+
+@keyframes titleReveal{
+    0%{transform:scale(.7);opacity:.2}
+    45%{transform:scale(1.15);opacity:1}
+    100%{transform:scale(1)}
+}
+
 </style>
 </head>
 
@@ -357,6 +474,7 @@ h1{
         </div>
 
         <div id="deckInfo">Pioche : 0 carte</div>
+        <div id="secretScoreText">Les cartes gagnées restent secrètes jusqu’à la fin.</div>
         <div id="log"></div>
     </main>
 </div>
@@ -373,7 +491,20 @@ h1{
 <div id="endOverlay">
     <div class="modalCard">
         <h2 id="endTitle">Fin de partie</h2>
-        <div id="finalScores" class="info"></div>
+        <div id="finalScores" class="info">Comptage des cartes...</div>
+        <div id="countAnimation">
+            <div class="countBox">
+                <div class="countName" id="countNameHost">Joueur 1</div>
+                <div class="countNumber" id="countHost">0</div>
+                <div class="cardPileAnim" id="pileHost"></div>
+            </div>
+
+            <div class="countBox">
+                <div class="countName" id="countNameGuest">Joueur 2</div>
+                <div class="countNumber" id="countGuest">0</div>
+                <div class="cardPileAnim" id="pileGuest"></div>
+            </div>
+        </div>
         <button onclick="restartGame()">🔁 Rejouer</button>
         <button class="redBtn" onclick="leaveRoom()">🚪 Quitter</button>
     </div>
@@ -595,6 +726,8 @@ function applyRoom(){
         document.getElementById("status").innerText = "Trouve le symbole commun le plus vite possible !";
         renderCard("centerCard", room.centerCard || []);
         renderMyCard();
+        flipCard("centerCard");
+        flipCard("myCard");
         document.getElementById("deckInfo").innerText = "Pioche : " + ((room.deck || []).length) + " carte(s)";
     }
 
@@ -617,7 +750,7 @@ function renderPlayers(){
         <div class="slot filled">
             <strong>${room.hostPseudo || "Hôte"}</strong>
             <span class="hostBadge"> 👑</span>
-            <br>Cartes gagnées : ${room.players && room.players[room.hostUid] ? room.players[room.hostUid].won : 0}
+            <br>${room.status === "ended" ? "Cartes gagnées : " + (room.players && room.players[room.hostUid] ? room.players[room.hostUid].won : 0) : "En jeu"}
         </div>
     `;
 
@@ -625,11 +758,47 @@ function renderPlayers(){
         box.innerHTML += `
             <div class="slot filled">
                 <strong>${room.guestPseudo}</strong>
-                <br>Cartes gagnées : ${room.players && room.players[room.guestUid] ? room.players[room.guestUid].won : 0}
+                <br>${room.status === "ended" ? "Cartes gagnées : " + (room.players && room.players[room.guestUid] ? room.players[room.guestUid].won : 0) : "En jeu"}
             </div>
         `;
     }else{
         box.innerHTML += "<div class='slot'>Invité : vide</div>";
+    }
+}
+
+
+function shuffledPositions(){
+    const base = [
+        [50,16],
+        [77,32],
+        [75,67],
+        [50,84],
+        [24,67],
+        [23,32]
+    ];
+
+    return shuffle(base);
+}
+
+function flipCard(id){
+    const card = document.getElementById(id);
+    if(!card) return;
+
+    card.classList.remove("flip");
+    void card.offsetWidth;
+    card.classList.add("flip");
+}
+
+function flashCard(id, type){
+    const card = document.getElementById(id);
+    if(!card) return;
+
+    card.classList.remove("goodFlash","badFlash");
+    void card.offsetWidth;
+    card.classList.add(type === "good" ? "goodFlash" : "badFlash");
+
+    if(navigator.vibrate){
+        navigator.vibrate(type === "good" ? 70 : [40,40,40]);
     }
 }
 
@@ -641,21 +810,21 @@ function renderCard(id, symbols){
         return;
     }
 
-    const positions = [
-        [50,17],
-        [77,34],
-        [74,66],
-        [50,82],
-        [24,65],
-        [23,34]
-    ];
+    const positions = shuffledPositions();
 
     symbols.forEach((sym,i)=>{
         const el = document.createElement("div");
         el.className = "symbol";
         el.innerText = sym;
-        el.style.left = positions[i][0] + "%";
-        el.style.top = positions[i][1] + "%";
+
+        const pos = positions[i % positions.length];
+        const rot = Math.floor(Math.random()*70 - 35);
+        const size = 0.88 + Math.random()*0.28;
+
+        el.style.left = pos[0] + "%";
+        el.style.top = pos[1] + "%";
+        el.style.setProperty("--rot", rot + "deg");
+        el.style.transform = "translate(-50%,-50%) scale(" + size + ") rotate(" + rot + "deg)";
 
         if(id === "myCard"){
             el.onclick = () => chooseSymbol(sym);
@@ -923,6 +1092,7 @@ async function chooseSymbol(sym){
 
     if(!myCard.includes(sym) || !center.includes(sym)){
         document.getElementById("status").innerText = "❌ Mauvais symbole !";
+        flashCard("myCard","bad");
         setTimeout(()=>applyRoom(),700);
         return;
     }
@@ -975,8 +1145,7 @@ async function chooseSymbol(sym){
 
         await updateDoc(roomRef, updates);
 
-        document.getElementById("myCard").classList.add("flashWin");
-        setTimeout(()=>document.getElementById("myCard").classList.remove("flashWin"),650);
+        flashCard("myCard","good");
 
     }catch(error){
         alert(error.message);
@@ -986,26 +1155,105 @@ async function chooseSymbol(sym){
 }
 window.chooseSymbol = chooseSymbol;
 
+let finalShownForRoom = "";
+
 function showFinal(){
     const players = room.players || {};
     const host = players[room.hostUid] || {won:0,pseudo:room.hostPseudo};
     const guest = players[room.guestUid] || {won:0,pseudo:room.guestPseudo};
 
-    let winnerText = "🤝 Égalité !";
-
-    if((host.won || 0) > (guest.won || 0)){
-        winnerText = "🏆 " + (host.pseudo || room.hostPseudo) + " gagne !";
-    }else if((guest.won || 0) > (host.won || 0)){
-        winnerText = "🏆 " + (guest.pseudo || room.guestPseudo) + " gagne !";
-    }
-
-    document.getElementById("endTitle").innerText = winnerText;
-    document.getElementById("finalScores").innerHTML =
-        (host.pseudo || room.hostPseudo) + " : " + (host.won || 0) + " carte(s)<br>" +
-        (guest.pseudo || room.guestPseudo) + " : " + (guest.won || 0) + " carte(s)";
+    const hostName = host.pseudo || room.hostPseudo || "Joueur 1";
+    const guestName = guest.pseudo || room.guestPseudo || "Joueur 2";
+    const hostScore = host.won || 0;
+    const guestScore = guest.won || 0;
 
     document.getElementById("endOverlay").style.display = "flex";
     document.getElementById("status").innerText = "Partie terminée.";
+    document.getElementById("countNameHost").innerText = hostName;
+    document.getElementById("countNameGuest").innerText = guestName;
+
+    const key = room.id + "_" + hostScore + "_" + guestScore;
+
+    if(finalShownForRoom === key){
+        setFinalText(hostName,guestName,hostScore,guestScore);
+        document.getElementById("countHost").innerText = hostScore;
+        document.getElementById("countGuest").innerText = guestScore;
+        return;
+    }
+
+    finalShownForRoom = key;
+
+    document.getElementById("endTitle").innerText = "🃏 Comptage...";
+    document.getElementById("endTitle").classList.remove("reveal");
+    document.getElementById("finalScores").innerHTML = "Les cartes sont comptées...";
+    document.getElementById("countHost").innerText = "0";
+    document.getElementById("countGuest").innerText = "0";
+    document.getElementById("pileHost").innerHTML = "";
+    document.getElementById("pileGuest").innerHTML = "";
+
+    animateCount("countHost","pileHost",hostScore,0);
+    animateCount("countGuest","pileGuest",guestScore,180);
+
+    const delay = 1800 + Math.max(hostScore,guestScore) * 90;
+
+    setTimeout(()=>{
+        setFinalText(hostName,guestName,hostScore,guestScore);
+    }, delay);
+}
+
+function setFinalText(hostName,guestName,hostScore,guestScore){
+    let winnerText = "🤝 Égalité !";
+
+    if(hostScore > guestScore){
+        winnerText = "🏆 " + hostName + " gagne !";
+    }else if(guestScore > hostScore){
+        winnerText = "🏆 " + guestName + " gagne !";
+    }
+
+    const title = document.getElementById("endTitle");
+    title.innerText = winnerText;
+    title.classList.remove("reveal");
+    void title.offsetWidth;
+    title.classList.add("reveal");
+
+    document.getElementById("finalScores").innerHTML =
+        hostName + " : " + hostScore + " carte(s)<br>" +
+        guestName + " : " + guestScore + " carte(s)";
+}
+
+function animateCount(countId,pileId,target,delay){
+    const countEl = document.getElementById(countId);
+    const pile = document.getElementById(pileId);
+
+    let current = 0;
+
+    setTimeout(()=>{
+        function step(){
+            countEl.innerText = current;
+
+            if(current > 0){
+                const card = document.createElement("div");
+                card.className = "pileCard";
+                card.style.left = (50 + Math.min(current,12)*2) + "%";
+                card.style.top = Math.min(current,12)*-2 + "px";
+                card.style.transform = "translateX(-50%) rotate(" + (current*7%35-17) + "deg)";
+                pile.appendChild(card);
+            }
+
+            if(current >= target){
+                countEl.innerText = target;
+                return;
+            }
+
+            current++;
+
+            const progress = target === 0 ? 1 : current / target;
+            const nextDelay = 45 + progress * progress * 180;
+            setTimeout(step,nextDelay);
+        }
+
+        step();
+    },delay);
 }
 
 async function restartGame(){
