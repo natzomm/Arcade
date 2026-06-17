@@ -3661,41 +3661,36 @@ window.openNotification = function(type, fromUid = "", fromPseudo = "", game = "
     if(type === "friendRequest"){
         document.getElementById("accountPanel").classList.add("open");
         showSettingsPage("requests");
+        return;
     }
 
-    else if(type === "message"){
+    if(type === "message"){
         document.getElementById("accountPanel").classList.add("open");
         showSettingsPage("chat");
 
         if(fromUid && fromPseudo){
             openConversation(fromUid, fromPseudo);
         }
+
+        return;
     }
 
-    else if(type === "gameInvite"){
-        if(game === "uno"){
-            window.location.href = "uno_online.html";
-        }else{
-            window.location.href = "morpion_online.html";
-        }
-    }
-
-    else if(type === "gameInvite"){
-        if(game === "uno"){
-            window.location.href = "uno_online.html";
+    if(type === "gameInvite"){
+        if(game === "dobble"){
+            window.location.href = "dobble_online.html";
         }else if(game === "connect4"){
             window.location.href = "puissance4_online.html";
-        }else if(game === "dobble"){
-            window.location.href = "dobble_online.html";
+        }else if(game === "uno"){
+            window.location.href = "uno_online.html";
         }else{
             window.location.href = "morpion_online.html";
         }
+
+        return;
     }
 
-    else{
-        document.getElementById("accountPanel").classList.add("open");
-        showSettingsPage("account");
-    }
+    document.getElementById("accountPanel").classList.add("open");
+    showSettingsPage("account");
 };
 window.openChatFromFriend = function(friendUid, friendPseudo){
     document.getElementById("accountPanel").classList.add("open");

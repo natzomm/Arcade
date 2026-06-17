@@ -761,6 +761,7 @@ let roomUnsub = null;
 let inviteUnsub = null;
 let pendingInvite = null;
 let clickLocked = false;
+let repairInProgress = false;
 
 function goHome(){
     window.location.href = "index.html";
@@ -1333,14 +1334,21 @@ async function startGame(){
         };
     }
 
-    const hostCard = players[room.hostUid].card && players[room.hostUid].card.length === 6 ? players[room.hostUid].card : createInitialCard();
-    const guestCard = players[room.guestUid].card && players[room.guestUid].card.length === 6 ? players[room.guestUid].card : createInitialCard();
+    let hostCard = players[room.hostUid].card;
+    let guestCard = players[room.guestUid].card;
+
+    if(!hostCard || hostCard.length !== 6){
+        hostCard = createInitialCard();
+    }
+
+    if(!guestCard || guestCard.length !== 6){
+        guestCard = createInitialCard();
+    }
 
     let deck = buildDeck(hostCard, guestCard, 24);
 
-    if(deck.length === 0){
-        alert("Erreur : la pioche n'a pas pu être créée.");
-        return;
+    if(!deck || deck.length === 0){
+        deck = [createCenterCard(hostCard, guestCard)];
     }
 
     const centerCard = deck.shift();
@@ -1361,34 +1369,47 @@ async function startGame(){
 
     await updateDoc(doc(db,"dobbleRooms",roomId),{
         status:"playing",
-        players,
-        centerCard,
-        deck,
+        players:players,
+        centerCard:centerCard,
+        deck:deck,
         lastWinner:"",
         lastSymbol:"",
         log:["🎮 Partie Dobble lancée !"]
     });
 }
-
 window.startGame = startGame;
 
 
 async function repairEmptyCenterCard(){
+    if(repairInProgress) return;
     if(!room || room.hostUid !== user.uid || !room.players || !room.guestUid) return;
 
-    const hostCard = room.players[room.hostUid]?.card || createInitialCard();
-    const guestCard = room.players[room.guestUid]?.card || createInitialCard();
-    let deck = room.deck && room.deck.length ? [...room.deck] : buildDeck(hostCard,guestCard,24);
-    const centerCard = deck.shift();
+    repairInProgress = true;
 
-    if(centerCard && centerCard.length){
-        await updateDoc(doc(db,"dobbleRooms",roomId),{
-            centerCard,
-            deck
-        });
+    try{
+        const hostCard = room.players[room.hostUid]?.card || createInitialCard();
+        const guestCard = room.players[room.guestUid]?.card || createInitialCard();
+
+        let deck = room.deck && room.deck.length ? [...room.deck] : buildDeck(hostCard,guestCard,24);
+
+        if(!deck || deck.length === 0){
+            deck = [createCenterCard(hostCard,guestCard)];
+        }
+
+        const centerCard = deck.shift();
+
+        if(centerCard && centerCard.length === 6){
+            await updateDoc(doc(db,"dobbleRooms",roomId),{
+                centerCard:centerCard,
+                deck:deck
+            });
+        }
+    }catch(error){
+        console.log(error);
     }
-}
 
+    setTimeout(()=>repairInProgress=false,1000);
+}
 
 async function chooseSymbol(sym){
     if(clickLocked) return;
