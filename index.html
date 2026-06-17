@@ -1250,6 +1250,14 @@ h1{
     }
 }
 
+
+.favoriteStar.active{
+    background:#facc15 !important;
+    color:#422006 !important;
+    border-color:#fde68a !important;
+    box-shadow:0 0 18px rgba(250,204,21,.75);
+}
+
 </style>
 </head>
 
@@ -1820,6 +1828,18 @@ function updateUnoCard(){
     }
 }
 
+function openPuissance4(){
+    savePseudo();
+
+    if(localStorage.getItem("playMode") === "online"){
+        trackGame("Puissance 4 Online","puissance4_online.html");
+        window.location.href = "puissance4_online.html";
+    }else{
+        trackGame("Puissance 4","puissance4.html");
+        window.location.href = "puissance4.html";
+    }
+}
+
 function openUno(){
     const mode = localStorage.getItem("playMode");
 
@@ -1873,6 +1893,26 @@ function toggleFavorite(name,page,emoji){
 
     localStorage.setItem("favorites", JSON.stringify(favs));
     renderHomeDashboard();
+    updateFavoriteStars();
+}
+
+function updateFavoriteStars(){
+    const favs = getFavorites();
+    const names = favs.map(f=>f.name);
+
+    document.querySelectorAll(".favoriteStar").forEach(btn=>{
+        const onclick = btn.getAttribute("onclick") || "";
+        let active = false;
+
+        names.forEach(name=>{
+            if(onclick.includes("'" + name + "'")){
+                active = true;
+            }
+        });
+
+        btn.classList.toggle("active", active);
+        btn.innerText = active ? "★" : "☆";
+    });
 }
 
 function renderHomeDashboard(){
@@ -1953,6 +1993,7 @@ function renderStats(){
     if(document.getElementById("miniStatFav")) document.getElementById("miniStatFav").innerText = fav === "Aucun" ? "—" : fav.split(" ")[0];
 
     renderActivity();
+    if(typeof updateFavoriteStars === "function") updateFavoriteStars();
 }
 
 function setTheme(theme){
@@ -2117,6 +2158,10 @@ window.addEventListener("load", () => {
 
     if(typeof updateUnoCard === "function"){
         updateUnoCard();
+    }
+
+    if(typeof updateFavoriteStars === "function"){
+        updateFavoriteStars();
     }
 });
 </script>
@@ -3256,19 +3301,6 @@ window.addEventListener("beforeunload", () => {
         }, { merge:true });
     }
 });
-
-function openPuissance4(){
-    savePseudo();
-
-    if(localStorage.getItem("playMode") === "online"){
-        trackGame("Puissance 4 Online","puissance4_online.html");
-        window.location.href = "puissance4_online.html";
-    }else{
-        trackGame("Puissance 4","puissance4.html");
-        window.location.href = "puissance4.html";
-    }
-}
-
 
 
 </script>
