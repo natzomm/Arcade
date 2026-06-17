@@ -1258,6 +1258,446 @@ h1{
     box-shadow:0 0 18px rgba(250,204,21,.75);
 }
 
+
+/* ================= V8 HOME APP RESPONSIVE ================= */
+:root{
+    --panel:rgba(15,23,42,.82);
+    --panel2:rgba(30,41,59,.72);
+    --line:rgba(148,163,184,.22);
+    --cyan:#38bdf8;
+    --yellow:#facc15;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at top left,rgba(56,189,248,.20),transparent 34%),
+        radial-gradient(circle at top right,rgba(250,204,21,.10),transparent 28%),
+        linear-gradient(135deg,#020617,#0f172a,#1e3a8a) !important;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:42px 42px;
+    mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent);
+    z-index:-1;
+}
+
+#container{
+    width:min(1260px,94%) !important;
+}
+
+#topBar{
+    min-height:66px !important;
+    border-bottom:1px solid rgba(148,163,184,.18);
+}
+
+#topTitle{
+    font-size:26px !important;
+}
+
+#container > h1,
+#container > .subtitle{
+    display:none;
+}
+
+#homeDashboard{
+    display:grid !important;
+    grid-template-columns:1.25fr .85fr .85fr !important;
+    gap:18px !important;
+    margin:10px 0 30px !important;
+}
+
+#homeDashboard .homeWidget{
+    min-height:165px;
+}
+
+#homeProfileCard{
+    background:
+        radial-gradient(circle at right,rgba(56,189,248,.18),transparent 38%),
+        linear-gradient(145deg,rgba(15,23,42,.95),rgba(30,41,59,.78)) !important;
+    display:grid !important;
+    grid-template-columns:auto 1fr;
+    gap:16px;
+    align-items:center;
+}
+
+#homeProfileCard h3{
+    grid-column:1/-1;
+    font-size:20px;
+    margin-bottom:0;
+}
+
+.profileAvatar{
+    width:82px !important;
+    height:82px !important;
+    font-size:38px !important;
+    flex-shrink:0;
+}
+
+#homePseudo{
+    font-size:26px;
+    color:white;
+}
+
+#homeStatus{
+    margin-top:8px;
+}
+
+#homeQuickLine{
+    margin-top:10px;
+    color:#94a3b8 !important;
+}
+
+#homeMiniStats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:12px;
+}
+
+.miniStat{
+    background:#020617;
+    border:1px solid rgba(148,163,184,.16);
+    border-radius:14px;
+    padding:9px;
+    font-size:13px;
+}
+
+.miniStat strong{
+    color:white;
+    display:block;
+    font-size:20px;
+}
+
+.homeWidget{
+    border-radius:26px !important;
+    background:linear-gradient(145deg,var(--panel),var(--panel2)) !important;
+    border:1px solid var(--line) !important;
+    box-shadow:0 20px 55px rgba(0,0,0,.30) !important;
+}
+
+.homeWidget h3{
+    color:var(--yellow) !important;
+}
+
+.homeWidget button{
+    border-radius:14px !important;
+    box-shadow:0 8px 20px rgba(56,189,248,.16);
+}
+
+#homeDashboard .homeWidget:nth-child(4),
+#homeDashboard .homeWidget:nth-child(5){
+    display:none;
+}
+
+#pseudoBox{
+    margin:0 auto 28px !important;
+    width:min(760px,100%);
+    background:rgba(2,6,23,.45);
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:22px;
+    padding:12px;
+}
+
+#pseudoBox input{
+    background:#020617;
+    color:white;
+    border:1px solid rgba(148,163,184,.25);
+}
+
+#pseudoBox button{
+    margin:0;
+    background:var(--cyan);
+    color:#082f49;
+}
+
+#games{
+    display:grid !important;
+    grid-template-columns:repeat(4,1fr) !important;
+    gap:18px !important;
+}
+
+.card{
+    width:100% !important;
+    height:auto !important;
+    min-height:205px;
+    border-radius:26px !important;
+    background:
+        radial-gradient(circle at top right,rgba(56,189,248,.12),transparent 34%),
+        linear-gradient(145deg,#1e293b,#0f172a) !important;
+    border:1px solid rgba(148,163,184,.22) !important;
+    box-shadow:0 18px 42px rgba(0,0,0,.28);
+    overflow:hidden;
+}
+
+.card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.06),transparent 45%);
+    opacity:.65;
+    pointer-events:none;
+}
+
+.card::after{
+    content:"";
+    position:absolute;
+    right:-42px;
+    bottom:-55px;
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    background:rgba(56,189,248,.08);
+    transition:.25s;
+}
+
+.card:hover{
+    transform:translateY(-8px) scale(1.015) !important;
+    border-color:var(--cyan) !important;
+    box-shadow:0 24px 60px rgba(0,0,0,.38);
+}
+
+.card:hover::after{
+    transform:scale(1.28);
+}
+
+.icon{
+    font-size:58px !important;
+    margin-bottom:13px !important;
+}
+
+.title{
+    font-size:24px !important;
+    line-height:1.05;
+}
+
+.desc{
+    font-size:14px;
+    line-height:1.35;
+    max-width:230px;
+}
+
+.icon,.title,.desc{
+    position:relative;
+    z-index:2;
+}
+
+.favoriteStar{
+    width:34px !important;
+    height:34px !important;
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(250,204,21,.25) !important;
+}
+
+.favoriteStar.active{
+    background:#facc15 !important;
+    color:#422006 !important;
+    border-color:#fde68a !important;
+    box-shadow:0 0 18px rgba(250,204,21,.75);
+}
+
+#favoriteGamesHome{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+#favoriteGamesHome button{
+    margin:0 !important;
+    background:#020617 !important;
+    color:white !important;
+    text-align:left;
+    box-shadow:none !important;
+}
+
+#activityHome{
+    margin-top:10px;
+    max-height:82px;
+    overflow:auto;
+}
+
+.activityLine{
+    padding:5px 0;
+    color:#94a3b8;
+    border-bottom:1px solid rgba(148,163,184,.12);
+}
+
+#accountPanel{
+    width:min(900px,94vw) !important;
+    right:-940px !important;
+    grid-template-columns:220px 1fr !important;
+    border-left:1px solid rgba(56,189,248,.25);
+}
+
+#accountPanel.open{
+    right:0 !important;
+}
+
+#settingsTabs{
+    position:sticky;
+    top:0;
+}
+
+@media(max-width:1100px){
+    #games{
+        grid-template-columns:repeat(3,1fr) !important;
+    }
+}
+
+@media(max-width:760px){
+    body{
+        padding-top:118px !important;
+    }
+
+    #topBar{
+        min-height:104px !important;
+        align-items:center;
+    }
+
+    #topLeft{
+        width:100%;
+        justify-content:space-between;
+    }
+
+    #topRight{
+        width:100%;
+        justify-content:center;
+        transform:none !important;
+    }
+
+    #homeDashboard{
+        grid-template-columns:1fr !important;
+        gap:14px !important;
+        margin-top:6px !important;
+    }
+
+    #homeDashboard .homeWidget:nth-child(4),
+    #homeDashboard .homeWidget:nth-child(5){
+        display:block;
+    }
+
+    #homeProfileCard{
+        grid-template-columns:auto 1fr;
+        min-height:150px;
+    }
+
+    #homeProfileCard h3{
+        font-size:17px;
+    }
+
+    .profileAvatar{
+        width:66px !important;
+        height:66px !important;
+        font-size:31px !important;
+    }
+
+    #homePseudo{
+        font-size:21px;
+    }
+
+    #homeMiniStats{
+        grid-template-columns:1fr 1fr;
+    }
+
+    #pseudoBox{
+        display:none;
+    }
+
+    #games{
+        grid-template-columns:repeat(2,1fr) !important;
+        gap:12px !important;
+    }
+
+    .card{
+        min-height:168px;
+        border-radius:20px !important;
+        padding:12px;
+    }
+
+    .icon{
+        font-size:45px !important;
+        margin-bottom:9px !important;
+    }
+
+    .title{
+        font-size:18px !important;
+    }
+
+    .desc{
+        font-size:12px;
+        padding:0 5px;
+    }
+
+    .favoriteStar{
+        top:8px !important;
+        left:8px !important;
+        width:30px !important;
+        height:30px !important;
+        font-size:16px !important;
+    }
+
+    #accountPanel{
+        top:108px !important;
+        width:100% !important;
+        right:-100% !important;
+        grid-template-columns:1fr !important;
+        border-radius:0 0 22px 22px !important;
+        max-height:calc(100vh - 108px);
+    }
+
+    #settingsTabs{
+        position:static;
+        display:flex;
+        overflow-x:auto;
+        gap:8px;
+        max-height:none;
+    }
+
+    .settingsTab{
+        min-width:145px !important;
+        text-align:center !important;
+    }
+
+    #sideMenu,
+    #notifPanel{
+        top:108px !important;
+        height:calc(100vh - 108px);
+    }
+
+    #toastNotif{
+        top:116px !important;
+    }
+}
+
+@media(max-width:390px){
+    #games{
+        gap:10px !important;
+    }
+
+    .card{
+        min-height:158px;
+    }
+
+    .icon{
+        font-size:39px !important;
+    }
+
+    .title{
+        font-size:16px !important;
+    }
+
+    .desc{
+        font-size:11px;
+    }
+}
+
 </style>
 </head>
 
@@ -1451,12 +1891,12 @@ h1{
 
     <div id="homeDashboard">
         <div class="homeWidget" id="homeProfileCard">
-            <h3>👤 Ton espace</h3>
+            <h3>👋 Bienvenue</h3>
             <div class="profileAvatar" id="homeAvatar">?</div>
             <div id="homeProfileText">
                 <div><strong id="homePseudo">Joueur</strong></div>
                 <div id="homeStatus" class="statusPill">Hors ligne</div>
-                <div id="homeQuickLine">Bienvenue sur Mini Games.</div>
+                <div id="homeQuickLine">Choisis un jeu et invite tes amis.</div>
                 <div id="homeMiniStats">
                     <div class="miniStat"><strong id="miniStatGames">0</strong> parties</div>
                     <div class="miniStat"><strong id="miniStatFav">—</strong> favori</div>
@@ -1465,13 +1905,12 @@ h1{
         </div>
 
         <div class="homeWidget">
-            <h3>⭐ Accès rapide</h3>
+            <h3>⭐ Favoris</h3>
             <div id="favoriteGamesHome">Aucun favori.</div>
-            <div style="margin-top:10px;color:#94a3b8;font-size:13px;">Clique sur ☆ sur un jeu pour l’ajouter ici.</div>
         </div>
 
         <div class="homeWidget">
-            <h3>🕹️ Reprendre</h3>
+            <h3>▶️ Continuer</h3>
             <div id="lastGameText">Aucun jeu lancé récemment.</div>
             <button onclick="openLastGame()">Reprendre</button>
             <div id="activityHome"></div>
@@ -1825,6 +2264,18 @@ function updateUnoCard(){
         uno.classList.remove("locked");
     }else{
         uno.classList.add("locked");
+    }
+}
+
+function openPuissance4(){
+    savePseudo();
+
+    if(localStorage.getItem("playMode") === "online"){
+        trackGame("Puissance 4 Online","puissance4_online.html");
+        window.location.href = "puissance4_online.html";
+    }else{
+        trackGame("Puissance 4","puissance4.html");
+        window.location.href = "puissance4.html";
     }
 }
 
