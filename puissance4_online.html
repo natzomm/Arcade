@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puissance 4 Online</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{min-height:100vh;background:linear-gradient(135deg,#0f172a,#1e3a8a,#7c2d12);color:white}
+button{border:none;border-radius:12px;cursor:pointer;font-weight:bold;transition:.2s}
+button:hover{transform:scale(1.04)}
+header{padding:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+h1{font-size:42px}
+.homeBtn{padding:13px 22px;font-size:18px;background:#38bdf8;color:#082f49}
+#container{width:min(1120px,95%);margin:0 auto;display:grid;grid-template-columns:315px 1fr;gap:22px}
+.panel{background:rgba(15,23,42,.86);border:1px solid rgba(148,163,184,.25);border-radius:24px;padding:22px;box-shadow:0 20px 45px rgba(0,0,0,.3)}
+.scoreLine,.playerSlot{background:#020617;padding:13px;margin:10px 0;border-radius:12px;font-size:20px}
+.playerSlot{font-size:17px;border:2px dashed #475569;color:#94a3b8}
+.playerSlot.filled{border-style:solid;border-color:#22c55e;color:white}
+.hostBadge{color:#facc15;font-weight:bold}
+.actionBtn,.resetBtn{width:100%;padding:13px;margin-top:10px;font-size:17px;background:#22c55e;color:#052e16}
+.redBtn{background:#ef4444!important;color:white!important}
+.blueBtn{background:#38bdf8!important;color:#082f49!important}
+.yellowBtn{background:#facc15!important;color:#422006!important}
+.kickBtn{padding:8px 10px;font-size:13px;background:#ef4444;color:white;margin-top:8px}
+.friendItem{background:#020617;border-radius:12px;padding:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.friendItem button{padding:9px 12px;font-size:14px;background:#22c55e;color:#052e16}
+#inviteList{margin-top:15px;max-height:210px;overflow:auto}
+.info{margin-top:15px;color:#cbd5e1;line-height:1.4;background:#020617;border-radius:12px;padding:12px}
+#gamePanel{text-align:center}
+#status{font-size:28px;font-weight:bold;margin-bottom:16px;color:#facc15;min-height:38px}
+#dropPreview{height:70px;width:min(620px,95%);margin:0 auto 8px;position:relative}
+.previewDisc{position:absolute;width:58px;height:58px;border-radius:50%;top:6px;transition:left .15s;border:4px solid rgba(255,255,255,.55);box-shadow:inset -8px -8px 14px rgba(0,0,0,.25),inset 8px 8px 12px rgba(255,255,255,.25),0 8px 18px rgba(0,0,0,.35)}
+.previewDisc.red{background:#ef4444}.previewDisc.yellow{background:#facc15}
+#boardWrap{width:min(620px,95%);margin:0 auto;position:relative;padding:16px;border-radius:25px;background:linear-gradient(145deg,#2563eb,#1d4ed8,#172554);box-shadow:0 22px 0 #0f172a,0 28px 35px rgba(0,0,0,.45),inset 8px 8px 16px rgba(255,255,255,.14),inset -8px -8px 18px rgba(0,0,0,.35);transform:perspective(900px) rotateX(5deg)}
+#fallLayer{position:absolute;inset:16px;pointer-events:none;z-index:5}
+#board{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr);gap:10px;position:relative;z-index:8}
+.cell{aspect-ratio:1/1;border-radius:50%;background:#020617;box-shadow:inset 0 8px 15px rgba(0,0,0,.85),inset 0 -4px 8px rgba(255,255,255,.12);cursor:pointer;position:relative;overflow:hidden}
+.cell:hover{outline:3px solid rgba(250,204,21,.45)}
+.disc{width:100%;height:100%;border-radius:50%;border:4px solid rgba(255,255,255,.18);box-shadow:inset -8px -8px 14px rgba(0,0,0,.25),inset 8px 8px 12px rgba(255,255,255,.25)}
+.disc.red,.fallingDisc.red{background:#ef4444}.disc.yellow,.fallingDisc.yellow{background:#facc15}
+.fallingDisc{position:absolute;border-radius:50%;border:4px solid rgba(255,255,255,.35);box-shadow:inset -8px -8px 14px rgba(0,0,0,.25),inset 8px 8px 12px rgba(255,255,255,.25),0 10px 20px rgba(0,0,0,.35);z-index:20;transition:top .38s cubic-bezier(.2,.85,.25,1.25)}
+.cell.win{outline:5px solid #22c55e;box-shadow:0 0 22px #22c55e,inset 0 8px 15px rgba(0,0,0,.85)}
+#controls{margin-top:24px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.playBtn{padding:14px 24px;font-size:18px;background:#facc15;color:#422006}
+.clearBtn{padding:14px 24px;font-size:18px;background:#38bdf8;color:#082f49}
+#endMessage,#inviteOverlay{position:fixed;inset:0;background:rgba(2,6,23,.88);display:none;justify-content:center;align-items:center;z-index:50}
+#endCard,#inviteCard{width:min(430px,90%);background:#1e293b;border:2px solid #38bdf8;border-radius:24px;padding:28px;text-align:center}
+#endCard h2,#inviteCard h2{font-size:36px;margin-bottom:16px}
+#endCard button,#inviteCard button{width:100%;margin:8px 0;padding:13px 22px;font-size:18px;background:#22c55e;color:#052e16}
+@media(max-width:850px){#container{grid-template-columns:1fr}h1{font-size:34px}#board{gap:7px}#boardWrap{padding:12px}#fallLayer{inset:12px}}
+</style>
+</head>
+
+<body>
+<header>
+    <div>
+        <h1>🔴🟡 Puissance 4 Online</h1>
+        <div>👤 Joueur : <span id="player">Joueur</span></div>
+    </div>
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+<aside class="panel">
+    <h2>🏆 Scores</h2>
+    <div class="scoreLine"><span id="labelRed">🔴 Rouge</span> : <span id="scoreRed">0</span></div>
+    <div class="scoreLine"><span id="labelYellow">🟡 Jaune</span> : <span id="scoreYellow">0</span></div>
+    <div class="scoreLine">🤝 Égalités : <span id="scoreDraw">0</span></div>
+
+    <h2 style="margin-top:25px;">👥 Salon</h2>
+    <div id="playersSlots"></div>
+
+    <button class="actionBtn" onclick="createRoom()">➕ Créer salon</button>
+    <button class="actionBtn blueBtn" onclick="loadFriends()">👥 Inviter un ami</button>
+    <button class="actionBtn yellowBtn" onclick="startMatch()">▶️ Commencer</button>
+    <button class="actionBtn redBtn" onclick="leaveRoom()">🚪 Quitter salon</button>
+
+    <div class="info">Mode en ligne : crée un salon, invite un ami, puis lance la partie.</div>
+    <button class="resetBtn redBtn" onclick="hostResetScores()">🔄 Reset scores</button>
+    <div id="inviteList"></div>
+</aside>
+
+<section class="panel" id="gamePanel">
+    <div id="status">Connecte-toi depuis l'accueil.</div>
+    <div id="dropPreview"><div class="previewDisc red" id="previewDisc"></div></div>
+    <div id="boardWrap"><div id="fallLayer"></div><div id="board"></div></div>
+    <div id="controls">
+        <button class="playBtn" onclick="hostNewRound()">🔁 Nouvelle manche</button>
+        <button class="clearBtn" onclick="hostClearGrid()">🧹 Vider grille</button>
+    </div>
+</section>
+</div>
+
+<div id="endMessage"><div id="endCard"><h2 id="endTitle">Fin</h2><button onclick="closeEnd()">Continuer</button></div></div>
+
+<div id="inviteOverlay">
+    <div id="inviteCard">
+        <h2>🔴🟡 Invitation</h2>
+        <p id="inviteText">Quelqu'un t'invite.</p>
+        <button onclick="acceptInvite()">Accepter</button>
+        <button class="redBtn" onclick="refuseInvite()">Refuser</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import { getFirestore,doc,getDoc,setDoc,updateDoc,collection,query,where,getDocs,addDoc,onSnapshot,serverTimestamp,deleteDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyCicpzlFc-WfbmBjzu8y-bWYPaXu6Mnt24",authDomain:"arcade-fbd7c.firebaseapp.com",projectId:"arcade-fbd7c",storageBucket:"arcade-fbd7c.firebasestorage.app",messagingSenderId:"648897624519",appId:"1:648897624519:web:bffd2e9d3023362f8781e2"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+
+const ROWS=6,COLS=7;
+let user=null,userData=null,roomId=localStorage.getItem("connect4_room")||"",room=null,roomUnsub=null,inviteUnsub=null,pendingInvite=null;
+let board=createEmptyBoard(),hoverCol=3,animating=false,autoTimer=null;
+
+const boardEl=document.getElementById("board"),fallLayer=document.getElementById("fallLayer"),previewDisc=document.getElementById("previewDisc");
+
+function goHome(){window.location.href="index.html"} window.goHome=goHome;
+
+onAuthStateChanged(auth,async u=>{
+    user=u;
+    if(!user){document.getElementById("status").innerText="Tu dois être connecté en ligne depuis l'accueil.";renderBoard();return}
+    const snap=await getDoc(doc(db,"users",user.uid));
+    userData=snap.exists()?snap.data():{pseudo:localStorage.getItem("pseudo")||"Joueur"};
+    document.getElementById("player").innerText=userData.pseudo||"Joueur";
+    listenInvites();
+    await checkPendingInviteOnLoad();
+    if(roomId) listenRoom(roomId); else{renderBoard();renderPlayers();document.getElementById("status").innerText="Crée un salon ou accepte une invitation."}
+});
+
+function createEmptyBoard(){return Array.from({length:ROWS},()=>Array(COLS).fill(""))}
+function getMyPseudo(){return userData?.pseudo||"Joueur"}
+
+async function createRoom(){
+    if(!user){alert("Connecte-toi depuis l'accueil.");return}
+    if(roomId){if(!confirm("Tu as déjà un salon. En créer un nouveau ?")) return; await leaveRoom()}
+    const roomRef=doc(collection(db,"connect4Rooms"));
+    roomId=roomRef.id; localStorage.setItem("connect4_room",roomId);
+    await setDoc(roomRef,{hostUid:user.uid,hostPseudo:getMyPseudo(),guestUid:"",guestPseudo:"",status:"waiting",board:createEmptyBoard(),current:"R",turnUid:user.uid,redUid:user.uid,yellowUid:"",scoreRed:0,scoreYellow:0,draw:0,gameOver:false,winner:"",winningCombo:[],round:1,createdAt:serverTimestamp()});
+    listenRoom(roomId);
+}
+window.createRoom=createRoom;
+
+function listenRoom(id){
+    if(roomUnsub) roomUnsub();
+    roomUnsub=onSnapshot(doc(db,"connect4Rooms",id),snap=>{
+        if(!snap.exists()){roomId="";localStorage.removeItem("connect4_room");room=null;board=createEmptyBoard();renderBoard();renderPlayers();document.getElementById("status").innerText="Le salon a été fermé.";return}
+        room={id:snap.id,...snap.data()}; board=room.board||createEmptyBoard(); applyRoom();
+    });
+}
+
+function applyRoom(){
+    renderPlayers(); renderScores(); renderBoard(); updatePreview();
+    if(room.status==="waiting"){document.getElementById("status").innerText=room.hostUid===user.uid?"Salon créé. Invite un ami.":"En attente de l'hôte.";return}
+    if(room.status==="playing"){
+        if(room.gameOver){document.getElementById("status").innerText=room.winner==="draw"?"🤝 Égalité ! Nouvelle manche...":(room.winner==="R"?"🔴 Rouge":"🟡 Jaune")+" gagne ! Nouvelle manche...";return}
+        if(room.turnUid===user.uid){document.getElementById("status").innerText="À toi de jouer "+(getMyColor()==="R"?"🔴":"🟡")}
+        else{const other=getPlayerByUid(room.turnUid);document.getElementById("status").innerText="Tour de "+(other?other.pseudo:"l'autre joueur")}
+    }
+}
+
+function renderPlayers(){
+    const box=document.getElementById("playersSlots");
+    if(!room){box.innerHTML='<div class="playerSlot">Hôte : vide</div><div class="playerSlot">Invité : vide</div>';return}
+    box.innerHTML=`<div class="playerSlot filled"><strong>${room.hostPseudo||"Hôte"}</strong><span class="hostBadge"> 👑 Hôte</span><br>${room.redUid===room.hostUid?"🔴 Rouge":room.yellowUid===room.hostUid?"🟡 Jaune":"En attente"}</div>`;
+    if(room.guestUid) box.innerHTML+=`<div class="playerSlot filled"><strong>${room.guestPseudo}</strong><br>${room.redUid===room.guestUid?"🔴 Rouge":room.yellowUid===room.guestUid?"🟡 Jaune":"En attente"}${room.hostUid===user?.uid&&room.status==="waiting"?'<br><button class="kickBtn" onclick="kickGuest()">Expulser</button>':""}</div>`;
+    else box.innerHTML+='<div class="playerSlot">Invité : vide</div>';
+}
+
+function renderScores(){
+    if(!room) return;
+    document.getElementById("scoreRed").innerText=room.scoreRed||0;
+    document.getElementById("scoreYellow").innerText=room.scoreYellow||0;
+    document.getElementById("scoreDraw").innerText=room.draw||0;
+    const redName=room.redUid===room.hostUid?room.hostPseudo:room.guestPseudo;
+    const yellowName=room.yellowUid===room.hostUid?room.hostPseudo:room.guestPseudo;
+    document.getElementById("labelRed").innerText="🔴 "+(redName||"Rouge");
+    document.getElementById("labelYellow").innerText="🟡 "+(yellowName||"Jaune");
+}
+function getPlayerByUid(uid){if(!room)return null;if(room.hostUid===uid)return{uid:room.hostUid,pseudo:room.hostPseudo};if(room.guestUid===uid)return{uid:room.guestUid,pseudo:room.guestPseudo};return null}
+function getMyColor(){if(!room)return"";if(room.redUid===user.uid)return"R";if(room.yellowUid===user.uid)return"Y";return""}
+
+async function loadFriends(){
+    if(!user){alert("Connecte-toi.");return}
+    if(!roomId||!room){alert("Crée d'abord un salon.");return}
+    if(room.hostUid!==user.uid){alert("Seul l'hôte peut inviter.");return}
+    const snap=await getDoc(doc(db,"users",user.uid));
+    if(!snap.exists()||!snap.data().friends?.length){document.getElementById("inviteList").innerHTML="<div class='info'>Tu n'as pas encore d'amis.</div>";return}
+    const box=document.getElementById("inviteList"); box.innerHTML="<h3 style='margin-top:15px;'>Inviter</h3>";
+    for(const fuid of snap.data().friends){
+        const fsnap=await getDoc(doc(db,"users",fuid));
+        if(fsnap.exists()){const f=fsnap.data();box.innerHTML+=`<div class="friendItem"><span>${f.online?"🟢":"⚫"} ${f.pseudo}</span><button onclick="inviteFriend('${fuid}','${f.pseudo}')">Inviter</button></div>`}
+    }
+}
+window.loadFriends=loadFriends;
+
+async function inviteFriend(friendUid,friendPseudo){
+    if(!room||!roomId)return;
+    if(room.hostUid!==user.uid){alert("Seul l'hôte peut inviter.");return}
+    if(room.guestUid){alert("Le salon est déjà plein.");return}
+    await addDoc(collection(db,"gameInvites"),{game:"connect4",roomId,fromUid:user.uid,fromPseudo:getMyPseudo(),toUid:friendUid,toPseudo:friendPseudo,status:"pending",createdAt:serverTimestamp()});
+    await addDoc(collection(db,"notifications"),{toUid:friendUid,type:"gameInvite",game:"connect4",roomId,text:getMyPseudo()+" t'invite à jouer au Puissance 4.",read:false,fromUid:user.uid,fromPseudo:getMyPseudo(),createdAt:serverTimestamp()});
+    alert("Invitation envoyée à "+friendPseudo);
+}
+window.inviteFriend=inviteFriend;
+
+function listenInvites(){
+    if(inviteUnsub) inviteUnsub();
+    const q=query(collection(db,"gameInvites"),where("toUid","==",user.uid),where("game","==","connect4"),where("status","==","pending"));
+    inviteUnsub=onSnapshot(q,snap=>{if(snap.empty)return;let arr=[];snap.forEach(d=>arr.push({id:d.id,...d.data()}));pendingInvite=arr[0];document.getElementById("inviteText").innerText=pendingInvite.fromPseudo+" t'invite à jouer au Puissance 4.";document.getElementById("inviteOverlay").style.display="flex"});
+}
+
+async function checkPendingInviteOnLoad(){
+    const q=query(collection(db,"gameInvites"),where("toUid","==",user.uid),where("game","==","connect4"),where("status","==","pending"));
+    const snap=await getDocs(q); if(snap.empty)return;
+    const d=snap.docs[0]; pendingInvite={id:d.id,...d.data()};
+    document.getElementById("inviteText").innerText=pendingInvite.fromPseudo+" t'invite à jouer au Puissance 4.";
+    document.getElementById("inviteOverlay").style.display="flex";
+}
+
+async function acceptInvite(){
+    if(!pendingInvite)return;
+    const ref=doc(db,"connect4Rooms",pendingInvite.roomId),rs=await getDoc(ref);
+    if(!rs.exists()){alert("Le salon n'existe plus.");await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"expired"});document.getElementById("inviteOverlay").style.display="none";return}
+    const r=rs.data();
+    if(r.guestUid&&r.guestUid!==user.uid){alert("Le salon est plein.");await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"full"});document.getElementById("inviteOverlay").style.display="none";return}
+    await updateDoc(ref,{guestUid:user.uid,guestPseudo:getMyPseudo()});
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"accepted"});
+    roomId=pendingInvite.roomId; localStorage.setItem("connect4_room",roomId);
+    document.getElementById("inviteOverlay").style.display="none"; listenRoom(roomId);
+}
+window.acceptInvite=acceptInvite;
+
+async function refuseInvite(){if(!pendingInvite)return;await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"refused"});document.getElementById("inviteOverlay").style.display="none";pendingInvite=null}
+window.refuseInvite=refuseInvite;
+
+async function startMatch(){
+    if(!room){alert("Crée un salon.");return}
+    if(room.hostUid!==user.uid){alert("Seul l'hôte peut lancer.");return}
+    if(!room.guestUid){alert("Il faut être 2 joueurs.");return}
+    const redHost=Math.random()<.5,redUid=redHost?room.hostUid:room.guestUid,yellowUid=redHost?room.guestUid:room.hostUid;
+    await updateDoc(doc(db,"connect4Rooms",roomId),{status:"playing",board:createEmptyBoard(),current:"R",redUid,yellowUid,turnUid:redUid,gameOver:false,winner:"",winningCombo:[]});
+}
+window.startMatch=startMatch;
+
+async function kickGuest(){if(!room||room.hostUid!==user.uid||room.status!=="waiting")return;if(!confirm("Expulser ce joueur ?"))return;await updateDoc(doc(db,"connect4Rooms",roomId),{guestUid:"",guestPseudo:""})}
+window.kickGuest=kickGuest;
+
+function renderBoard(){
+    boardEl.innerHTML="";
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+        const cell=document.createElement("div");cell.className="cell";cell.dataset.row=r;cell.dataset.col=c;
+        cell.onclick=()=>playColumn(c); cell.onmouseenter=()=>{hoverCol=c;updatePreview()};
+        if(board[r][c]){const disc=document.createElement("div");disc.className="disc "+(board[r][c]==="R"?"red":"yellow");cell.appendChild(disc)}
+        if(room?.winningCombo?.some(pos=>pos[0]===r&&pos[1]===c))cell.classList.add("win");
+        boardEl.appendChild(cell);
+    }
+    updatePreview();
+}
+
+function updatePreview(){
+    const rect=boardEl.getBoundingClientRect(),first=boardEl.children[0]; if(!first)return;
+    const left=(hoverCol/COLS)*rect.width+(rect.width/COLS-58)/2;
+    previewDisc.style.left=left+"px"; previewDisc.className="previewDisc "+((room?.current||"R")==="R"?"red":"yellow");
+}
+
+function getAvailableRow(b,col){for(let r=ROWS-1;r>=0;r--)if(b[r][col]==="")return r;return -1}
+
+async function playColumn(col){
+    if(!room||room.status!=="playing"||room.gameOver||animating)return;
+    if(room.turnUid!==user.uid){alert("Ce n'est pas ton tour.");return}
+    const myColor=getMyColor(); if(myColor!==room.current){alert("Erreur de couleur.");return}
+    const row=getAvailableRow(board,col); if(row===-1)return;
+    await animateDrop(row,col,room.current);
+    const newBoard=board.map(r=>[...r]); newBoard[row][col]=room.current;
+    const result=checkWinner(newBoard);
+    if(result){await finishOnline(result,newBoard);return}
+    const next=room.current==="R"?"Y":"R",nextUid=next==="R"?room.redUid:room.yellowUid;
+    await updateDoc(doc(db,"connect4Rooms",roomId),{board:newBoard,current:next,turnUid:nextUid});
+}
+window.playColumn=playColumn;
+
+function animateDrop(row,col,piece){return new Promise(resolve=>{
+    animating=true; const cell=getCell(row,col),br=boardEl.getBoundingClientRect(),cr=cell.getBoundingClientRect();
+    const disc=document.createElement("div");disc.className="fallingDisc "+(piece==="R"?"red":"yellow");
+    const size=cr.width; disc.style.width=size+"px";disc.style.height=size+"px";disc.style.left=(cr.left-br.left)+"px";disc.style.top="-85px";
+    fallLayer.appendChild(disc); setTimeout(()=>disc.style.top=(cr.top-br.top)+"px",30);
+    setTimeout(()=>{disc.remove();animating=false;resolve()},430);
+})}
+function getCell(row,col){return boardEl.querySelector(`[data-row="${row}"][data-col="${col}"]`)}
+
+function getAllLines(){const lines=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(c+3<COLS)lines.push([[r,c],[r,c+1],[r,c+2],[r,c+3]]);if(r+3<ROWS)lines.push([[r,c],[r+1,c],[r+2,c],[r+3,c]]);if(r+3<ROWS&&c+3<COLS)lines.push([[r,c],[r+1,c+1],[r+2,c+2],[r+3,c+3]]);if(r+3<ROWS&&c-3>=0)lines.push([[r,c],[r+1,c-1],[r+2,c-2],[r+3,c-3]])}return lines}
+function checkWinner(b){for(const line of getAllLines()){const vals=line.map(([r,c])=>b[r][c]);if(vals[0]&&vals.every(v=>v===vals[0]))return{winner:vals[0],combo:line}}if(b.every(row=>row.every(cell=>cell!=="")))return{winner:"draw",combo:[]};return null}
+
+async function finishOnline(result,newBoard){
+    const updates={board:newBoard,gameOver:true,winner:result.winner,winningCombo:result.combo||[]};
+    if(result.winner==="draw"){updates.draw=(room.draw||0)+1;showEnd("🤝 Égalité !")}
+    else if(result.winner==="R"){updates.scoreRed=(room.scoreRed||0)+1;showEnd("🔴 Rouge gagne !")}
+    else{updates.scoreYellow=(room.scoreYellow||0)+1;showEnd("🟡 Jaune gagne !")}
+    await updateDoc(doc(db,"connect4Rooms",roomId),updates);
+    clearTimeout(autoTimer); if(room.hostUid===user.uid)autoTimer=setTimeout(()=>autoNewRound(),2200);
+}
+
+async function autoNewRound(){
+    if(!roomId)return; const snap=await getDoc(doc(db,"connect4Rooms",roomId)); if(!snap.exists())return;
+    const r=snap.data(); if(!r.gameOver&&r.status==="playing")return;
+    const redHost=Math.random()<.5,redUid=redHost?r.hostUid:r.guestUid,yellowUid=redHost?r.guestUid:r.hostUid;
+    await updateDoc(doc(db,"connect4Rooms",roomId),{board:createEmptyBoard(),current:"R",redUid,yellowUid,turnUid:redUid,gameOver:false,winner:"",winningCombo:[],round:(r.round||1)+1});
+    closeEnd();
+}
+async function hostNewRound(){if(!room||room.hostUid!==user.uid){alert("Seul l'hôte peut lancer une nouvelle manche.");return}await autoNewRound()}
+window.hostNewRound=hostNewRound;
+async function hostClearGrid(){if(!room||room.hostUid!==user.uid){alert("Seul l'hôte peut vider la grille.");return}if(!confirm("Vider la grille ?"))return;await autoNewRound()}
+window.hostClearGrid=hostClearGrid;
+async function hostResetScores(){if(!room||room.hostUid!==user.uid){alert("Seul l'hôte peut reset les scores.");return}if(!confirm("Reset les scores ?"))return;await updateDoc(doc(db,"connect4Rooms",roomId),{scoreRed:0,scoreYellow:0,draw:0})}
+window.hostResetScores=hostResetScores;
+
+function showEnd(text){document.getElementById("endTitle").innerText=text;document.getElementById("endMessage").style.display="flex"}
+function closeEnd(){document.getElementById("endMessage").style.display="none"} window.closeEnd=closeEnd;
+
+async function leaveRoom(){
+    if(!roomId){goHome();return}
+    if(room&&room.hostUid===user.uid){if(confirm("Tu es hôte. Quitter va fermer le salon."))await deleteDoc(doc(db,"connect4Rooms",roomId));else return}
+    else if(room)await updateDoc(doc(db,"connect4Rooms",roomId),{guestUid:"",guestPseudo:"",status:"waiting",board:createEmptyBoard(),gameOver:false,winner:"",winningCombo:[],yellowUid:"",turnUid:room.hostUid,current:"R"});
+    roomId=""; localStorage.removeItem("connect4_room"); room=null; board=createEmptyBoard(); renderBoard(); renderPlayers(); document.getElementById("status").innerText="Tu as quitté le salon.";
+}
+window.leaveRoom=leaveRoom;
+
+window.addEventListener("resize",updatePreview);
+renderBoard();renderPlayers();
+</script>
+</body>
+</html>
