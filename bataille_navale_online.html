@@ -382,10 +382,52 @@ h1{
         font-size:20px;
     }
 }
+
+/* ================= BATTLESHIP V2 FIX + PLACEMENT UX ================= */
+.shipChoice{
+    cursor:grab;
+    touch-action:none;
+}
+.shipChoice:active{
+    cursor:grabbing;
+}
+.shipChoice.dragging{
+    opacity:.55;
+    transform:scale(.98);
+}
+#dragGhost{
+    position:fixed;
+    left:0;
+    top:0;
+    pointer-events:none;
+    z-index:9999;
+    display:none;
+    background:#facc15;
+    color:#422006;
+    padding:10px 14px;
+    border-radius:999px;
+    font-weight:bold;
+    box-shadow:0 12px 30px rgba(0,0,0,.45);
+}
+.cell.preview{
+    animation:previewPulse .5s infinite alternate;
+}
+@keyframes previewPulse{
+    from{filter:brightness(1)}
+    to{filter:brightness(1.35)}
+}
+.placementHint{
+    margin-top:8px;
+    color:#94a3b8;
+    font-size:13px;
+    line-height:1.35;
+}
+
 </style>
 </head>
 
 <body>
+<div id="dragGhost"></div>
 
 <header>
     <div>
@@ -416,9 +458,11 @@ h1{
         <h2 style="margin-top:18px;">🚢 Placement</h2>
         <button class="actionBtn yellowBtn" onclick="rotateShip()">↔️ Tourner le bateau</button>
         <button class="actionBtn" onclick="randomPlaceShips()">🎲 Placement auto</button>
+        <button class="actionBtn redBtn" onclick="resetPlacement()">🧹 Reset placement</button>
         <button class="actionBtn greenBtn" onclick="setReady()">✅ Je suis prêt</button>
 
         <div id="shipList"></div>
+        <div class="placementHint">Astuce : clique un bateau puis clique la grille, ou maintiens/glisse le bateau sur la grille.</div>
 
         <div id="log"></div>
     </aside>
@@ -574,9 +618,10 @@ async function createRoom(){
         return;
     }
 
+    // Si un ancien salon existe, on le nettoie sans bloquer.
     if(roomId){
         if(!confirm("Tu as déjà un salon. En créer un nouveau ?")) return;
-        await leaveRoom();
+        await closeCurrentRoomBeforeNew();
     }
 
     resetLocalPlacement();
@@ -609,6 +654,51 @@ async function createRoom(){
     listenRoom(roomId);
 }
 window.createRoom = createRoom;
+
+async function closeCurrentRoomBeforeNew(){
+    if(!roomId){
+        localStorage.removeItem("battleship_room");
+        return;
+    }
+
+    try{
+        const ref = doc(db,"battleshipRooms",roomId);
+        const snap = await getDoc(ref);
+
+        if(snap.exists()){
+            const data = snap.data();
+
+            if(data.hostUid === user.uid){
+                await deleteDoc(ref);
+            }else{
+                const players = data.players || {};
+                delete players[user.uid];
+
+                await updateDoc(ref,{
+                    guestUid:"",
+                    guestPseudo:"",
+                    players,
+                    status:"waiting",
+                    phase:"placing",
+                    turnUid:"",
+                    log:[getMyPseudo() + " a quitté le salon.", ...(data.log || [])].slice(0,40)
+                });
+            }
+        }
+    }catch(error){
+        console.log("Ancien salon ignoré :", error);
+    }
+
+    if(roomUnsub){
+        roomUnsub();
+        roomUnsub = null;
+    }
+
+    localStorage.removeItem("battleship_room");
+    roomId = "";
+    room = null;
+}
+
 
 function listenRoom(id){
     if(roomUnsub) roomUnsub();
@@ -785,18 +875,104 @@ function renderShipList(){
         const placed = !!localShips.find(s=>s.index===i) || !!getMe()?.ships?.find(s=>s.index===i);
         const div = document.createElement("div");
         div.className = "shipChoice " + (selectedShipIndex===i ? "active " : "") + (placed ? "done" : "");
-        div.innerHTML = `<span>${ship.name}</span><strong>${ship.size}</strong>`;
+        div.innerHTML = `<span>🚢 ${ship.name}</span><strong>${ship.size}</strong>`;
+
         div.onclick = () => {
             if(!placed){
                 selectedShipIndex = i;
                 renderShipList();
             }
         };
+
+        if(!placed){
+            div.onpointerdown = (e) => startShipDrag(e,i);
+        }
+
         box.appendChild(div);
     });
 
     document.getElementById("orientationText").innerText = orientation === "H" ? "Horizontal" : "Vertical";
 }
+
+
+let draggingShipIndex = null;
+
+function startShipDrag(e,index){
+    if(!room || room.phase !== "placing") return;
+
+    const me = getMe();
+    if(me && me.ready) return;
+
+    draggingShipIndex = index;
+    selectedShipIndex = index;
+
+    const ghost = document.getElementById("dragGhost");
+    ghost.innerText = "🚢 " + SHIPS[index].name + " (" + SHIPS[index].size + ")";
+    ghost.style.display = "block";
+    moveGhost(e);
+
+    document.addEventListener("pointermove", onShipDragMove);
+    document.addEventListener("pointerup", onShipDragEnd, {once:true});
+
+    renderShipList();
+    e.preventDefault();
+}
+
+function moveGhost(e){
+    const ghost = document.getElementById("dragGhost");
+    if(!ghost) return;
+    ghost.style.left = (e.clientX + 12) + "px";
+    ghost.style.top = (e.clientY + 12) + "px";
+}
+
+function onShipDragMove(e){
+    if(draggingShipIndex === null) return;
+
+    moveGhost(e);
+
+    const el = document.elementFromPoint(e.clientX,e.clientY);
+    const cell = el ? el.closest("#myBoard .cell") : null;
+
+    clearPreview();
+
+    if(cell){
+        const r = Number(cell.dataset.r);
+        const c = Number(cell.dataset.c);
+
+        const old = selectedShipIndex;
+        selectedShipIndex = draggingShipIndex;
+
+        const cells = canPlace(selectedShipIndex,r,c);
+        const targets = cells || previewCells(selectedShipIndex,r,c);
+        const className = cells ? "preview" : "badPreview";
+
+        targets.forEach(pos=>{
+            const target = document.querySelector(`#myBoard [data-r="${pos.r}"][data-c="${pos.c}"]`);
+            if(target) target.classList.add(className);
+        });
+
+        selectedShipIndex = old;
+    }
+}
+
+function onShipDragEnd(e){
+    document.removeEventListener("pointermove", onShipDragMove);
+
+    const ghost = document.getElementById("dragGhost");
+    if(ghost) ghost.style.display = "none";
+
+    const el = document.elementFromPoint(e.clientX,e.clientY);
+    const cell = el ? el.closest("#myBoard .cell") : null;
+
+    if(cell && draggingShipIndex !== null){
+        selectedShipIndex = draggingShipIndex;
+        placeShip(Number(cell.dataset.r), Number(cell.dataset.c));
+    }
+
+    draggingShipIndex = null;
+    clearPreview();
+}
+
 
 function rotateShip(){
     orientation = orientation === "H" ? "V" : "H";
@@ -897,6 +1073,7 @@ function randomPlaceShips(){
     const me = getMe();
     if(me && me.ready) return;
 
+    const oldOrientation = orientation;
     localShips = [];
 
     for(let i=0;i<SHIPS.length;i++){
@@ -924,10 +1101,33 @@ function randomPlaceShips(){
     }
 
     selectedShipIndex = 0;
+    orientation = oldOrientation;
     renderShipList();
     renderBoards();
 }
 window.randomPlaceShips = randomPlaceShips;
+
+
+function resetPlacement(){
+    const me = getMe();
+
+    if(room && room.phase !== "placing"){
+        alert("Tu ne peux plus modifier le placement.");
+        return;
+    }
+
+    if(me && me.ready){
+        alert("Tu es déjà prêt.");
+        return;
+    }
+
+    localShips = [];
+    selectedShipIndex = 0;
+    renderShipList();
+    renderBoards();
+}
+window.resetPlacement = resetPlacement;
+
 
 async function setReady(){
     if(!room){
