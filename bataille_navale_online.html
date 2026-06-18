@@ -753,6 +753,125 @@ body.hideFleetOnMobile #myFleetBox{
     }
 }
 
+
+/* ================= V2.1 MOBILE PLACEMENT FIX ================= */
+@media(max-width:700px){
+    body.placingMode #battleStatsBar,
+    body.placingMode #lastShotBox,
+    body.placingMode #turnBanner{
+        display:none !important;
+    }
+
+    body.placingMode #gameTop{
+        position:static !important;
+        margin-bottom:8px !important;
+        padding:6px !important;
+    }
+
+    body.placingMode #status{
+        font-size:16px !important;
+        margin:6px 0 8px !important;
+        min-height:auto !important;
+    }
+
+    body.placingMode aside.panel{
+        display:flex;
+        flex-direction:column;
+    }
+
+    body.placingMode #shipList{
+        order:99;
+        position:fixed !important;
+        left:8px !important;
+        right:8px !important;
+        bottom:8px !important;
+        top:auto !important;
+        z-index:5000 !important;
+        margin:0 !important;
+        display:flex !important;
+        flex-direction:row !important;
+        overflow-x:auto !important;
+        background:rgba(2,6,23,.97) !important;
+        border:2px solid #38bdf8 !important;
+        border-radius:18px !important;
+        padding:8px !important;
+        box-shadow:0 -10px 30px rgba(0,0,0,.45);
+    }
+
+    body.placingMode .placementHint{
+        position:fixed;
+        left:8px;
+        right:8px;
+        bottom:86px;
+        z-index:4999;
+        background:rgba(15,23,42,.96);
+        border:1px solid rgba(148,163,184,.24);
+        border-radius:14px;
+        padding:8px;
+        font-size:12px !important;
+        text-align:center;
+    }
+
+    body.placingMode #container{
+        padding-bottom:145px !important;
+    }
+
+    body.placingMode #myFleetBox{
+        display:block !important;
+    }
+
+    body.placingMode #enemyBoard{
+        display:none !important;
+    }
+
+    body.placingMode #boards{
+        gap:8px !important;
+    }
+
+    body.placingMode .boardTitle{
+        margin-bottom:5px !important;
+    }
+
+    body.placingMode #myBoard{
+        width:96vw !important;
+        max-width:96vw !important;
+    }
+
+    body.placingMode .shipChoice{
+        min-width:138px !important;
+        padding:8px !important;
+        font-size:12px !important;
+    }
+
+    body.placingMode .shipChoice strong{
+        font-size:16px;
+    }
+
+    body.placingMode .actionBtn{
+        padding:9px !important;
+        font-size:13px !important;
+        margin:4px 0 !important;
+    }
+}
+
+@media(max-width:430px){
+    body.placingMode #container{
+        padding-bottom:155px !important;
+    }
+
+    body.placingMode .placementHint{
+        bottom:92px;
+    }
+
+    body.placingMode .grid{
+        width:97vw !important;
+    }
+
+    body.placingMode .cell{
+        min-height:31px !important;
+    }
+}
+
 </style>
 </head>
 
@@ -967,6 +1086,7 @@ function resetLocalPlacement(){
 }
 
 function renderEmpty(){
+    document.body.classList.remove("placingMode");
     document.getElementById("playersBox").innerHTML = "<div class='playerSlot'>Aucun salon.</div>";
     document.getElementById("phaseText").innerText = "—";
     document.getElementById("status").innerText = "Crée un salon ou accepte une invitation.";
@@ -1152,6 +1272,11 @@ function animateCell(boardId,r,c,cls){
 }
 
 function toggleFleetMobile(){
+    if(room && room.phase === "placing"){
+        document.body.classList.remove("hideFleetOnMobile");
+        return;
+    }
+
     document.body.classList.toggle("hideFleetOnMobile");
 }
 window.toggleFleetMobile = toggleFleetMobile;
@@ -1170,6 +1295,8 @@ function countShotStats(player){
 }
 
 function updateBattleUI(){
+    document.body.classList.toggle("placingMode", !!room && room.phase === "placing");
+
     const me = getMe();
     const enemy = getEnemy();
 
@@ -1300,7 +1427,7 @@ function applyRoom(){
         if(me && me.ready){
             document.getElementById("status").innerText = "Tu es prêt. En attente de l'autre joueur.";
         }else{
-            document.getElementById("status").innerText = "Place tes bateaux : choisis un bateau puis touche la grille.";
+            document.getElementById("status").innerText = "Choisis un bateau en bas, puis touche la grille.";
         }
     }
 
