@@ -2225,11 +2225,11 @@ body::before{
 
 function cleanupDobbleData(){
     let favs = JSON.parse(localStorage.getItem("favorites") || "[]");
-    favs = favs.filter(f => f.name !== "" && f.page !== "");
+    favs = favs.filter(f => f.name !== "Dobble Online" && f.page !== "dobble_online.html");
     localStorage.setItem("favorites", JSON.stringify(favs));
 
     const last = JSON.parse(localStorage.getItem("lastGame") || "null");
-    if(last && (last.name === "" || last.page === "")){
+    if(last && (last.name === "Dobble Online" || last.page === "dobble_online.html")){
         localStorage.removeItem("lastGame");
     }
 }
@@ -2251,7 +2251,7 @@ function savePseudo(){
 async function cleanupRoomsThenGo(gameName, page){
     savePseudo();
 
-    if(typeof window.cleanupOldOnlineRooms === "function"){
+    if(localStorage.getItem("playMode") === "online" && typeof window.cleanupOldOnlineRooms === "function"){
         await window.cleanupOldOnlineRooms(gameName);
     }
 
