@@ -618,51 +618,86 @@ async function createRoom(){
         return;
     }
 
-    // Si un ancien salon existe, on le nettoie sans bloquer.
+    // IMPORTANT :
+    // Si un ancien salon est coincé dans le navigateur, on ne bloque plus.
+    // Si tu es hôte de l'ancien salon, on tente de le supprimer.
+    // Si Firebase refuse ou si le salon n'existe plus, on continue quand même.
     if(roomId){
         if(!confirm("Tu as déjà un salon. En créer un nouveau ?")) return;
-        await closeCurrentRoomBeforeNew();
+
+        try{
+            await closeCurrentRoomBeforeNew();
+        }catch(error){
+            console.log("Ancien salon impossible à nettoyer, on continue :", error);
+        }
+
+        roomId = "";
+        room = null;
+        localStorage.removeItem("battleship_room");
+
+        if(roomUnsub){
+            roomUnsub();
+            roomUnsub = null;
+        }
     }
 
     resetLocalPlacement();
 
-    const roomRef = doc(collection(db,"battleshipRooms"));
-    roomId = roomRef.id;
-    localStorage.setItem("battleship_room",roomId);
+    try{
+        const roomRef = doc(collection(db,"battleshipRooms"));
+        const newRoomId = roomRef.id;
 
-    await setDoc(roomRef,{
-        hostUid:user.uid,
-        hostPseudo:getMyPseudo(),
-        guestUid:"",
-        guestPseudo:"",
-        status:"waiting",
-        phase:"placing",
-        turnUid:"",
-        winnerUid:"",
-        players:{
-            [user.uid]:{
-                pseudo:getMyPseudo(),
-                ready:false,
-                ships:[],
-                shots:emptyShots()
-            }
-        },
-        log:["Salon créé."],
-        createdAt:serverTimestamp()
-    });
+        const baseRoom = {
+            hostUid:user.uid,
+            hostPseudo:getMyPseudo(),
+            guestUid:"",
+            guestPseudo:"",
+            status:"waiting",
+            phase:"placing",
+            turnUid:"",
+            winnerUid:"",
+            players:{
+                [user.uid]:{
+                    pseudo:getMyPseudo(),
+                    ready:false,
+                    ships:[],
+                    shots:emptyShots()
+                }
+            },
+            log:["Salon créé."],
+            createdAt:serverTimestamp()
+        };
 
-    listenRoom(roomId);
+        await setDoc(roomRef, baseRoom);
+
+        roomId = newRoomId;
+        localStorage.setItem("battleship_room",roomId);
+
+        // Affichage direct sans attendre le retour Firestore
+        room = {id:roomId, ...baseRoom};
+        applyRoom();
+
+        listenRoom(roomId);
+
+        document.getElementById("status").innerText = "Salon créé. Place tes bateaux puis invite un ami.";
+
+    }catch(error){
+        alert("Erreur création salon : " + error.message);
+        console.log(error);
+    }
 }
 window.createRoom = createRoom;
 
 async function closeCurrentRoomBeforeNew(){
-    if(!roomId){
+    const oldRoomId = roomId || localStorage.getItem("battleship_room");
+
+    if(!oldRoomId){
         localStorage.removeItem("battleship_room");
         return;
     }
 
     try{
-        const ref = doc(db,"battleshipRooms",roomId);
+        const ref = doc(db,"battleshipRooms",oldRoomId);
         const snap = await getDoc(ref);
 
         if(snap.exists()){
@@ -686,19 +721,13 @@ async function closeCurrentRoomBeforeNew(){
             }
         }
     }catch(error){
-        console.log("Ancien salon ignoré :", error);
-    }
-
-    if(roomUnsub){
-        roomUnsub();
-        roomUnsub = null;
+        console.log("Nettoyage ignoré :", error);
     }
 
     localStorage.removeItem("battleship_room");
     roomId = "";
     room = null;
 }
-
 
 function listenRoom(id){
     if(roomUnsub) roomUnsub();
@@ -1004,7 +1033,15 @@ function canPlace(index,r,c,ships=localShips){
 }
 
 function placeShip(r,c){
-    if(!room || room.phase !== "placing") return;
+    if(!room){
+        alert("Crée d'abord un salon.");
+        return;
+    }
+
+    if(room.phase !== "placing"){
+        alert("Tu ne peux placer les bateaux que pendant la phase de placement.");
+        return;
+    }
 
     const me = getMe();
     if(me && me.ready) return;
@@ -1068,7 +1105,15 @@ function clearPreview(){
 }
 
 function randomPlaceShips(){
-    if(!room || room.phase !== "placing") return;
+    if(!room){
+        alert("Crée d'abord un salon.");
+        return;
+    }
+
+    if(room.phase !== "placing"){
+        alert("Tu ne peux placer les bateaux que pendant la phase de placement.");
+        return;
+    }
 
     const me = getMe();
     if(me && me.ready) return;
