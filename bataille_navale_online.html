@@ -423,6 +423,146 @@ h1{
     line-height:1.35;
 }
 
+
+/* ================= BATTLESHIP MOBILE V3 FIX ================= */
+#mobilePlacementBar{
+    display:none;
+}
+
+.cell{
+    touch-action:manipulation;
+}
+
+#enemyBoard .cell{
+    cursor:pointer;
+}
+
+#enemyBoard .cell:not(.locked){
+    box-shadow:inset 0 0 0 2px rgba(250,204,21,.22);
+}
+
+#enemyBoard .cell:not(.locked)::before{
+    content:"";
+    position:absolute;
+    inset:-8px;
+}
+
+@media(max-width:700px){
+    #container{
+        width:100%;
+        padding:0 8px 25px;
+        gap:12px;
+    }
+
+    header{
+        padding:10px;
+    }
+
+    .panel{
+        border-radius:18px;
+        padding:10px;
+    }
+
+    #boards{
+        display:flex !important;
+        flex-direction:column;
+        gap:16px;
+    }
+
+    .boardBox{
+        width:100%;
+    }
+
+    .grid{
+        width:min(96vw,420px) !important;
+        gap:3px;
+        padding:6px;
+    }
+
+    .cell{
+        min-height:30px;
+        border-radius:6px;
+    }
+
+    #enemyBoard .cell{
+        min-height:34px;
+    }
+
+    #shipList{
+        display:flex;
+        overflow-x:auto;
+        gap:8px;
+        padding:6px 0;
+        scroll-snap-type:x mandatory;
+    }
+
+    .shipChoice{
+        min-width:150px;
+        flex:0 0 auto;
+        scroll-snap-align:start;
+        font-size:13px;
+        padding:9px 10px;
+    }
+
+    .placementHint{
+        font-size:12px;
+    }
+
+    #gameTop{
+        position:sticky;
+        top:0;
+        z-index:20;
+        background:rgba(15,23,42,.96);
+        padding:8px;
+        border-radius:16px;
+        border:1px solid rgba(148,163,184,.18);
+    }
+}
+
+@media(max-width:520px){
+    body{
+        overflow-x:hidden;
+    }
+
+    #container{
+        display:block;
+    }
+
+    aside.panel{
+        margin-bottom:12px;
+    }
+
+    #shipList{
+        position:sticky;
+        top:0;
+        z-index:35;
+        background:rgba(2,6,23,.96);
+        border:1px solid rgba(148,163,184,.18);
+        border-radius:16px;
+        padding:8px;
+        margin-top:8px;
+    }
+
+    #myBoard,
+    #enemyBoard{
+        width:96vw !important;
+        max-width:96vw !important;
+    }
+
+    .grid{
+        aspect-ratio:1/1;
+    }
+
+    #enemyBoard .cell{
+        min-height:36px;
+    }
+
+    .cell.hit::after,
+    .cell.miss::after{
+        font-size:18px;
+    }
+}
+
 </style>
 </head>
 
@@ -790,7 +930,7 @@ function applyRoom(){
         if(me && me.ready){
             document.getElementById("status").innerText = "Tu es prêt. En attente de l'autre joueur.";
         }else{
-            document.getElementById("status").innerText = "Place tes bateaux puis clique sur “Je suis prêt”.";
+            document.getElementById("status").innerText = "Place tes bateaux : choisis un bateau puis touche la grille.";
         }
     }
 
@@ -925,6 +1065,10 @@ function renderEnemyBoard(){
 
             if(room?.phase === "battle" && room.turnUid === user?.uid && !shot){
                 cell.onclick = () => fireAt(r,c);
+                cell.onpointerup = (e) => {
+                    e.preventDefault();
+                    fireAt(r,c);
+                };
             }else{
                 cell.classList.add("locked");
             }
@@ -955,6 +1099,10 @@ function renderShipList(){
 
         if(!placed){
             div.onpointerdown = (e) => startShipDrag(e,i);
+            div.ontouchstart = () => {
+                selectedShipIndex = i;
+                renderShipList();
+            };
         }
 
         box.appendChild(div);
@@ -982,6 +1130,7 @@ function startShipDrag(e,index){
 
     document.addEventListener("pointermove", onShipDragMove);
     document.addEventListener("pointerup", onShipDragEnd, {once:true});
+    document.addEventListener("pointercancel", onShipDragCancel, {once:true});
 
     renderShipList();
     e.preventDefault();
@@ -1022,6 +1171,14 @@ function onShipDragMove(e){
 
         selectedShipIndex = old;
     }
+}
+
+function onShipDragCancel(){
+    document.removeEventListener("pointermove", onShipDragMove);
+    const ghost = document.getElementById("dragGhost");
+    if(ghost) ghost.style.display = "none";
+    draggingShipIndex = null;
+    clearPreview();
 }
 
 function onShipDragEnd(e){
