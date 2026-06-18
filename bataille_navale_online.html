@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bataille Navale Online</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at top left,rgba(56,189,248,.18),transparent 34%),
+        linear-gradient(135deg,#020617,#0f172a,#0c4a6e);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+h1{
+    font-size:clamp(32px,5vw,48px);
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1250px,96%);
+    margin:0 auto 35px;
+    display:grid;
+    grid-template-columns:330px 1fr;
+    gap:20px;
+}
+
+.panel{
+    background:rgba(15,23,42,.88);
+    border:1px solid rgba(148,163,184,.24);
+    border-radius:24px;
+    padding:20px;
+    box-shadow:0 18px 45px rgba(0,0,0,.32);
+}
+
+.info{
+    background:#020617;
+    border-radius:14px;
+    padding:12px;
+    margin:10px 0;
+    color:#cbd5e1;
+    line-height:1.4;
+}
+
+.actionBtn{
+    width:100%;
+    padding:12px;
+    margin:7px 0;
+    font-size:16px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+.greenBtn{
+    background:#22c55e!important;
+    color:#052e16!important;
+}
+
+.redBtn{
+    background:#ef4444!important;
+    color:white!important;
+}
+
+.yellowBtn{
+    background:#facc15!important;
+    color:#422006!important;
+}
+
+.smallBtn{
+    padding:8px 10px;
+    margin:4px;
+    font-size:14px;
+    background:#334155;
+    color:white;
+}
+
+#playersBox{
+    display:grid;
+    gap:10px;
+    margin:12px 0;
+}
+
+.playerSlot{
+    background:#020617;
+    border-radius:14px;
+    padding:12px;
+    color:#cbd5e1;
+    border:1px solid rgba(148,163,184,.17);
+}
+
+.playerSlot strong{
+    color:white;
+}
+
+#friendsList{
+    margin-top:8px;
+    max-height:210px;
+    overflow:auto;
+}
+
+.friendItem{
+    background:#020617;
+    border-radius:12px;
+    padding:10px;
+    margin:7px 0;
+    color:#cbd5e1;
+}
+
+#status{
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    color:#facc15;
+    min-height:34px;
+    margin-bottom:14px;
+}
+
+#gameTop{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+}
+
+.phasePill{
+    background:#020617;
+    border:1px solid rgba(148,163,184,.2);
+    border-radius:999px;
+    padding:8px 12px;
+    color:#cbd5e1;
+}
+
+#boards{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    align-items:start;
+}
+
+.boardBox{
+    text-align:center;
+}
+
+.boardTitle{
+    font-weight:bold;
+    color:#facc15;
+    margin-bottom:10px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(10,1fr);
+    grid-template-rows:repeat(10,1fr);
+    gap:4px;
+    width:min(440px,100%);
+    aspect-ratio:1/1;
+    margin:0 auto;
+    background:#075985;
+    padding:8px;
+    border-radius:18px;
+    box-shadow:
+        inset 0 0 24px rgba(255,255,255,.12),
+        0 18px 32px rgba(0,0,0,.35);
+}
+
+.cell{
+    background:#082f49;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,.08);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    user-select:none;
+    transition:.15s;
+    position:relative;
+    overflow:hidden;
+    min-width:0;
+    min-height:0;
+}
+
+.cell:hover{
+    outline:2px solid rgba(250,204,21,.55);
+    transform:scale(1.03);
+}
+
+.cell.ship{
+    background:#64748b;
+}
+
+.cell.preview{
+    background:#22c55e;
+}
+
+.cell.badPreview{
+    background:#ef4444;
+}
+
+.cell.hit{
+    background:#7f1d1d;
+}
+
+.cell.hit::after{
+    content:"💥";
+    font-size:20px;
+}
+
+.cell.miss{
+    background:#0f172a;
+}
+
+.cell.miss::after{
+    content:"•";
+    color:#38bdf8;
+    font-size:25px;
+}
+
+.cell.sunk{
+    background:#991b1b;
+    box-shadow:0 0 14px rgba(239,68,68,.8);
+}
+
+.cell.locked{
+    cursor:not-allowed;
+}
+
+#shipList{
+    margin-top:12px;
+}
+
+.shipChoice{
+    background:#020617;
+    color:#cbd5e1;
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:12px;
+    padding:9px;
+    margin:6px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+}
+
+.shipChoice.active{
+    border-color:#facc15;
+    color:white;
+}
+
+.shipChoice.done{
+    opacity:.45;
+}
+
+#log{
+    background:#020617;
+    border-radius:14px;
+    padding:10px;
+    margin-top:14px;
+    color:#cbd5e1;
+    max-height:130px;
+    overflow:auto;
+    font-size:14px;
+    text-align:left;
+}
+
+.logLine{
+    padding:4px 0;
+    border-bottom:1px solid rgba(148,163,184,.1);
+}
+
+#inviteOverlay,#endOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:100;
+    backdrop-filter:blur(5px);
+}
+
+.modalCard{
+    width:min(430px,90%);
+    background:#0f172a;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 25px 65px rgba(0,0,0,.5);
+}
+
+.modalCard h2{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+.modalCard p{
+    color:#cbd5e1;
+    margin:10px 0;
+}
+
+.modalCard button{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:17px;
+}
+
+@media(max-width:1000px){
+    #container{
+        grid-template-columns:1fr;
+    }
+
+    #boards{
+        grid-template-columns:1fr;
+    }
+
+    .grid{
+        width:min(92vw,430px);
+    }
+}
+
+@media(max-width:520px){
+    header{
+        padding:12px;
+    }
+
+    .panel{
+        padding:14px;
+    }
+
+    .grid{
+        gap:3px;
+        padding:6px;
+        border-radius:14px;
+    }
+
+    .cell{
+        border-radius:5px;
+        font-size:11px;
+    }
+
+    #status{
+        font-size:20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>⚓ Bataille Navale Online</h1>
+        <div>👤 Joueur : <span id="playerName">Joueur</span></div>
+    </div>
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+    <aside class="panel">
+        <h2>🌊 Salon</h2>
+
+        <div id="playersBox">
+            <div class="playerSlot">Aucun salon.</div>
+        </div>
+
+        <button class="actionBtn greenBtn" onclick="createRoom()">➕ Créer un salon</button>
+        <button class="actionBtn" onclick="loadFriends()">👥 Charger mes amis</button>
+        <button class="actionBtn redBtn" onclick="leaveRoom()">🚪 Quitter le salon</button>
+
+        <div id="friendsList"></div>
+
+        <div class="info">
+            Règle V1 : place tes bateaux, clique “Prêt”, puis tire sur la grille ennemie chacun ton tour.
+        </div>
+
+        <h2 style="margin-top:18px;">🚢 Placement</h2>
+        <button class="actionBtn yellowBtn" onclick="rotateShip()">↔️ Tourner le bateau</button>
+        <button class="actionBtn" onclick="randomPlaceShips()">🎲 Placement auto</button>
+        <button class="actionBtn greenBtn" onclick="setReady()">✅ Je suis prêt</button>
+
+        <div id="shipList"></div>
+
+        <div id="log"></div>
+    </aside>
+
+    <main class="panel">
+        <div id="status">Crée un salon ou accepte une invitation.</div>
+
+        <div id="gameTop">
+            <div class="phasePill">Phase : <span id="phaseText">—</span></div>
+            <div class="phasePill">Orientation : <span id="orientationText">Horizontal</span></div>
+        </div>
+
+        <div id="boards">
+            <div class="boardBox">
+                <div class="boardTitle">🛡️ Ta flotte</div>
+                <div class="grid" id="myBoard"></div>
+            </div>
+
+            <div class="boardBox">
+                <div class="boardTitle">🎯 Grille ennemie</div>
+                <div class="grid" id="enemyBoard"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="inviteOverlay">
+    <div class="modalCard">
+        <h2>⚓ Invitation</h2>
+        <p id="inviteText">On t'invite à jouer.</p>
+        <button class="greenBtn" onclick="acceptInvite()">✅ Accepter</button>
+        <button class="redBtn" onclick="refuseInvite()">❌ Refuser</button>
+    </div>
+</div>
+
+<div id="endOverlay">
+    <div class="modalCard">
+        <h2 id="endTitle">Fin</h2>
+        <p id="endText"></p>
+        <button class="greenBtn" onclick="restartGame()">🔁 Revanche</button>
+        <button onclick="document.getElementById('endOverlay').style.display='none'">Continuer</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    onSnapshot,
+    serverTimestamp,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCicpzlFc-WfbmBjzu8y-bWYPaXu6Mnt24",
+    authDomain: "arcade-fbd7c.firebaseapp.com",
+    projectId: "arcade-fbd7c",
+    storageBucket: "arcade-fbd7c.firebasestorage.app",
+    messagingSenderId: "648897624519",
+    appId: "1:648897624519:web:bffd2e9d3023362f8781e2"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const SIZE = 10;
+const SHIPS = [
+    {name:"Porte-avions", size:5},
+    {name:"Croiseur", size:4},
+    {name:"Destroyer", size:3},
+    {name:"Sous-marin", size:3},
+    {name:"Torpilleur", size:2}
+];
+
+let user = null;
+let userData = null;
+let roomId = localStorage.getItem("battleship_room") || "";
+let room = null;
+let roomUnsub = null;
+let inviteUnsub = null;
+let pendingInvite = null;
+
+let localShips = [];
+let orientation = "H";
+let selectedShipIndex = 0;
+
+function goHome(){
+    window.location.href = "index.html";
+}
+window.goHome = goHome;
+
+onAuthStateChanged(auth, async u=>{
+    user = u;
+
+    if(!user){
+        document.getElementById("status").innerText = "Tu dois être connecté en ligne depuis l'accueil.";
+        renderBoards();
+        return;
+    }
+
+    const snap = await getDoc(doc(db,"users",user.uid));
+    userData = snap.exists() ? snap.data() : {pseudo:localStorage.getItem("pseudo") || "Joueur"};
+
+    document.getElementById("playerName").innerText = getMyPseudo();
+
+    listenInvites();
+    await checkPendingInviteOnLoad();
+
+    if(roomId){
+        listenRoom(roomId);
+    }else{
+        resetLocalPlacement();
+        renderEmpty();
+    }
+});
+
+function getMyPseudo(){
+    return userData && userData.pseudo ? userData.pseudo : "Joueur";
+}
+
+function emptyShots(){
+    return Array.from({length:SIZE},()=>Array(SIZE).fill(""));
+}
+
+function resetLocalPlacement(){
+    localShips = [];
+    selectedShipIndex = 0;
+}
+
+function renderEmpty(){
+    document.getElementById("playersBox").innerHTML = "<div class='playerSlot'>Aucun salon.</div>";
+    document.getElementById("phaseText").innerText = "—";
+    document.getElementById("status").innerText = "Crée un salon ou accepte une invitation.";
+    renderBoards();
+    renderShipList();
+    renderLog([]);
+}
+
+async function createRoom(){
+    if(!user){
+        alert("Connecte-toi depuis l'accueil.");
+        return;
+    }
+
+    if(roomId){
+        if(!confirm("Tu as déjà un salon. En créer un nouveau ?")) return;
+        await leaveRoom();
+    }
+
+    resetLocalPlacement();
+
+    const roomRef = doc(collection(db,"battleshipRooms"));
+    roomId = roomRef.id;
+    localStorage.setItem("battleship_room",roomId);
+
+    await setDoc(roomRef,{
+        hostUid:user.uid,
+        hostPseudo:getMyPseudo(),
+        guestUid:"",
+        guestPseudo:"",
+        status:"waiting",
+        phase:"placing",
+        turnUid:"",
+        winnerUid:"",
+        players:{
+            [user.uid]:{
+                pseudo:getMyPseudo(),
+                ready:false,
+                ships:[],
+                shots:emptyShots()
+            }
+        },
+        log:["Salon créé."],
+        createdAt:serverTimestamp()
+    });
+
+    listenRoom(roomId);
+}
+window.createRoom = createRoom;
+
+function listenRoom(id){
+    if(roomUnsub) roomUnsub();
+
+    roomUnsub = onSnapshot(doc(db,"battleshipRooms",id), snap=>{
+        if(!snap.exists()){
+            roomId = "";
+            localStorage.removeItem("battleship_room");
+            room = null;
+            resetLocalPlacement();
+            renderEmpty();
+            document.getElementById("status").innerText = "Le salon a été fermé.";
+            return;
+        }
+
+        room = {id:snap.id, ...snap.data()};
+        applyRoom();
+    });
+}
+
+function applyRoom(){
+    renderPlayers();
+    renderShipList();
+    renderBoards();
+    renderLog(room.log || []);
+
+    document.getElementById("phaseText").innerText =
+        room.phase === "placing" ? "Placement" :
+        room.phase === "battle" ? "Combat" :
+        room.phase === "ended" ? "Terminée" : "Attente";
+
+    if(room.status === "waiting"){
+        document.getElementById("status").innerText =
+            room.hostUid === user.uid ? "Invite un ami puis place tes bateaux." : "En attente de l'hôte.";
+        return;
+    }
+
+    if(room.phase === "placing"){
+        const me = getMe();
+
+        if(me && me.ready){
+            document.getElementById("status").innerText = "Tu es prêt. En attente de l'autre joueur.";
+        }else{
+            document.getElementById("status").innerText = "Place tes bateaux puis clique sur “Je suis prêt”.";
+        }
+    }
+
+    if(room.phase === "battle"){
+        document.getElementById("status").innerText =
+            room.turnUid === user.uid ? "À toi de tirer sur la grille ennemie !" : "Tour de l'adversaire.";
+    }
+
+    if(room.phase === "ended"){
+        const winner = room.winnerUid === user.uid ? "🏆 Tu as gagné !" : "💀 Tu as perdu.";
+        document.getElementById("endTitle").innerText = winner;
+        document.getElementById("endText").innerText = "La flotte ennemie a été coulée.";
+        document.getElementById("endOverlay").style.display = "flex";
+        document.getElementById("status").innerText = "Partie terminée.";
+    }
+}
+
+function renderPlayers(){
+    if(!room){
+        document.getElementById("playersBox").innerHTML = "<div class='playerSlot'>Aucun salon.</div>";
+        return;
+    }
+
+    const host = room.players?.[room.hostUid];
+    const guest = room.guestUid ? room.players?.[room.guestUid] : null;
+
+    document.getElementById("playersBox").innerHTML = `
+        <div class="playerSlot">
+            <strong>${room.hostPseudo || "Hôte"}</strong> 👑<br>
+            ${host?.ready ? "✅ Prêt" : "⏳ Pas prêt"}
+        </div>
+        <div class="playerSlot">
+            <strong>${room.guestPseudo || "Case vide"}</strong><br>
+            ${guest ? (guest.ready ? "✅ Prêt" : "⏳ Pas prêt") : "En attente..."}
+        </div>
+    `;
+}
+
+function getMe(){
+    if(!room || !user) return null;
+    return room.players?.[user.uid] || null;
+}
+
+function getEnemyUid(){
+    if(!room || !user) return "";
+    if(room.hostUid === user.uid) return room.guestUid || "";
+    return room.hostUid || "";
+}
+
+function getEnemy(){
+    const enemyUid = getEnemyUid();
+    if(!enemyUid) return null;
+    return room.players?.[enemyUid] || null;
+}
+
+function renderBoards(){
+    renderMyBoard();
+    renderEnemyBoard();
+}
+
+function renderMyBoard(){
+    const board = document.getElementById("myBoard");
+    board.innerHTML = "";
+
+    const me = getMe();
+    const myShips = me && me.ships && me.ships.length ? me.ships : localShips;
+    const enemy = getEnemy();
+
+    for(let r=0;r<SIZE;r++){
+        for(let c=0;c<SIZE;c++){
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.r = r;
+            cell.dataset.c = c;
+
+            const hasShip = shipAt(myShips,r,c);
+            if(hasShip) cell.classList.add("ship");
+
+            const enemyShot = enemy?.shots?.[r]?.[c] || "";
+            if(enemyShot === "hit") cell.classList.add("hit");
+            if(enemyShot === "miss") cell.classList.add("miss");
+            if(enemyShot === "sunk") cell.classList.add("sunk");
+
+            cell.onclick = () => placeShip(r,c);
+            cell.onmouseenter = () => previewPlacement(r,c);
+            cell.onmouseleave = () => clearPreview();
+
+            board.appendChild(cell);
+        }
+    }
+}
+
+function renderEnemyBoard(){
+    const board = document.getElementById("enemyBoard");
+    board.innerHTML = "";
+
+    const me = getMe();
+    const shots = me?.shots || emptyShots();
+
+    for(let r=0;r<SIZE;r++){
+        for(let c=0;c<SIZE;c++){
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.dataset.r = r;
+            cell.dataset.c = c;
+
+            const shot = shots[r][c];
+            if(shot === "hit") cell.classList.add("hit");
+            if(shot === "miss") cell.classList.add("miss");
+            if(shot === "sunk") cell.classList.add("sunk");
+
+            if(room?.phase === "battle" && room.turnUid === user?.uid && !shot){
+                cell.onclick = () => fireAt(r,c);
+            }else{
+                cell.classList.add("locked");
+            }
+
+            board.appendChild(cell);
+        }
+    }
+}
+
+function renderShipList(){
+    const box = document.getElementById("shipList");
+    if(!box) return;
+
+    box.innerHTML = "";
+
+    SHIPS.forEach((ship,i)=>{
+        const placed = !!localShips.find(s=>s.index===i) || !!getMe()?.ships?.find(s=>s.index===i);
+        const div = document.createElement("div");
+        div.className = "shipChoice " + (selectedShipIndex===i ? "active " : "") + (placed ? "done" : "");
+        div.innerHTML = `<span>${ship.name}</span><strong>${ship.size}</strong>`;
+        div.onclick = () => {
+            if(!placed){
+                selectedShipIndex = i;
+                renderShipList();
+            }
+        };
+        box.appendChild(div);
+    });
+
+    document.getElementById("orientationText").innerText = orientation === "H" ? "Horizontal" : "Vertical";
+}
+
+function rotateShip(){
+    orientation = orientation === "H" ? "V" : "H";
+    renderShipList();
+}
+window.rotateShip = rotateShip;
+
+function shipAt(ships,r,c){
+    return ships.some(ship => ship.cells.some(cell => cell.r===r && cell.c===c));
+}
+
+function canPlace(index,r,c,ships=localShips){
+    const ship = SHIPS[index];
+    if(!ship) return false;
+
+    const cells = [];
+
+    for(let i=0;i<ship.size;i++){
+        const rr = r + (orientation==="V" ? i : 0);
+        const cc = c + (orientation==="H" ? i : 0);
+
+        if(rr<0 || rr>=SIZE || cc<0 || cc>=SIZE) return false;
+        if(shipAt(ships,rr,cc)) return false;
+
+        cells.push({r:rr,c:cc});
+    }
+
+    return cells;
+}
+
+function placeShip(r,c){
+    if(!room || room.phase !== "placing") return;
+
+    const me = getMe();
+    if(me && me.ready) return;
+
+    if(localShips.find(s=>s.index===selectedShipIndex)) return;
+
+    const cells = canPlace(selectedShipIndex,r,c);
+    if(!cells) return;
+
+    localShips.push({
+        index:selectedShipIndex,
+        name:SHIPS[selectedShipIndex].name,
+        size:SHIPS[selectedShipIndex].size,
+        cells,
+        hits:[]
+    });
+
+    const next = SHIPS.findIndex((s,i)=>!localShips.find(x=>x.index===i));
+    selectedShipIndex = next === -1 ? selectedShipIndex : next;
+
+    renderShipList();
+    renderBoards();
+}
+
+function previewPlacement(r,c){
+    if(!room || room.phase !== "placing") return;
+    if(localShips.find(s=>s.index===selectedShipIndex)) return;
+
+    clearPreview();
+
+    const cells = canPlace(selectedShipIndex,r,c);
+    const className = cells ? "preview" : "badPreview";
+
+    const targets = cells || previewCells(selectedShipIndex,r,c);
+
+    targets.forEach(pos=>{
+        const cell = document.querySelector(`#myBoard [data-r="${pos.r}"][data-c="${pos.c}"]`);
+        if(cell) cell.classList.add(className);
+    });
+}
+
+function previewCells(index,r,c){
+    const ship = SHIPS[index];
+    const cells = [];
+    if(!ship) return cells;
+
+    for(let i=0;i<ship.size;i++){
+        cells.push({
+            r:r + (orientation==="V" ? i : 0),
+            c:c + (orientation==="H" ? i : 0)
+        });
+    }
+
+    return cells;
+}
+
+function clearPreview(){
+    document.querySelectorAll(".preview,.badPreview").forEach(c=>{
+        c.classList.remove("preview","badPreview");
+    });
+}
+
+function randomPlaceShips(){
+    if(!room || room.phase !== "placing") return;
+
+    const me = getMe();
+    if(me && me.ready) return;
+
+    localShips = [];
+
+    for(let i=0;i<SHIPS.length;i++){
+        let placed = false;
+        let attempts = 0;
+
+        while(!placed && attempts < 500){
+            attempts++;
+            orientation = Math.random() < .5 ? "H" : "V";
+            const r = Math.floor(Math.random()*SIZE);
+            const c = Math.floor(Math.random()*SIZE);
+            const cells = canPlace(i,r,c,localShips);
+
+            if(cells){
+                localShips.push({
+                    index:i,
+                    name:SHIPS[i].name,
+                    size:SHIPS[i].size,
+                    cells,
+                    hits:[]
+                });
+                placed = true;
+            }
+        }
+    }
+
+    selectedShipIndex = 0;
+    renderShipList();
+    renderBoards();
+}
+window.randomPlaceShips = randomPlaceShips;
+
+async function setReady(){
+    if(!room){
+        alert("Crée un salon.");
+        return;
+    }
+
+    if(room.phase !== "placing"){
+        alert("La partie a déjà commencé.");
+        return;
+    }
+
+    if(localShips.length !== SHIPS.length){
+        alert("Place tous tes bateaux avant d'être prêt.");
+        return;
+    }
+
+    const players = {...room.players};
+    players[user.uid] = {
+        ...players[user.uid],
+        ready:true,
+        ships:localShips,
+        shots:players[user.uid]?.shots || emptyShots()
+    };
+
+    let updates = {
+        players,
+        log:addLog(getMyPseudo() + " est prêt.")
+    };
+
+    const enemyUid = getEnemyUid();
+    if(enemyUid && players[enemyUid] && players[enemyUid].ready){
+        updates.phase = "battle";
+        updates.status = "playing";
+        updates.turnUid = room.hostUid;
+        updates.log = addLog("⚔️ Combat lancé ! " + room.hostPseudo + " commence.");
+    }
+
+    await updateDoc(doc(db,"battleshipRooms",roomId), updates);
+}
+window.setReady = setReady;
+
+async function fireAt(r,c){
+    if(!room || room.phase !== "battle") return;
+    if(room.turnUid !== user.uid) return;
+
+    const enemyUid = getEnemyUid();
+    if(!enemyUid) return;
+
+    const players = JSON.parse(JSON.stringify(room.players));
+    const me = players[user.uid];
+    const enemy = players[enemyUid];
+
+    if(me.shots[r][c]) return;
+
+    let hit = false;
+    let sunkShip = null;
+
+    for(const ship of enemy.ships){
+        if(ship.cells.some(cell=>cell.r===r && cell.c===c)){
+            hit = true;
+            if(!ship.hits) ship.hits = [];
+            ship.hits.push({r,c});
+
+            if(ship.hits.length >= ship.size){
+                sunkShip = ship;
+                ship.cells.forEach(cell=>{
+                    me.shots[cell.r][cell.c] = "sunk";
+                });
+            }
+            break;
+        }
+    }
+
+    if(hit && !sunkShip){
+        me.shots[r][c] = "hit";
+    }
+
+    if(!hit){
+        me.shots[r][c] = "miss";
+    }
+
+    const allSunk = enemy.ships.every(ship => (ship.hits || []).length >= ship.size);
+
+    const updates = {
+        players,
+        turnUid:enemyUid,
+        log:addLog(hit ? (getMyPseudo() + " touche !") : (getMyPseudo() + " rate."))
+    };
+
+    if(sunkShip){
+        updates.log = addLog("💥 " + getMyPseudo() + " coule : " + sunkShip.name + " !");
+    }
+
+    if(allSunk){
+        updates.phase = "ended";
+        updates.status = "ended";
+        updates.winnerUid = user.uid;
+        updates.log = addLog("🏆 " + getMyPseudo() + " gagne la bataille !");
+    }
+
+    await updateDoc(doc(db,"battleshipRooms",roomId), updates);
+}
+window.fireAt = fireAt;
+
+function addLog(text){
+    const old = room && room.log ? room.log : [];
+    return [text, ...old].slice(0,40);
+}
+
+function renderLog(log=[]){
+    const box = document.getElementById("log");
+    if(!box) return;
+
+    if(!log.length){
+        box.innerHTML = "<div class='logLine'>Aucun événement.</div>";
+        return;
+    }
+
+    box.innerHTML = log.slice(0,12).map(l=>`<div class="logLine">${l}</div>`).join("");
+}
+
+async function loadFriends(){
+    const box = document.getElementById("friendsList");
+
+    if(!user){
+        box.innerHTML = "<div class='friendItem'>Connecte-toi pour inviter.</div>";
+        return;
+    }
+
+    const meSnap = await getDoc(doc(db,"users",user.uid));
+
+    if(!meSnap.exists() || !meSnap.data().friends || meSnap.data().friends.length === 0){
+        box.innerHTML = "<div class='friendItem'>Tu n'as pas encore d'amis.</div>";
+        return;
+    }
+
+    box.innerHTML = "";
+
+    for(const friendUid of meSnap.data().friends){
+        const fSnap = await getDoc(doc(db,"users",friendUid));
+        if(fSnap.exists()){
+            const f = fSnap.data();
+            box.innerHTML += `
+                <div class="friendItem">
+                    <strong>${f.online ? "🟢" : "⚫"} ${f.pseudo}</strong>
+                    <button class="smallBtn" onclick="inviteFriend('${friendUid}','${f.pseudo}')">Inviter</button>
+                </div>
+            `;
+        }
+    }
+}
+window.loadFriends = loadFriends;
+
+async function inviteFriend(friendUid,friendPseudo){
+    if(!room || !roomId){
+        alert("Crée d'abord un salon.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut inviter.");
+        return;
+    }
+
+    if(room.guestUid){
+        alert("Le salon est déjà plein.");
+        return;
+    }
+
+    await addDoc(collection(db,"gameInvites"),{
+        game:"battleship",
+        roomId,
+        fromUid:user.uid,
+        fromPseudo:getMyPseudo(),
+        toUid:friendUid,
+        toPseudo:friendPseudo,
+        status:"pending",
+        createdAt:serverTimestamp()
+    });
+
+    await addDoc(collection(db,"notifications"),{
+        toUid:friendUid,
+        type:"gameInvite",
+        game:"battleship",
+        roomId,
+        text:getMyPseudo() + " t'invite à jouer à Bataille Navale.",
+        read:false,
+        fromUid:user.uid,
+        fromPseudo:getMyPseudo(),
+        createdAt:serverTimestamp()
+    });
+
+    alert("Invitation envoyée à " + friendPseudo);
+}
+window.inviteFriend = inviteFriend;
+
+function listenInvites(){
+    if(inviteUnsub) inviteUnsub();
+
+    const q = query(
+        collection(db,"gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","battleship"),
+        where("status","==","pending")
+    );
+
+    inviteUnsub = onSnapshot(q, snap=>{
+        if(snap.empty) return;
+
+        const d = snap.docs[0];
+        pendingInvite = {id:d.id, ...d.data()};
+
+        document.getElementById("inviteText").innerText =
+            pendingInvite.fromPseudo + " t'invite à jouer à Bataille Navale.";
+
+        document.getElementById("inviteOverlay").style.display = "flex";
+    });
+}
+
+async function checkPendingInviteOnLoad(){
+    const q = query(
+        collection(db,"gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","battleship"),
+        where("status","==","pending")
+    );
+
+    const snap = await getDocs(q);
+    if(snap.empty) return;
+
+    const d = snap.docs[0];
+    pendingInvite = {id:d.id, ...d.data()};
+
+    document.getElementById("inviteText").innerText =
+        pendingInvite.fromPseudo + " t'invite à jouer à Bataille Navale.";
+
+    document.getElementById("inviteOverlay").style.display = "flex";
+}
+
+async function acceptInvite(){
+    if(!pendingInvite) return;
+
+    const roomRef = doc(db,"battleshipRooms",pendingInvite.roomId);
+    const roomSnap = await getDoc(roomRef);
+
+    if(!roomSnap.exists()){
+        alert("Le salon n'existe plus.");
+        await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"expired"});
+        document.getElementById("inviteOverlay").style.display = "none";
+        return;
+    }
+
+    const r = roomSnap.data();
+
+    if(r.guestUid && r.guestUid !== user.uid){
+        alert("Le salon est plein.");
+        await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"full"});
+        document.getElementById("inviteOverlay").style.display = "none";
+        return;
+    }
+
+    const players = r.players || {};
+    players[user.uid] = {
+        pseudo:getMyPseudo(),
+        ready:false,
+        ships:[],
+        shots:emptyShots()
+    };
+
+    await updateDoc(roomRef,{
+        guestUid:user.uid,
+        guestPseudo:getMyPseudo(),
+        players,
+        status:"placing",
+        log:[getMyPseudo() + " a rejoint le salon.", ...(r.log || [])].slice(0,40)
+    });
+
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"accepted"});
+
+    roomId = pendingInvite.roomId;
+    localStorage.setItem("battleship_room", roomId);
+    resetLocalPlacement();
+
+    document.getElementById("inviteOverlay").style.display = "none";
+    listenRoom(roomId);
+}
+window.acceptInvite = acceptInvite;
+
+async function refuseInvite(){
+    if(!pendingInvite) return;
+
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"refused"});
+    document.getElementById("inviteOverlay").style.display = "none";
+    pendingInvite = null;
+}
+window.refuseInvite = refuseInvite;
+
+async function leaveRoom(){
+    if(!roomId){
+        goHome();
+        return;
+    }
+
+    try{
+        const ref = doc(db,"battleshipRooms",roomId);
+        const snap = await getDoc(ref);
+
+        if(snap.exists()){
+            const data = snap.data();
+
+            if(data.hostUid === user.uid){
+                await deleteDoc(ref);
+            }else{
+                const players = data.players || {};
+                delete players[user.uid];
+
+                await updateDoc(ref,{
+                    guestUid:"",
+                    guestPseudo:"",
+                    players,
+                    status:"waiting",
+                    phase:"placing",
+                    turnUid:"",
+                    log:[getMyPseudo() + " a quitté le salon.", ...(data.log || [])].slice(0,40)
+                });
+            }
+        }
+    }catch(error){
+        console.log(error);
+    }
+
+    localStorage.removeItem("battleship_room");
+    roomId = "";
+    room = null;
+    resetLocalPlacement();
+    renderEmpty();
+}
+window.leaveRoom = leaveRoom;
+
+async function restartGame(){
+    if(!room || room.hostUid !== user.uid){
+        alert("Seul l'hôte peut relancer.");
+        return;
+    }
+
+    const players = {...room.players};
+
+    Object.keys(players).forEach(uid=>{
+        players[uid].ready = false;
+        players[uid].ships = [];
+        players[uid].shots = emptyShots();
+    });
+
+    await updateDoc(doc(db,"battleshipRooms",roomId),{
+        phase:"placing",
+        status:"placing",
+        winnerUid:"",
+        turnUid:"",
+        players,
+        log:["🔁 Nouvelle bataille !"]
+    });
+
+    resetLocalPlacement();
+    document.getElementById("endOverlay").style.display = "none";
+}
+window.restartGame = restartGame;
+
+renderBoards();
+renderShipList();
+</script>
+
+</body>
+</html>

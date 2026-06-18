@@ -1880,6 +1880,7 @@ body::before{
     <button onclick="goToGame('mole.html')">🔨 Whack-a-Mole</button>
     <button onclick="goToGame('fruit.html')">🍉 Fruit Slice</button>
 <button onclick="openUno()">🃏 Uno</button>
+    <button onclick="openBattleship()">⚓ Bataille Navale</button>
 </div>
 
 <div id="accountPanel">
@@ -2168,6 +2169,15 @@ body::before{
             <div class="desc">Invite tes amis et joue au UNO en ligne !</div>
             <div id="unoLock">🔒 En ligne requis</div>
         </div>
+
+        <div class="card" onclick="openBattleship()">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Bataille Navale Online','bataille_navale_online.html','⚓')">☆</button>
+            <div class="icon">⚓</div>
+            <div class="title">Bataille Navale</div>
+            <div class="desc">Place tes bateaux et coule la flotte de ton ami en ligne !</div>
+        </div>
+
+
 </div>
 
     <div class="footer">Ton pseudo est sauvegardé automatiquement dans le navigateur.</div>
@@ -2461,6 +2471,19 @@ function openPuissance4(){
         trackGame("Puissance 4","puissance4.html");
         window.location.href = "puissance4.html";
     }
+}
+
+
+function openBattleship(){
+    const mode = localStorage.getItem("playMode");
+
+    if(mode !== "online"){
+        alert("🔒 Tu dois être connecté en ligne pour jouer à Bataille Navale.");
+        return;
+    }
+
+    trackGame("Bataille Navale Online","bataille_navale_online.html");
+    window.location.href = "bataille_navale_online.html";
 }
 
 function openUno(){
