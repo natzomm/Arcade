@@ -2247,17 +2247,6 @@ function savePseudo(){
     input.value = p;
 }
 
-
-async function cleanupRoomsThenGo(gameName, page){
-    savePseudo();
-
-    if(localStorage.getItem("playMode") === "online" && typeof window.cleanupOldOnlineRooms === "function"){
-        await window.cleanupOldOnlineRooms(gameName);
-    }
-
-    window.location.href = page;
-}
-
 function openMorpion(){
     savePseudo();
 
@@ -2265,8 +2254,7 @@ function openMorpion(){
 
     if(mode === "online"){
         trackGame("Morpion Online","morpion_online.html");
-        cleanupRoomsThenGo("morpion","morpion_online.html");
-        return;
+        window.location.href = "morpion_online.html";
     }else{
         trackGame("Morpion","morpion.html");
         window.location.href = "morpion.html";
@@ -2468,8 +2456,7 @@ function openPuissance4(){
 
     if(localStorage.getItem("playMode") === "online"){
         trackGame("Puissance 4 Online","puissance4_online.html");
-        cleanupRoomsThenGo("connect4","puissance4_online.html");
-        return;
+        window.location.href = "puissance4_online.html";
     }else{
         trackGame("Puissance 4","puissance4.html");
         window.location.href = "puissance4.html";
@@ -2485,8 +2472,7 @@ function openUno(){
     }
 
     trackGame("UNO Online","uno_online.html");
-    cleanupRoomsThenGo("uno","uno_online.html");
-    return;
+    window.location.href = "uno_online.html";
 }
 
 
@@ -3668,7 +3654,7 @@ window.openNotification = function(type, fromUid = "", fromPseudo = "", game = "
     }
 
     if(type === "gameInvite"){
-        ifif(game === "connect4"){
+        if(game === "connect4"){
             window.location.href = "puissance4_online.html";
         }else if(game === "uno"){
             window.location.href = "uno_online.html";
