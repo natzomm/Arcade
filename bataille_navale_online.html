@@ -563,10 +563,207 @@ h1{
     }
 }
 
+
+/* ================= BATTLESHIP V2 ANIMATIONS + UI ================= */
+#battleToast{
+    position:fixed;
+    inset:0;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    background:rgba(2,6,23,.35);
+    z-index:9998;
+    pointer-events:none;
+}
+
+#battleToast.show{
+    display:flex;
+}
+
+#battleToastCard{
+    background:linear-gradient(145deg,#1e293b,#020617);
+    border:3px solid #facc15;
+    border-radius:28px;
+    padding:28px 34px;
+    text-align:center;
+    box-shadow:0 25px 70px rgba(0,0,0,.6), 0 0 35px rgba(250,204,21,.45);
+    animation:battleToastPop .9s ease-out;
+}
+
+#battleToastIcon{
+    font-size:70px;
+    margin-bottom:8px;
+}
+
+#battleToastText{
+    font-size:34px;
+    font-weight:900;
+    color:#facc15;
+}
+
+#battleToastSub{
+    color:#cbd5e1;
+    margin-top:8px;
+    font-size:17px;
+}
+
+@keyframes battleToastPop{
+    0%{transform:scale(.55) rotate(-5deg);opacity:0}
+    35%{transform:scale(1.12) rotate(2deg);opacity:1}
+    65%{transform:scale(.98)}
+    100%{transform:scale(1)}
+}
+
+.cell.explosionAnim::after{
+    content:"💥";
+    animation:boomPop .65s ease-out;
+}
+
+.cell.splashAnim::after{
+    content:"💦";
+    animation:splashPop .65s ease-out;
+}
+
+@keyframes boomPop{
+    0%{transform:scale(.2);opacity:.2}
+    55%{transform:scale(1.45);opacity:1}
+    100%{transform:scale(1);opacity:1}
+}
+
+@keyframes splashPop{
+    0%{transform:scale(.2) translateY(-8px);opacity:.2}
+    60%{transform:scale(1.35) translateY(0);opacity:1}
+    100%{transform:scale(1);opacity:1}
+}
+
+#battleStatsBar{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin:0 0 14px;
+}
+
+.battleStat{
+    background:#020617;
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:14px;
+    padding:10px;
+    text-align:center;
+    color:#cbd5e1;
+    font-size:13px;
+}
+
+.battleStat strong{
+    display:block;
+    color:white;
+    font-size:19px;
+}
+
+#turnBanner{
+    text-align:center;
+    border-radius:18px;
+    padding:12px;
+    margin-bottom:12px;
+    font-size:20px;
+    font-weight:900;
+    background:#334155;
+    color:white;
+    border:2px solid transparent;
+}
+
+#turnBanner.mine{
+    background:#14532d;
+    color:#bbf7d0;
+    border-color:#22c55e;
+    box-shadow:0 0 24px rgba(34,197,94,.22);
+}
+
+#turnBanner.enemy{
+    background:#451a03;
+    color:#fde68a;
+    border-color:#f59e0b;
+}
+
+#lastShotBox{
+    background:#020617;
+    border-radius:14px;
+    padding:11px;
+    margin:10px 0;
+    color:#cbd5e1;
+    border:1px solid rgba(148,163,184,.16);
+}
+
+#lastShotText{
+    color:white;
+    font-weight:bold;
+}
+
+#endSummary{
+    margin-top:12px;
+    background:#020617;
+    border-radius:16px;
+    padding:12px;
+    color:#cbd5e1;
+    line-height:1.55;
+}
+
+.hideFleetMobileBtn{
+    display:none;
+}
+
+body.hideFleetOnMobile #myFleetBox{
+    display:none;
+}
+
+@media(max-width:700px){
+    #battleStatsBar{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    #turnBanner{
+        font-size:17px;
+        padding:10px;
+    }
+
+    .hideFleetMobileBtn{
+        display:block;
+        width:100%;
+        padding:10px;
+        margin:8px 0;
+        background:#334155;
+        color:white;
+    }
+
+    body.hideFleetOnMobile #enemyBoard{
+        width:98vw !important;
+        max-width:98vw !important;
+    }
+
+    #battleToastCard{
+        width:min(92%,420px);
+        padding:22px 18px;
+    }
+
+    #battleToastIcon{
+        font-size:56px;
+    }
+
+    #battleToastText{
+        font-size:26px;
+    }
+}
+
 </style>
 </head>
 
 <body>
+<div id="battleToast">
+    <div id="battleToastCard">
+        <div id="battleToastIcon">💥</div>
+        <div id="battleToastText">Touché !</div>
+        <div id="battleToastSub"></div>
+    </div>
+</div>
 <div id="dragGhost"></div>
 
 <header>
@@ -608,6 +805,18 @@ h1{
     </aside>
 
     <main class="panel">
+        <div id="turnBanner">En attente...</div>
+
+        <div id="battleStatsBar">
+            <div class="battleStat"><strong id="statMyShips">5</strong> tes navires</div>
+            <div class="battleStat"><strong id="statEnemyShips">5</strong> ennemis</div>
+            <div class="battleStat"><strong id="statShots">0</strong> tirs</div>
+            <div class="battleStat"><strong id="statAccuracy">0%</strong> précision</div>
+        </div>
+
+        <div id="lastShotBox">Dernier tir : <span id="lastShotText">aucun</span></div>
+        <button class="hideFleetMobileBtn" onclick="toggleFleetMobile()">Masquer / afficher ma flotte</button>
+
         <div id="status">Crée un salon ou accepte une invitation.</div>
 
         <div id="gameTop">
@@ -616,7 +825,7 @@ h1{
         </div>
 
         <div id="boards">
-            <div class="boardBox">
+            <div class="boardBox" id="myFleetBox">
                 <div class="boardTitle">🛡️ Ta flotte</div>
                 <div class="grid" id="myBoard"></div>
             </div>
@@ -642,6 +851,7 @@ h1{
     <div class="modalCard">
         <h2 id="endTitle">Fin</h2>
         <p id="endText"></p>
+        <div id="endSummary"></div>
         <button class="greenBtn" onclick="restartGame()">🔁 Revanche</button>
         <button onclick="document.getElementById('endOverlay').style.display='none'">Continuer</button>
     </div>
@@ -763,6 +973,7 @@ function renderEmpty(){
     renderBoards();
     renderShipList();
     renderLog([]);
+    updateBattleUI();
 }
 
 async function createRoom(){
@@ -901,6 +1112,163 @@ function listenRoom(id){
     });
 }
 
+
+let lastAnimatedShotKey = "";
+
+function showBattleToast(icon,text,sub,type=""){
+    const overlay = document.getElementById("battleToast");
+    const iconEl = document.getElementById("battleToastIcon");
+    const textEl = document.getElementById("battleToastText");
+    const subEl = document.getElementById("battleToastSub");
+
+    if(!overlay || !iconEl || !textEl || !subEl) return;
+
+    iconEl.innerText = icon;
+    textEl.innerText = text;
+    subEl.innerText = sub || "";
+
+    overlay.classList.remove("show");
+    void overlay.offsetWidth;
+    overlay.classList.add("show");
+
+    if(navigator.vibrate){
+        if(type === "sunk") navigator.vibrate([120,60,120]);
+        else if(type === "hit") navigator.vibrate(90);
+        else if(type === "miss") navigator.vibrate(35);
+    }
+
+    setTimeout(()=>overlay.classList.remove("show"), 1200);
+}
+
+function animateCell(boardId,r,c,cls){
+    const cell = document.querySelector(`#${boardId} [data-r="${r}"][data-c="${c}"]`);
+    if(!cell) return;
+
+    cell.classList.remove("explosionAnim","splashAnim");
+    void cell.offsetWidth;
+    cell.classList.add(cls);
+
+    setTimeout(()=>cell.classList.remove(cls),700);
+}
+
+function toggleFleetMobile(){
+    document.body.classList.toggle("hideFleetOnMobile");
+}
+window.toggleFleetMobile = toggleFleetMobile;
+
+function countAliveShips(player){
+    if(!player || !player.ships) return 0;
+    return player.ships.filter(ship => (ship.hits || []).length < ship.size).length;
+}
+
+function countShotStats(player){
+    const shots = normalizeShots(player?.shots || emptyShots());
+    const total = shots.filter(v=>v).length;
+    const hits = shots.filter(v=>v==="hit" || v==="sunk").length;
+    const accuracy = total === 0 ? 0 : Math.round((hits/total)*100);
+    return {total,hits,accuracy};
+}
+
+function updateBattleUI(){
+    const me = getMe();
+    const enemy = getEnemy();
+
+    const myAlive = countAliveShips(me);
+    const enemyAlive = countAliveShips(enemy);
+    const stats = countShotStats(me);
+
+    if(document.getElementById("statMyShips")) document.getElementById("statMyShips").innerText = myAlive;
+    if(document.getElementById("statEnemyShips")) document.getElementById("statEnemyShips").innerText = enemyAlive;
+    if(document.getElementById("statShots")) document.getElementById("statShots").innerText = stats.total;
+    if(document.getElementById("statAccuracy")) document.getElementById("statAccuracy").innerText = stats.accuracy + "%";
+
+    const banner = document.getElementById("turnBanner");
+    if(!banner) return;
+
+    banner.classList.remove("mine","enemy");
+
+    if(!room){
+        banner.innerText = "En attente...";
+        return;
+    }
+
+    if(room.phase === "placing"){
+        banner.innerText = "🚢 Phase de placement";
+    }else if(room.phase === "battle"){
+        if(room.turnUid === user?.uid){
+            banner.innerText = "🟢 À toi de jouer !";
+            banner.classList.add("mine");
+        }else{
+            banner.innerText = "🟠 Tour adverse";
+            banner.classList.add("enemy");
+        }
+    }else if(room.phase === "ended"){
+        banner.innerText = "🏁 Partie terminée";
+    }else{
+        banner.innerText = "En attente...";
+    }
+}
+
+function setLastShotText(text){
+    const el = document.getElementById("lastShotText");
+    if(el) el.innerText = text || "aucun";
+}
+
+function renderEndSummary(){
+    const me = getMe();
+    const enemy = getEnemy();
+    const stats = countShotStats(me);
+    const enemyStats = countShotStats(enemy);
+
+    const box = document.getElementById("endSummary");
+    if(!box) return;
+
+    box.innerHTML = `
+        <strong>Résumé</strong><br>
+        Tes tirs : ${stats.total}<br>
+        Tes touches : ${stats.hits}<br>
+        Ta précision : ${stats.accuracy}%<br>
+        Tirs adverses : ${enemyStats.total}<br>
+        Navires ennemis restants : ${countAliveShips(enemy)}
+    `;
+}
+
+function playShotFeedback(data){
+    if(!data || !data.lastShot) return;
+
+    const s = data.lastShot;
+    const key = s.byUid + "_" + s.r + "_" + s.c + "_" + s.result + "_" + (s.shipName || "");
+
+    if(key === lastAnimatedShotKey) return;
+    lastAnimatedShotKey = key;
+
+    const mine = s.byUid === user?.uid;
+    const boardId = mine ? "enemyBoard" : "myBoard";
+
+    if(s.result === "miss"){
+        animateCell(boardId,s.r,s.c,"splashAnim");
+        setLastShotText((mine ? "Tu rates" : "L'adversaire rate") + " en " + coordName(s.r,s.c));
+        showBattleToast("💦","Raté !",coordName(s.r,s.c),"miss");
+    }
+
+    if(s.result === "hit"){
+        animateCell(boardId,s.r,s.c,"explosionAnim");
+        setLastShotText((mine ? "Tu touches" : "L'adversaire touche") + " en " + coordName(s.r,s.c));
+        showBattleToast("💥","Touché !",coordName(s.r,s.c),"hit");
+    }
+
+    if(s.result === "sunk"){
+        animateCell(boardId,s.r,s.c,"explosionAnim");
+        setLastShotText((mine ? "Tu coules " : "L'adversaire coule ") + (s.shipName || "un navire"));
+        showBattleToast("🔥",(s.shipName || "Navire") + " coulé !", mine ? "Bien joué capitaine." : "Ta flotte prend cher.","sunk");
+    }
+}
+
+function coordName(r,c){
+    return String.fromCharCode(65+r) + (c+1);
+}
+
+
 function applyRoom(){
     if(room && room.players){
         Object.keys(room.players).forEach(uid=>{
@@ -912,6 +1280,8 @@ function applyRoom(){
     renderShipList();
     renderBoards();
     renderLog(room.log || []);
+    updateBattleUI();
+    playShotFeedback(room);
 
     document.getElementById("phaseText").innerText =
         room.phase === "placing" ? "Placement" :
@@ -943,6 +1313,7 @@ function applyRoom(){
         const winner = room.winnerUid === user.uid ? "🏆 Tu as gagné !" : "💀 Tu as perdu.";
         document.getElementById("endTitle").innerText = winner;
         document.getElementById("endText").innerText = "La flotte ennemie a été coulée.";
+        renderEndSummary();
         document.getElementById("endOverlay").style.display = "flex";
         document.getElementById("status").innerText = "Partie terminée.";
     }
@@ -1457,9 +1828,19 @@ async function fireAt(r,c){
 
     const allSunk = enemy.ships.every(ship => (ship.hits || []).length >= ship.size);
 
+    const shotResult = sunkShip ? "sunk" : (hit ? "hit" : "miss");
+
     const updates = {
         players,
         turnUid:enemyUid,
+        lastShot:{
+            byUid:user.uid,
+            byPseudo:getMyPseudo(),
+            r,
+            c,
+            result:shotResult,
+            shipName:sunkShip ? sunkShip.name : ""
+        },
         log:addLog(hit ? (getMyPseudo() + " touche !") : (getMyPseudo() + " rate."))
     };
 
@@ -1733,6 +2114,7 @@ async function restartGame(){
         winnerUid:"",
         turnUid:"",
         players,
+        lastShot:null,
         log:["🔁 Nouvelle bataille !"]
     });
 
