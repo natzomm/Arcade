@@ -1952,6 +1952,7 @@ body::before{
 <button onclick="openUno()">🃏 Uno</button>
     <button onclick="openBattleship()">⚓ Bataille Navale</button>
     <button onclick="openDames()">⚫⚪ Dames</button>
+    <button onclick="openEchecs()">♟️ Échecs</button>
 </div>
 
 <div id="accountPanel">
@@ -2268,6 +2269,15 @@ body::before{
             <div class="title">Dames Online</div>
             <div class="desc">Affronte un ami aux dames en ligne !</div>
         </div>
+
+        <div class="card" onclick="openEchecs()">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Échecs Online','echecs_online.html','♟️')">☆</button>
+            <div class="icon">♟️</div>
+            <div class="title">Échecs Online</div>
+            <div class="desc">Affronte un ami aux échecs en ligne !</div>
+        </div>
+
+
 
 
 
@@ -2683,6 +2693,19 @@ function openBattleship(){
     window.location.href = "bataille_navale_online.html";
 }
 
+
+
+function openEchecs(){
+    const mode = localStorage.getItem("playMode");
+
+    if(mode !== "online"){
+        alert("🔒 Tu dois être connecté en ligne pour jouer aux Échecs.");
+        return;
+    }
+
+    trackGame("Échecs Online","echecs_online.html");
+    window.location.href = "echecs_online.html";
+}
 
 function openDames(){
     const mode = localStorage.getItem("playMode");
@@ -3896,6 +3919,8 @@ window.openNotification = function(type, fromUid = "", fromPseudo = "", game = "
             window.location.href = "bataille_navale_online.html";
         }else if(game === "checkers" || game === "dames"){
             window.location.href = "dames_online.html";
+        }else if(game === "chess" || game === "echecs"){
+            window.location.href = "echecs_online.html";
         }else{
             window.location.href = "morpion_online.html";
         }
