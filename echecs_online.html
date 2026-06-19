@@ -156,6 +156,34 @@ body.screenShake{animation:screenShake .28s ease}
     #moveToastIcon{font-size:48px}
     #moveToastText{font-size:25px}
 }
+
+/* ================= CHESS V2 CHECK / CHECKMATE ================= */
+.cell.kingCheck{
+    animation:kingCheckPulse .75s infinite alternate;
+    box-shadow:inset 0 0 0 6px rgba(239,68,68,.85), 0 0 25px rgba(239,68,68,.75);
+}
+
+@keyframes kingCheckPulse{
+    from{filter:brightness(1)}
+    to{filter:brightness(1.35)}
+}
+
+#checkAlert{
+    background:rgba(239,68,68,.14);
+    border:1px solid rgba(239,68,68,.4);
+    color:#fecaca;
+    border-radius:14px;
+    padding:10px;
+    margin-bottom:12px;
+    text-align:center;
+    font-weight:900;
+    display:none;
+}
+
+#checkAlert.show{
+    display:block;
+}
+
 </style>
 </head>
 
@@ -172,7 +200,7 @@ body.screenShake{animation:screenShake .28s ease}
 <header>
     <div>
         <h1>♟️ Échecs Online</h1>
-        <div id="versionBadge">V1 Online</div>
+        <div id="versionBadge">V2 Échec & Mat</div>
         <div>👤 Joueur : <span id="playerName">Joueur</span></div>
     </div>
     <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
@@ -192,7 +220,7 @@ body.screenShake{animation:screenShake .28s ease}
         <div id="friendsList"></div>
 
         <div class="info">
-            V1 : échecs en ligne avec invitations. Les règles principales sont incluses, et la victoire se fait par capture du roi pour commencer.
+            V2 : échecs en ligne avec échec au roi et échec et mat, sans bloquer tes erreurs.
         </div>
 
         <div id="log"></div>
@@ -215,6 +243,7 @@ body.screenShake{animation:screenShake .28s ease}
         <div id="timerLine">⏱️ Temps : <span id="timerValue">60</span>s</div>
         <div id="lastMoveBox">Dernier coup : <span id="lastMoveText">aucun</span></div>
         <div id="captainLine">Analyse le plateau et prépare ton coup.</div>
+        <div id="checkAlert">⚠️ Échec au roi !</div>
 
         <div id="scoreBar">
             <div class="statBox"><strong id="whiteCount">16</strong> blancs</div>
@@ -257,8 +286,9 @@ body.screenShake{animation:screenShake .28s ease}
         <p><strong>1.</strong> Crée un salon et invite un ami.</p>
         <p><strong>2.</strong> Clique sur une pièce à toi, puis sur une case verte pour jouer.</p>
         <p><strong>3.</strong> Les pièces bougent comme aux échecs classiques.</p>
-        <p><strong>4.</strong> V1 : pour gagner, capture le roi adverse.</p>
-        <p><strong>5.</strong> V2 plus tard : vrai échec et mat, roque, promotion avancée, prise en passant.</p>
+        <p><strong>4.</strong> Si ton roi est attaqué, tu es en échec.</p>
+        <p><strong>5.</strong> Pour gagner, il faut faire échec et mat.</p>
+        <p><strong>Note :</strong> les coups qui laissent ton roi en échec ne sont pas bloqués dans cette version.</p>
         <button onclick="closeRules()">Compris</button>
     </div>
 </div>
@@ -349,6 +379,113 @@ function inBoard(r,c){ return r>=0 && r<8 && c>=0 && c<8; }
 function colorOf(p){ if(!p) return ""; return p === p.toUpperCase() ? "white" : "black"; }
 function enemyColor(color){ return color === "white" ? "black" : "white"; }
 
+
+function findKing(board,color){
+    const king = color === "white" ? "K" : "k";
+    return board.findIndex(p => p === king);
+}
+
+function getPseudoLegalMovesForPiece(i,board){
+    const p = board[i];
+    if(!p) return [];
+
+    const type = p.toLowerCase();
+    if(type === "p") return pawnMoves(i,board);
+    if(type === "n") return knightMoves(i,board);
+    if(type === "b") return slideMoves(i,board,[[1,1],[1,-1],[-1,1],[-1,-1]]);
+    if(type === "r") return slideMoves(i,board,[[1,0],[-1,0],[0,1],[0,-1]]);
+    if(type === "q") return slideMoves(i,board,[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]);
+    if(type === "k") return kingMoves(i,board);
+
+    return [];
+}
+
+function isSquareAttacked(board,targetIndex,byColor){
+    for(let i=0;i<64;i++){
+        const p = board[i];
+        if(!p || colorOf(p) !== byColor) continue;
+
+        const type = p.toLowerCase();
+
+        if(type === "p"){
+            const dir = byColor === "white" ? -1 : 1;
+            const r = row(i);
+            const c = col(i);
+
+            for(const dc of [-1,1]){
+                const rr = r + dir;
+                const cc = c + dc;
+                if(inBoard(rr,cc) && idx(rr,cc) === targetIndex){
+                    return true;
+                }
+            }
+        }else{
+            const moves = getPseudoLegalMovesForPiece(i,board);
+            if(moves.some(m => m.to === targetIndex)){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function isKingInCheck(board,color){
+    const kingIndex = findKing(board,color);
+    if(kingIndex === -1) return true;
+    return isSquareAttacked(board,kingIndex,enemyColor(color));
+}
+
+function simulateMove(board,move){
+    const copy = [...board];
+    const p = copy[move.from];
+    copy[move.from] = "";
+    copy[move.to] = p;
+    return copy;
+}
+
+function getAllLegalMovesForColor(color,board){
+    const all = [];
+
+    for(let i=0;i<64;i++){
+        const p = board[i];
+        if(p && colorOf(p) === color){
+            const moves = getLegalMovesForPiece(i,board);
+            moves.forEach(m => all.push(m));
+        }
+    }
+
+    return all;
+}
+
+function isCheckmate(board,color){
+    if(!isKingInCheck(board,color)) return false;
+    return getAllLegalMovesForColor(color,board).length === 0;
+}
+
+function updateCheckAlert(){
+    const alert = document.getElementById("checkAlert");
+    if(!alert || !room || !room.board || room.phase !== "playing"){
+        if(alert) alert.classList.remove("show");
+        return;
+    }
+
+    const myColor = getMyColor();
+    const myCheck = isKingInCheck(room.board,myColor);
+    const enemyCheck = isKingInCheck(room.board,enemyColor(myColor));
+
+    if(myCheck){
+        alert.innerText = "⚠️ Ton roi est en échec !";
+        alert.classList.add("show");
+    }else if(enemyCheck){
+        alert.innerText = "⚠️ Roi adverse en échec !";
+        alert.classList.add("show");
+    }else{
+        alert.classList.remove("show");
+    }
+}
+
+
 function renderEmpty(){
     room = null;
     selectedIndex = null;
@@ -360,6 +497,7 @@ function renderEmpty(){
     renderLog([]);
     renderChat([]);
     updateStats(emptyBoard());
+    updateCheckAlert();
     stopTurnTimer();
     updateSoundButton();
 }
@@ -462,6 +600,7 @@ function applyRoom(){
     renderLog(room.log || []);
     renderChat(room.chat || []);
     updateStats(room.board || emptyBoard());
+    updateCheckAlert();
     updateSoundButton();
     updateLastMoveDisplay();
     startTurnTimer();
@@ -479,14 +618,16 @@ function applyRoom(){
         banner.classList.toggle("mine",mine);
         banner.classList.toggle("enemy",!mine);
         banner.innerText = mine ? "🟢 À toi de jouer !" : "🟠 Tour adverse";
-        document.getElementById("status").innerText = mine ? "Choisis une pièce puis une case verte." : "Attends le coup de ton adversaire.";
+        const myColor = getMyColor();
+        const checkText = isKingInCheck(room.board || emptyBoard(), myColor) ? " ⚠️ Tu es en échec !" : "";
+        document.getElementById("status").innerText = mine ? ("Choisis une pièce puis une case verte." + checkText) : "Attends le coup de ton adversaire.";
         updateCaptainLine(mine ? "♟️ Analyse le plateau et joue ton meilleur coup." : "🛡️ L'adversaire réfléchit.");
     }
 
     if(room.phase === "ended"){
         const won = room.winnerUid === user.uid;
         document.getElementById("endTitle").innerText = won ? "🏆 Victoire !" : "💀 Défaite";
-        document.getElementById("endText").innerText = won ? "Tu as capturé le roi adverse." : "Ton roi a été capturé.";
+        document.getElementById("endText").innerText = won ? "Tu as fait échec et mat." : "Tu es échec et mat.";
         document.getElementById("endSummary").innerHTML = `
             Coups joués : ${room.moveCount || 0}<br>
             Prises : ${room.captureCount || 0}<br>
@@ -539,6 +680,13 @@ function renderBoard(board){
                 if(room.lastMove.to === i) cell.classList.add("lastTo");
             }
 
+            if(room && room.board && room.phase === "playing"){
+                const pCheck = room.board[i];
+                if(pCheck && pCheck.toLowerCase() === "k" && isKingInCheck(room.board,colorOf(pCheck))){
+                    cell.classList.add("kingCheck");
+                }
+            }
+
             const move = possibleMoves.find(m=>m.to===i);
             if(move) cell.classList.add(move.capture ? "captureHint" : "moveHint");
 
@@ -581,15 +729,14 @@ function getLegalMovesForPiece(i, board){
     const p = board[i];
     if(!p) return [];
 
-    const type = p.toLowerCase();
-    if(type === "p") return pawnMoves(i,board);
-    if(type === "n") return knightMoves(i,board);
-    if(type === "b") return slideMoves(i,board,[[1,1],[1,-1],[-1,1],[-1,-1]]);
-    if(type === "r") return slideMoves(i,board,[[1,0],[-1,0],[0,1],[0,-1]]);
-    if(type === "q") return slideMoves(i,board,[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]);
-    if(type === "k") return kingMoves(i,board);
+    const pseudoMoves = getPseudoLegalMovesForPiece(i,board);
 
-    return [];
+    // V2 : on empêche seulement de capturer directement le roi.
+    // Les coups qui laissent ton roi en échec restent possibles, comme tu l'as demandé.
+    return pseudoMoves.filter(move=>{
+        const target = board[move.to];
+        return !(target && target.toLowerCase() === "k");
+    });
 }
 
 function pawnMoves(i,board){
@@ -714,9 +861,11 @@ async function makeMove(move){
     if(p === "p" && row(move.to) === 7){ board[move.to] = "q"; promoted = true; }
 
     const enemyUid = getEnemyUid();
+    const myColor = getMyColor();
+    const opponentColor = enemyColor(myColor);
     let winner = false;
 
-    if(capturedPiece && capturedPiece.toLowerCase() === "k"){
+    if(isCheckmate(board,opponentColor)){
         winner = true;
     }
 
@@ -742,7 +891,7 @@ async function makeMove(move){
         updates.phase = "ended";
         updates.status = "ended";
         updates.winnerUid = user.uid;
-        updates.log = ["🏆 " + getMyPseudo() + " capture le roi et gagne !",...(room.log || [])].slice(0,40);
+        updates.log = ["🏆 Échec et mat ! " + getMyPseudo() + " gagne !",...(room.log || [])].slice(0,40);
     }
 
     await updateDoc(doc(db,"chessRooms",roomId), updates);
@@ -779,7 +928,14 @@ function playLastMoveFeedback(){
         return;
     }
 
-    if(m.capture){
+    const board = room.board || emptyBoard();
+    const enemy = enemyColor(colorOf(board[m.to] || "P"));
+    const check = isKingInCheck(board, enemy);
+
+    if(check){
+        showMoveToast("⚠️","Échec au roi !",m.pseudo + " met le roi en danger.","capture");
+        updateCaptainLine("⚠️ Échec au roi !");
+    }else if(m.capture){
         showMoveToast("💥","Capture !",m.pseudo + " prend une pièce.","capture");
         updateCaptainLine("💥 Capture confirmée !");
     }else{
