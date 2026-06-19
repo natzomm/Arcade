@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dames Online</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at top left,rgba(250,204,21,.14),transparent 35%),
+        radial-gradient(circle at top right,rgba(56,189,248,.14),transparent 28%),
+        linear-gradient(135deg,#020617,#0f172a,#422006);
+    color:white;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.2s;
+}
+
+button:hover{
+    transform:scale(1.04);
+}
+
+header{
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+h1{
+    font-size:clamp(34px,5vw,52px);
+}
+
+#versionBadge{
+    display:inline-block;
+    margin-top:6px;
+    background:#facc15;
+    color:#422006;
+    padding:5px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:13px;
+}
+
+.homeBtn{
+    padding:13px 22px;
+    font-size:18px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+#container{
+    width:min(1240px,96%);
+    margin:0 auto 35px;
+    display:grid;
+    grid-template-columns:330px 1fr;
+    gap:20px;
+}
+
+.panel{
+    background:rgba(15,23,42,.9);
+    border:1px solid rgba(148,163,184,.22);
+    border-radius:24px;
+    padding:20px;
+    box-shadow:0 18px 45px rgba(0,0,0,.34);
+}
+
+.actionBtn{
+    width:100%;
+    padding:12px;
+    margin:7px 0;
+    font-size:16px;
+    background:#38bdf8;
+    color:#082f49;
+}
+
+.greenBtn{background:#22c55e!important;color:#052e16!important}
+.redBtn{background:#ef4444!important;color:white!important}
+.yellowBtn{background:#facc15!important;color:#422006!important}
+
+.smallBtn{
+    padding:8px 10px;
+    margin:4px;
+    font-size:14px;
+    background:#334155;
+    color:white;
+}
+
+.info{
+    background:#020617;
+    border-radius:14px;
+    padding:12px;
+    margin:10px 0;
+    color:#cbd5e1;
+    line-height:1.45;
+}
+
+#playersBox{
+    display:grid;
+    gap:10px;
+    margin:12px 0;
+}
+
+.playerSlot{
+    background:#020617;
+    border-radius:14px;
+    padding:12px;
+    color:#cbd5e1;
+    border:1px solid rgba(148,163,184,.17);
+}
+
+.playerSlot strong{
+    color:white;
+}
+
+#friendsList{
+    max-height:220px;
+    overflow:auto;
+}
+
+.friendItem{
+    background:#020617;
+    border-radius:12px;
+    padding:10px;
+    margin:7px 0;
+    color:#cbd5e1;
+}
+
+#status{
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    color:#facc15;
+    min-height:34px;
+    margin-bottom:12px;
+}
+
+#turnBanner{
+    text-align:center;
+    border-radius:18px;
+    padding:12px;
+    margin-bottom:12px;
+    font-size:20px;
+    font-weight:900;
+    background:#334155;
+    color:white;
+    border:2px solid transparent;
+}
+
+#turnBanner.mine{
+    background:#14532d;
+    color:#bbf7d0;
+    border-color:#22c55e;
+    box-shadow:0 0 24px rgba(34,197,94,.22);
+}
+
+#turnBanner.enemy{
+    background:#451a03;
+    color:#fde68a;
+    border-color:#f59e0b;
+}
+
+#scoreBar{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-bottom:14px;
+}
+
+.statBox{
+    background:#020617;
+    border:1px solid rgba(148,163,184,.16);
+    border-radius:14px;
+    padding:10px;
+    text-align:center;
+    color:#cbd5e1;
+    font-size:13px;
+}
+
+.statBox strong{
+    display:block;
+    color:white;
+    font-size:20px;
+}
+
+#boardWrap{
+    width:min(680px,96vw);
+    margin:0 auto;
+    background:linear-gradient(145deg,#78350f,#451a03);
+    padding:14px;
+    border-radius:24px;
+    box-shadow:
+        0 25px 55px rgba(0,0,0,.45),
+        inset 0 0 20px rgba(255,255,255,.12);
+}
+
+#board{
+    display:grid;
+    grid-template-columns:repeat(8,1fr);
+    grid-template-rows:repeat(8,1fr);
+    aspect-ratio:1/1;
+    border-radius:16px;
+    overflow:hidden;
+    border:4px solid #1c1917;
+}
+
+.cell{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    user-select:none;
+    cursor:pointer;
+    touch-action:manipulation;
+}
+
+.light{background:#fef3c7}
+.dark{background:#92400e}
+
+.cell.selectable::after{
+    content:"";
+    position:absolute;
+    inset:9%;
+    border:4px solid #22c55e;
+    border-radius:50%;
+    pointer-events:none;
+}
+
+.cell.moveHint::after{
+    content:"";
+    width:36%;
+    height:36%;
+    border-radius:50%;
+    background:rgba(34,197,94,.75);
+    box-shadow:0 0 18px rgba(34,197,94,.8);
+}
+
+.cell.captureHint::after{
+    content:"";
+    width:52%;
+    height:52%;
+    border-radius:50%;
+    border:5px solid #ef4444;
+    box-shadow:0 0 20px rgba(239,68,68,.85);
+}
+
+.piece{
+    width:74%;
+    height:74%;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    font-weight:900;
+    box-shadow:
+        inset -6px -6px 12px rgba(0,0,0,.32),
+        inset 5px 5px 10px rgba(255,255,255,.18),
+        0 10px 18px rgba(0,0,0,.35);
+    transition:.18s;
+}
+
+.piece.red{
+    background:#ef4444;
+    color:white;
+    border:4px solid #fecaca;
+}
+
+.piece.black{
+    background:#111827;
+    color:#facc15;
+    border:4px solid #64748b;
+}
+
+.piece.king::before{
+    content:"♛";
+}
+
+.piece.pop{
+    animation:piecePop .35s ease;
+}
+
+@keyframes piecePop{
+    0%{transform:scale(.6)}
+    60%{transform:scale(1.12)}
+    100%{transform:scale(1)}
+}
+
+#log{
+    background:#020617;
+    border-radius:14px;
+    padding:10px;
+    margin-top:14px;
+    color:#cbd5e1;
+    max-height:140px;
+    overflow:auto;
+    font-size:14px;
+    text-align:left;
+}
+
+.logLine{
+    padding:4px 0;
+    border-bottom:1px solid rgba(148,163,184,.1);
+}
+
+#chatPanel{
+    margin-top:16px;
+}
+
+#checkersChatBox{
+    background:#020617;
+    border-radius:14px;
+    padding:10px;
+    max-height:150px;
+    overflow:auto;
+    color:#cbd5e1;
+    font-size:14px;
+}
+
+.checkersMsg{
+    background:#1e293b;
+    border-radius:12px;
+    padding:8px;
+    margin:6px 0;
+}
+
+.checkersMsg.mine{
+    background:#14532d;
+    color:white;
+    text-align:right;
+}
+
+#checkersChatInput{
+    width:100%;
+    margin:8px 0;
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    background:#020617;
+    color:white;
+}
+
+.quickChat{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+}
+
+.quickChat button{
+    padding:7px 9px;
+    font-size:12px;
+    background:#334155;
+    color:white;
+}
+
+#inviteOverlay,#endOverlay,#rulesOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:100;
+    backdrop-filter:blur(5px);
+}
+
+#rulesOverlay.open,#inviteOverlay.open,#endOverlay.open{
+    display:flex;
+}
+
+.modalCard{
+    width:min(480px,92%);
+    background:#0f172a;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 25px 65px rgba(0,0,0,.5);
+}
+
+.modalCard h2{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+.modalCard p{
+    color:#cbd5e1;
+    margin:10px 0;
+    line-height:1.45;
+}
+
+.modalCard button{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:17px;
+}
+
+#endSummary{
+    margin-top:12px;
+    background:#020617;
+    border-radius:16px;
+    padding:12px;
+    color:#cbd5e1;
+    line-height:1.55;
+}
+
+@media(max-width:1000px){
+    #container{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:700px){
+    header{
+        padding:12px;
+    }
+
+    #container{
+        width:100%;
+        padding:0 8px 25px;
+    }
+
+    .panel{
+        padding:12px;
+        border-radius:18px;
+    }
+
+    #scoreBar{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    #boardWrap{
+        width:98vw;
+        padding:8px;
+        border-radius:18px;
+    }
+
+    .piece{
+        width:78%;
+        height:78%;
+        font-size:20px;
+    }
+
+    #status{
+        font-size:19px;
+    }
+
+    #turnBanner{
+        font-size:17px;
+        padding:10px;
+    }
+
+    #checkersChatBox{
+        max-height:100px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h1>⚫⚪ Dames Online</h1>
+        <div id="versionBadge">V1 Online</div>
+        <div>👤 Joueur : <span id="playerName">Joueur</span></div>
+    </div>
+    <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
+</header>
+
+<div id="container">
+    <aside class="panel">
+        <h2>♟️ Salon</h2>
+
+        <div id="playersBox">
+            <div class="playerSlot">Aucun salon.</div>
+        </div>
+
+        <button class="actionBtn greenBtn" onclick="createRoom()">➕ Créer un salon</button>
+        <button class="actionBtn" onclick="loadFriends()">👥 Charger mes amis</button>
+        <button class="actionBtn yellowBtn" onclick="openRules()">❓ Comment jouer ?</button>
+        <button class="actionBtn redBtn" onclick="leaveRoom()">🚪 Quitter le salon</button>
+
+        <div id="friendsList"></div>
+
+        <div class="info">
+            V1 : dames en ligne avec invitations. Les prises sont obligatoires, les dames se déplacent en diagonale.
+        </div>
+
+        <div id="log"></div>
+
+        <div id="chatPanel">
+            <h2>💬 Chat</h2>
+            <div class="quickChat">
+                <button onclick="sendQuickMsg('Bien joué !')">Bien joué !</button>
+                <button onclick="sendQuickMsg('Joli coup 😎')">Joli coup 😎</button>
+                <button onclick="sendQuickMsg('À toi !')">À toi !</button>
+            </div>
+            <div id="checkersChatBox">Aucun message.</div>
+            <input id="checkersChatInput" placeholder="Message...">
+            <button class="actionBtn" onclick="sendChatMessage()">Envoyer</button>
+        </div>
+    </aside>
+
+    <main class="panel">
+        <div id="turnBanner">En attente...</div>
+
+        <div id="scoreBar">
+            <div class="statBox"><strong id="redCount">12</strong> rouges</div>
+            <div class="statBox"><strong id="blackCount">12</strong> noirs</div>
+            <div class="statBox"><strong id="captureCount">0</strong> prises</div>
+            <div class="statBox"><strong id="moveCount">0</strong> coups</div>
+        </div>
+
+        <div id="status">Crée un salon ou accepte une invitation.</div>
+
+        <div id="boardWrap">
+            <div id="board"></div>
+        </div>
+    </main>
+</div>
+
+<div id="inviteOverlay">
+    <div class="modalCard">
+        <h2>⚫⚪ Invitation</h2>
+        <p id="inviteText">On t'invite à jouer aux Dames.</p>
+        <button class="greenBtn" onclick="acceptInvite()">✅ Accepter</button>
+        <button class="redBtn" onclick="refuseInvite()">❌ Refuser</button>
+    </div>
+</div>
+
+<div id="endOverlay">
+    <div class="modalCard">
+        <h2 id="endTitle">Fin</h2>
+        <p id="endText"></p>
+        <div id="endSummary"></div>
+        <button class="greenBtn" onclick="restartGame()">🔁 Revanche</button>
+        <button onclick="goHome()">🏠 Accueil</button>
+        <button onclick="document.getElementById('endOverlay').classList.remove('open')">Continuer</button>
+    </div>
+</div>
+
+<div id="rulesOverlay">
+    <div class="modalCard">
+        <h2>❓ Comment jouer ?</h2>
+        <p><strong>1.</strong> Crée un salon et invite un ami.</p>
+        <p><strong>2.</strong> Clique sur un pion à toi, puis sur une case verte pour bouger.</p>
+        <p><strong>3.</strong> Les prises sont obligatoires : si tu peux manger, tu dois manger.</p>
+        <p><strong>4.</strong> Si un pion atteint le bout adverse, il devient une dame.</p>
+        <p><strong>5.</strong> Le premier qui bloque ou mange tous les pions adverses gagne.</p>
+        <button onclick="closeRules()">Compris</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    onSnapshot,
+    serverTimestamp,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCicpzlFc-WfbmBjzu8y-bWYPaXu6Mnt24",
+    authDomain: "arcade-fbd7c.firebaseapp.com",
+    projectId: "arcade-fbd7c",
+    storageBucket: "arcade-fbd7c.firebasestorage.app",
+    messagingSenderId: "648897624519",
+    appId: "1:648897624519:web:bffd2e9d3023362f8781e2"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+let userData = null;
+let roomId = localStorage.getItem("checkers_room") || "";
+let room = null;
+let roomUnsub = null;
+let inviteUnsub = null;
+let pendingInvite = null;
+let selectedIndex = null;
+let possibleMoves = [];
+
+function goHome(){
+    window.location.href = "index.html";
+}
+window.goHome = goHome;
+
+onAuthStateChanged(auth, async u=>{
+    user = u;
+
+    if(!user){
+        document.getElementById("status").innerText = "Tu dois être connecté en ligne depuis l'accueil.";
+        renderBoard(emptyBoard());
+        return;
+    }
+
+    const snap = await getDoc(doc(db,"users",user.uid));
+    userData = snap.exists() ? snap.data() : {pseudo:localStorage.getItem("pseudo") || "Joueur"};
+    document.getElementById("playerName").innerText = getMyPseudo();
+
+    listenInvites();
+    await checkPendingInviteOnLoad();
+
+    if(roomId){
+        listenRoom(roomId);
+    }else{
+        renderEmpty();
+    }
+});
+
+function getMyPseudo(){
+    return userData && userData.pseudo ? userData.pseudo : "Joueur";
+}
+
+function emptyBoard(){
+    return Array(64).fill("");
+}
+
+function startBoard(){
+    const b = emptyBoard();
+
+    for(let r=0;r<3;r++){
+        for(let c=0;c<8;c++){
+            if((r+c)%2===1) b[idx(r,c)] = "b";
+        }
+    }
+
+    for(let r=5;r<8;r++){
+        for(let c=0;c<8;c++){
+            if((r+c)%2===1) b[idx(r,c)] = "r";
+        }
+    }
+
+    return b;
+}
+
+function idx(r,c){
+    return r*8+c;
+}
+
+function row(i){
+    return Math.floor(i/8);
+}
+
+function col(i){
+    return i%8;
+}
+
+function pieceColor(p){
+    if(!p) return "";
+    return p.toLowerCase()==="r" ? "red" : "black";
+}
+
+function isKing(p){
+    return p === "R" || p === "B";
+}
+
+function renderEmpty(){
+    room = null;
+    selectedIndex = null;
+    possibleMoves = [];
+    document.getElementById("playersBox").innerHTML = "<div class='playerSlot'>Aucun salon.</div>";
+    document.getElementById("turnBanner").innerText = "En attente...";
+    document.getElementById("status").innerText = "Crée un salon ou accepte une invitation.";
+    renderBoard(emptyBoard());
+    renderLog([]);
+    renderChat([]);
+    updateStats(emptyBoard());
+}
+
+async function createRoom(){
+    if(!user){
+        alert("Connecte-toi depuis l'accueil.");
+        return;
+    }
+
+    if(roomId){
+        if(!confirm("Tu as déjà un salon de dames. En créer un nouveau ?")) return;
+        await closeCurrentRoomBeforeNew();
+    }
+
+    const board = startBoard();
+    const roomRef = doc(collection(db,"checkersRooms"));
+    roomId = roomRef.id;
+    localStorage.setItem("checkers_room",roomId);
+
+    const baseRoom = {
+        hostUid:user.uid,
+        hostPseudo:getMyPseudo(),
+        guestUid:"",
+        guestPseudo:"",
+        status:"waiting",
+        phase:"waiting",
+        board,
+        turnUid:user.uid,
+        winnerUid:"",
+        moveCount:0,
+        captureCount:0,
+        players:{
+            [user.uid]:{
+                pseudo:getMyPseudo(),
+                color:"red"
+            }
+        },
+        log:["Salon créé."],
+        chat:[],
+        createdAt:serverTimestamp()
+    };
+
+    await setDoc(roomRef,baseRoom);
+    room = {id:roomId,...baseRoom};
+    applyRoom();
+    listenRoom(roomId);
+}
+window.createRoom = createRoom;
+
+async function closeCurrentRoomBeforeNew(){
+    const oldRoomId = roomId || localStorage.getItem("checkers_room");
+
+    if(!oldRoomId){
+        localStorage.removeItem("checkers_room");
+        return;
+    }
+
+    try{
+        const ref = doc(db,"checkersRooms",oldRoomId);
+        const snap = await getDoc(ref);
+
+        if(snap.exists()){
+            const data = snap.data();
+
+            if(data.hostUid === user.uid){
+                await deleteDoc(ref);
+            }else{
+                const players = data.players || {};
+                delete players[user.uid];
+
+                await updateDoc(ref,{
+                    guestUid:"",
+                    guestPseudo:"",
+                    players,
+                    status:"waiting",
+                    phase:"waiting",
+                    log:[getMyPseudo()+" a quitté le salon.",...(data.log || [])].slice(0,40)
+                });
+            }
+        }
+    }catch(error){
+        console.log(error);
+    }
+
+    localStorage.removeItem("checkers_room");
+    roomId = "";
+    room = null;
+}
+
+function listenRoom(id){
+    if(roomUnsub) roomUnsub();
+
+    roomUnsub = onSnapshot(doc(db,"checkersRooms",id), snap=>{
+        if(!snap.exists()){
+            localStorage.removeItem("checkers_room");
+            roomId = "";
+            renderEmpty();
+            document.getElementById("status").innerText = "Le salon a été fermé.";
+            return;
+        }
+
+        room = {id:snap.id,...snap.data()};
+        applyRoom();
+    });
+}
+
+function applyRoom(){
+    selectedIndex = null;
+    possibleMoves = [];
+
+    renderPlayers();
+    renderBoard(room.board || emptyBoard());
+    renderLog(room.log || []);
+    renderChat(room.chat || []);
+    updateStats(room.board || emptyBoard());
+
+    if(room.status === "waiting"){
+        document.getElementById("turnBanner").innerText = "En attente d'un adversaire";
+        document.getElementById("status").innerText = room.hostUid === user.uid ? "Invite un ami pour commencer." : "En attente de l'hôte.";
+        return;
+    }
+
+    if(room.phase === "playing"){
+        const mine = room.turnUid === user.uid;
+        const banner = document.getElementById("turnBanner");
+        banner.classList.toggle("mine",mine);
+        banner.classList.toggle("enemy",!mine);
+        banner.innerText = mine ? "🟢 À toi de jouer !" : "🟠 Tour adverse";
+        document.getElementById("status").innerText = getStatusText();
+    }
+
+    if(room.phase === "ended"){
+        const won = room.winnerUid === user.uid;
+        document.getElementById("endTitle").innerText = won ? "🏆 Victoire !" : "💀 Défaite";
+        document.getElementById("endText").innerText = won ? "Tu as gagné la partie de dames." : "Ton adversaire remporte la partie.";
+        document.getElementById("endSummary").innerHTML = `
+            Coups joués : ${room.moveCount || 0}<br>
+            Prises : ${room.captureCount || 0}<br>
+            Rouges restants : ${countPieces(room.board,"red")}<br>
+            Noirs restants : ${countPieces(room.board,"black")}
+        `;
+        document.getElementById("endOverlay").classList.add("open");
+        document.getElementById("status").innerText = "Partie terminée.";
+    }
+}
+
+function getStatusText(){
+    if(!room || room.phase !== "playing") return "";
+
+    if(room.turnUid !== user.uid) return "Attends le coup de ton adversaire.";
+
+    const forced = getAllCapturesForUser();
+
+    if(forced.length){
+        return "Prise obligatoire : tu dois manger un pion.";
+    }
+
+    return "Choisis un pion puis une case verte.";
+}
+
+function renderPlayers(){
+    if(!room){
+        document.getElementById("playersBox").innerHTML = "<div class='playerSlot'>Aucun salon.</div>";
+        return;
+    }
+
+    document.getElementById("playersBox").innerHTML = `
+        <div class="playerSlot"><strong>${room.hostPseudo || "Hôte"}</strong> 👑<br>🔴 Rouges</div>
+        <div class="playerSlot"><strong>${room.guestPseudo || "Case vide"}</strong><br>⚫ Noirs</div>
+    `;
+}
+
+function getMyColor(){
+    if(!room || !room.players || !room.players[user.uid]) return "";
+    return room.players[user.uid].color;
+}
+
+function getEnemyUid(){
+    if(!room || !user) return "";
+    return room.hostUid === user.uid ? room.guestUid : room.hostUid;
+}
+
+function renderBoard(board){
+    const boardEl = document.getElementById("board");
+    boardEl.innerHTML = "";
+
+    for(let r=0;r<8;r++){
+        for(let c=0;c<8;c++){
+            const i = idx(r,c);
+            const cell = document.createElement("div");
+            cell.className = "cell " + ((r+c)%2===0 ? "light" : "dark");
+            cell.dataset.index = i;
+
+            const isSelected = selectedIndex === i;
+            if(isSelected) cell.classList.add("selectable");
+
+            const move = possibleMoves.find(m=>m.to===i);
+            if(move){
+                cell.classList.add(move.capture ? "captureHint" : "moveHint");
+            }
+
+            const p = board[i];
+
+            if(p){
+                const piece = document.createElement("div");
+                piece.className = "piece " + pieceColor(p) + (isKing(p) ? " king" : "");
+                cell.appendChild(piece);
+            }
+
+            cell.onclick = () => handleCellClick(i);
+            boardEl.appendChild(cell);
+        }
+    }
+}
+
+function handleCellClick(i){
+    if(!room || room.phase !== "playing") return;
+    if(room.turnUid !== user.uid) return;
+
+    const board = room.board || emptyBoard();
+    const p = board[i];
+    const myColor = getMyColor();
+
+    const existingMove = possibleMoves.find(m=>m.to===i);
+
+    if(existingMove && selectedIndex !== null){
+        makeMove(existingMove);
+        return;
+    }
+
+    if(p && pieceColor(p) === myColor){
+        const forced = getAllCapturesForUser();
+        const moves = getLegalMovesForPiece(i, board);
+
+        if(forced.length){
+            possibleMoves = forced.filter(m=>m.from===i);
+        }else{
+            possibleMoves = moves;
+        }
+
+        if(possibleMoves.length === 0){
+            selectedIndex = null;
+        }else{
+            selectedIndex = i;
+        }
+
+        renderBoard(board);
+    }
+}
+
+function getDirections(p){
+    const king = isKing(p);
+
+    if(king){
+        return [[1,1],[1,-1],[-1,1],[-1,-1]];
+    }
+
+    if(pieceColor(p)==="red"){
+        return [[-1,1],[-1,-1]];
+    }
+
+    return [[1,1],[1,-1]];
+}
+
+function inBoard(r,c){
+    return r>=0 && r<8 && c>=0 && c<8;
+}
+
+function getLegalMovesForPiece(i,board){
+    const p = board[i];
+    if(!p) return [];
+
+    const moves = [];
+    const r = row(i);
+    const c = col(i);
+    const myColor = pieceColor(p);
+
+    for(const [dr,dc] of getDirections(p)){
+        const r1 = r+dr;
+        const c1 = c+dc;
+        const r2 = r+dr*2;
+        const c2 = c+dc*2;
+
+        if(inBoard(r2,c2)){
+            const mid = idx(r1,c1);
+            const landing = idx(r2,c2);
+
+            if(board[mid] && pieceColor(board[mid]) !== myColor && !board[landing]){
+                moves.push({from:i,to:landing,capture:true,captured:mid});
+            }
+        }
+
+        if(inBoard(r1,c1)){
+            const to = idx(r1,c1);
+            if(!board[to]){
+                moves.push({from:i,to,capture:false});
+            }
+        }
+    }
+
+    return moves;
+}
+
+function getAllCapturesForColor(color,board){
+    const all = [];
+
+    for(let i=0;i<64;i++){
+        const p = board[i];
+        if(p && pieceColor(p)===color){
+            getLegalMovesForPiece(i,board).filter(m=>m.capture).forEach(m=>all.push(m));
+        }
+    }
+
+    return all;
+}
+
+function getAllCapturesForUser(){
+    if(!room) return [];
+    return getAllCapturesForColor(getMyColor(), room.board || emptyBoard());
+}
+
+async function makeMove(move){
+    const board = [...room.board];
+    const p = board[move.from];
+    board[move.from] = "";
+    board[move.to] = p;
+
+    let captureCount = room.captureCount || 0;
+
+    if(move.capture){
+        board[move.captured] = "";
+        captureCount++;
+    }
+
+    const toRow = row(move.to);
+    if(p === "r" && toRow === 0) board[move.to] = "R";
+    if(p === "b" && toRow === 7) board[move.to] = "B";
+
+    const myColor = getMyColor();
+    const enemyUid = getEnemyUid();
+    const enemyColor = myColor === "red" ? "black" : "red";
+
+    let nextTurn = enemyUid;
+    let logText = move.capture ? "💥 " + getMyPseudo() + " prend un pion." : "➡️ " + getMyPseudo() + " joue.";
+
+    // Multi-prise simple : si le même pion peut encore capturer, il rejoue.
+    if(move.capture){
+        const extra = getLegalMovesForPiece(move.to, board).filter(m=>m.capture);
+        if(extra.length){
+            nextTurn = user.uid;
+            logText = "🔥 " + getMyPseudo() + " peut encore prendre !";
+        }
+    }
+
+    const updates = {
+        board,
+        turnUid:nextTurn,
+        moveCount:(room.moveCount || 0)+1,
+        captureCount,
+        log:[logText,...(room.log || [])].slice(0,40)
+    };
+
+    const winner = checkWinner(board, enemyColor);
+
+    if(winner){
+        updates.phase = "ended";
+        updates.status = "ended";
+        updates.winnerUid = user.uid;
+        updates.log = ["🏆 " + getMyPseudo() + " gagne la partie !",...(room.log || [])].slice(0,40);
+    }
+
+    await updateDoc(doc(db,"checkersRooms",roomId), updates);
+}
+
+function countPieces(board,color){
+    return board.filter(p=>p && pieceColor(p)===color).length;
+}
+
+function hasMoves(color,board){
+    for(let i=0;i<64;i++){
+        const p = board[i];
+        if(p && pieceColor(p)===color && getLegalMovesForPiece(i,board).length){
+            return true;
+        }
+    }
+    return false;
+}
+
+function checkWinner(board,enemyColor){
+    if(countPieces(board,enemyColor) === 0) return true;
+    if(!hasMoves(enemyColor,board)) return true;
+    return false;
+}
+
+function updateStats(board){
+    document.getElementById("redCount").innerText = countPieces(board,"red");
+    document.getElementById("blackCount").innerText = countPieces(board,"black");
+    document.getElementById("captureCount").innerText = room?.captureCount || 0;
+    document.getElementById("moveCount").innerText = room?.moveCount || 0;
+}
+
+async function loadFriends(){
+    const box = document.getElementById("friendsList");
+
+    if(!user){
+        box.innerHTML = "<div class='friendItem'>Connecte-toi pour inviter.</div>";
+        return;
+    }
+
+    const meSnap = await getDoc(doc(db,"users",user.uid));
+
+    if(!meSnap.exists() || !meSnap.data().friends || meSnap.data().friends.length === 0){
+        box.innerHTML = "<div class='friendItem'>Tu n'as pas encore d'amis.</div>";
+        return;
+    }
+
+    box.innerHTML = "";
+
+    for(const friendUid of meSnap.data().friends){
+        const fSnap = await getDoc(doc(db,"users",friendUid));
+        if(fSnap.exists()){
+            const f = fSnap.data();
+            box.innerHTML += `
+                <div class="friendItem">
+                    <strong>${f.online ? "🟢" : "⚫"} ${f.pseudo}</strong>
+                    <button class="smallBtn" onclick="inviteFriend('${friendUid}','${f.pseudo}')">Inviter</button>
+                </div>
+            `;
+        }
+    }
+}
+window.loadFriends = loadFriends;
+
+async function inviteFriend(friendUid,friendPseudo){
+    if(!room || !roomId){
+        alert("Crée d'abord un salon.");
+        return;
+    }
+
+    if(room.hostUid !== user.uid){
+        alert("Seul l'hôte peut inviter.");
+        return;
+    }
+
+    if(room.guestUid){
+        alert("Le salon est déjà plein.");
+        return;
+    }
+
+    await addDoc(collection(db,"gameInvites"),{
+        game:"checkers",
+        roomId,
+        fromUid:user.uid,
+        fromPseudo:getMyPseudo(),
+        toUid:friendUid,
+        toPseudo:friendPseudo,
+        status:"pending",
+        createdAt:serverTimestamp()
+    });
+
+    await addDoc(collection(db,"notifications"),{
+        toUid:friendUid,
+        type:"gameInvite",
+        game:"checkers",
+        roomId,
+        text:getMyPseudo() + " t'invite à jouer aux Dames.",
+        read:false,
+        fromUid:user.uid,
+        fromPseudo:getMyPseudo(),
+        createdAt:serverTimestamp()
+    });
+
+    alert("Invitation envoyée à " + friendPseudo);
+}
+window.inviteFriend = inviteFriend;
+
+function listenInvites(){
+    if(inviteUnsub) inviteUnsub();
+
+    const q = query(
+        collection(db,"gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","checkers"),
+        where("status","==","pending")
+    );
+
+    inviteUnsub = onSnapshot(q, snap=>{
+        if(snap.empty) return;
+
+        const d = snap.docs[0];
+        pendingInvite = {id:d.id,...d.data()};
+        document.getElementById("inviteText").innerText = pendingInvite.fromPseudo + " t'invite à jouer aux Dames.";
+        document.getElementById("inviteOverlay").classList.add("open");
+    });
+}
+
+async function checkPendingInviteOnLoad(){
+    const q = query(
+        collection(db,"gameInvites"),
+        where("toUid","==",user.uid),
+        where("game","==","checkers"),
+        where("status","==","pending")
+    );
+
+    const snap = await getDocs(q);
+    if(snap.empty) return;
+
+    const d = snap.docs[0];
+    pendingInvite = {id:d.id,...d.data()};
+    document.getElementById("inviteText").innerText = pendingInvite.fromPseudo + " t'invite à jouer aux Dames.";
+    document.getElementById("inviteOverlay").classList.add("open");
+}
+
+async function acceptInvite(){
+    if(!pendingInvite) return;
+
+    const roomRef = doc(db,"checkersRooms",pendingInvite.roomId);
+    const roomSnap = await getDoc(roomRef);
+
+    if(!roomSnap.exists()){
+        alert("Le salon n'existe plus.");
+        await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"expired"});
+        document.getElementById("inviteOverlay").classList.remove("open");
+        return;
+    }
+
+    const r = roomSnap.data();
+
+    if(r.guestUid && r.guestUid !== user.uid){
+        alert("Le salon est plein.");
+        await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"full"});
+        document.getElementById("inviteOverlay").classList.remove("open");
+        return;
+    }
+
+    const players = r.players || {};
+    players[user.uid] = {
+        pseudo:getMyPseudo(),
+        color:"black"
+    };
+
+    await updateDoc(roomRef,{
+        guestUid:user.uid,
+        guestPseudo:getMyPseudo(),
+        players,
+        status:"playing",
+        phase:"playing",
+        log:[getMyPseudo() + " a rejoint le salon. Partie lancée !",...(r.log || [])].slice(0,40)
+    });
+
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"accepted"});
+
+    roomId = pendingInvite.roomId;
+    localStorage.setItem("checkers_room",roomId);
+
+    document.getElementById("inviteOverlay").classList.remove("open");
+    listenRoom(roomId);
+}
+window.acceptInvite = acceptInvite;
+
+async function refuseInvite(){
+    if(!pendingInvite) return;
+    await updateDoc(doc(db,"gameInvites",pendingInvite.id),{status:"refused"});
+    pendingInvite = null;
+    document.getElementById("inviteOverlay").classList.remove("open");
+}
+window.refuseInvite = refuseInvite;
+
+async function leaveRoom(){
+    if(roomId && room && room.phase !== "ended"){
+        if(!confirm("Quitter le salon ? Si tu es l'hôte, le salon sera fermé.")) return;
+    }
+
+    if(!roomId){
+        goHome();
+        return;
+    }
+
+    try{
+        const ref = doc(db,"checkersRooms",roomId);
+        const snap = await getDoc(ref);
+
+        if(snap.exists()){
+            const data = snap.data();
+
+            if(data.hostUid === user.uid){
+                await deleteDoc(ref);
+            }else{
+                const players = data.players || {};
+                delete players[user.uid];
+
+                await updateDoc(ref,{
+                    guestUid:"",
+                    guestPseudo:"",
+                    players,
+                    status:"waiting",
+                    phase:"waiting",
+                    log:[getMyPseudo()+" a quitté le salon.",...(data.log || [])].slice(0,40)
+                });
+            }
+        }
+    }catch(error){
+        console.log(error);
+    }
+
+    localStorage.removeItem("checkers_room");
+    roomId = "";
+    room = null;
+    renderEmpty();
+}
+window.leaveRoom = leaveRoom;
+
+async function restartGame(){
+    if(!room || room.hostUid !== user.uid){
+        alert("Seul l'hôte peut relancer.");
+        return;
+    }
+
+    if(!room.guestUid){
+        alert("Il faut être 2 joueurs.");
+        return;
+    }
+
+    const board = startBoard();
+
+    await updateDoc(doc(db,"checkersRooms",roomId),{
+        status:"playing",
+        phase:"playing",
+        board,
+        turnUid:room.hostUid,
+        winnerUid:"",
+        moveCount:0,
+        captureCount:0,
+        log:["🔁 Nouvelle partie de Dames !"],
+        chat:[]
+    });
+
+    document.getElementById("endOverlay").classList.remove("open");
+}
+window.restartGame = restartGame;
+
+function renderLog(log=[]){
+    const box = document.getElementById("log");
+
+    if(!log.length){
+        box.innerHTML = "<div class='logLine'>Aucun événement.</div>";
+        return;
+    }
+
+    box.innerHTML = log.slice(0,12).map(l=>`<div class="logLine">${l}</div>`).join("");
+}
+
+function renderChat(messages=[]){
+    const box = document.getElementById("checkersChatBox");
+
+    if(!messages.length){
+        box.innerHTML = "Aucun message.";
+        return;
+    }
+
+    box.innerHTML = messages.slice(-30).map(m=>{
+        const mine = m.uid === user?.uid;
+        return `<div class="checkersMsg ${mine ? "mine" : ""}"><strong>${mine ? "Moi" : m.pseudo}</strong><br>${escapeHTML(m.text)}</div>`;
+    }).join("");
+
+    box.scrollTop = box.scrollHeight;
+}
+
+function escapeHTML(str){
+    return String(str).replace(/[&<>"']/g, ch => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+    }[ch]));
+}
+
+async function sendChatMessage(){
+    const input = document.getElementById("checkersChatInput");
+    if(!input || !room) return;
+
+    const text = input.value.trim();
+    if(!text) return;
+
+    const chat = room.chat || [];
+    chat.push({
+        uid:user.uid,
+        pseudo:getMyPseudo(),
+        text,
+        time:Date.now()
+    });
+
+    await updateDoc(doc(db,"checkersRooms",roomId),{
+        chat:chat.slice(-50)
+    });
+
+    input.value = "";
+}
+window.sendChatMessage = sendChatMessage;
+
+function sendQuickMsg(text){
+    const input = document.getElementById("checkersChatInput");
+    if(input){
+        input.value = text;
+        sendChatMessage();
+    }
+}
+window.sendQuickMsg = sendQuickMsg;
+
+function openRules(){
+    document.getElementById("rulesOverlay").classList.add("open");
+}
+window.openRules = openRules;
+
+function closeRules(){
+    document.getElementById("rulesOverlay").classList.remove("open");
+}
+window.closeRules = closeRules;
+
+renderBoard(emptyBoard());
+updateStats(emptyBoard());
+</script>
+
+</body>
+</html>

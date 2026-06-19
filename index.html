@@ -1881,6 +1881,7 @@ body::before{
     <button onclick="goToGame('fruit.html')">🍉 Fruit Slice</button>
 <button onclick="openUno()">🃏 Uno</button>
     <button onclick="openBattleship()">⚓ Bataille Navale</button>
+    <button onclick="openDames()">⚫⚪ Dames</button>
 </div>
 
 <div id="accountPanel">
@@ -2177,6 +2178,15 @@ body::before{
             <div class="desc">Place tes bateaux et coule la flotte de ton ami en ligne !</div>
         </div>
 
+        <div class="card" onclick="openDames()">
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Dames Online','dames_online.html','⚫')">☆</button>
+            <div class="icon">⚫</div>
+            <div class="title">Dames Online</div>
+            <div class="desc">Affronte un ami aux dames en ligne !</div>
+        </div>
+
+
+
 
 </div>
 
@@ -2289,6 +2299,26 @@ function closeAllPanels(){
     document.getElementById("accountPanel").classList.remove("open");
     document.getElementById("notifPanel").classList.remove("open");
 }
+
+
+document.addEventListener("click", function(e){
+    const protectedZone = e.target.closest(
+        "#topBar, #sideMenu, #accountPanel, #notifPanel, #toastNotif, #loginOverlay, #friendProfileModal, button, input, select, textarea, label"
+    );
+
+    if(protectedZone){
+        return;
+    }
+
+    const sideOpen = document.getElementById("sideMenu")?.classList.contains("open");
+    const accountOpen = document.getElementById("accountPanel")?.classList.contains("open");
+    const notifOpen = document.getElementById("notifPanel")?.classList.contains("open");
+
+    if(sideOpen || accountOpen || notifOpen){
+        closeAllPanels();
+    }
+});
+
 
 function toggleMenu(){
     const menu = document.getElementById("sideMenu");
@@ -2484,6 +2514,19 @@ function openBattleship(){
 
     trackGame("Bataille Navale Online","bataille_navale_online.html");
     window.location.href = "bataille_navale_online.html";
+}
+
+
+function openDames(){
+    const mode = localStorage.getItem("playMode");
+
+    if(mode !== "online"){
+        alert("🔒 Tu dois être connecté en ligne pour jouer aux Dames.");
+        return;
+    }
+
+    trackGame("Dames Online","dames_online.html");
+    window.location.href = "dames_online.html";
 }
 
 function openUno(){
@@ -3683,6 +3726,8 @@ window.openNotification = function(type, fromUid = "", fromPseudo = "", game = "
             window.location.href = "uno_online.html";
         }else if(game === "battleship"){
             window.location.href = "bataille_navale_online.html";
+        }else if(game === "checkers" || game === "dames"){
+            window.location.href = "dames_online.html";
         }else{
             window.location.href = "morpion_online.html";
         }
