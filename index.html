@@ -1833,7 +1833,77 @@ body::before{
     }
 }
 
+
+/* ================= PWA INSTALL ================= */
+#installAppWidget{
+    border:1px solid rgba(56,189,248,.35) !important;
+}
+
+#installAppBtn{
+    background:#facc15 !important;
+    color:#422006 !important;
+}
+
+#installHelpModal{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:10080;
+    backdrop-filter:blur(6px);
+}
+
+#installHelpModal.open{
+    display:flex;
+}
+
+#installHelpCard{
+    width:min(460px,92%);
+    background:#0f172a;
+    border:2px solid #38bdf8;
+    border-radius:24px;
+    padding:24px;
+    text-align:left;
+    box-shadow:0 25px 70px rgba(0,0,0,.5);
+}
+
+#installHelpCard h2{
+    text-align:center;
+    margin-bottom:12px;
+    font-size:30px;
+}
+
+#installHelpCard p{
+    color:#cbd5e1;
+    line-height:1.5;
+    margin:9px 0;
+}
+
+#installHelpCard button{
+    width:100%;
+    margin:10px 0 0 0;
+    padding:12px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+@media(max-width:760px){
+    #installAppWidget{
+        grid-column:1/-1;
+    }
+}
+
 </style>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nova Arcade">
+
 </head>
 
 <body>
@@ -1939,6 +2009,12 @@ body::before{
                 <div class="homeWidgetSetting">
                     <label><input type="checkbox" id="widget_quickStats" onchange="saveHomeWidgetSettings()"> 🏆 Stats rapides</label>
                 </div>
+
+                <div class="homeWidgetSetting">
+                    <label><input type="checkbox" id="widget_install" onchange="saveHomeWidgetSettings()"> 📱 Installer l’appli</label>
+                </div>
+
+
             </div>
 
             <button onclick="showAllHomeWidgets()">Tout afficher</button>
@@ -2072,7 +2148,15 @@ body::before{
             </div>
         </div>
 
-        <div class="homeWidget" data-widget="favorites">
+        
+        <div class="homeWidget" id="installAppWidget" data-widget="install">
+            <button class="widgetClose" onclick="hideHomeWidget('install')">×</button>
+            <h3>📱 Installer l’appli</h3>
+            <div>Ajoute Nova Arcade sur l’écran d’accueil de ton téléphone.</div>
+            <button id="installAppBtn" onclick="installApp()">📲 Installer</button>
+        </div>
+
+<div class="homeWidget" data-widget="favorites">
             <button class="widgetClose" onclick="hideHomeWidget('favorites')">×</button>
             <h3>⭐ Favoris</h3>
             <div id="favoriteGamesHome">Aucun favori.</div>
@@ -2204,6 +2288,16 @@ body::before{
     </div>
 </div>
 
+
+<div id="installHelpModal">
+    <div id="installHelpCard">
+        <h2>📲 Installer Nova Arcade</h2>
+        <p><strong>Android / Chrome :</strong> appuie sur le bouton “Installer”. Si ça ne marche pas, ouvre le menu ⋮ puis “Ajouter à l’écran d’accueil”.</p>
+        <p><strong>iPhone / Safari :</strong> appuie sur le bouton partager ⬆️ puis “Sur l’écran d’accueil”.</p>
+        <button onclick="closeInstallHelp()">Compris</button>
+    </div>
+</div>
+
 <div id="loginOverlay">
     <div id="loginCard">
         <h2>🎮 Mini Games</h2>
@@ -2243,6 +2337,64 @@ body::before{
 
 <script>
 
+let deferredInstallPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+
+    const btn = document.getElementById("installAppBtn");
+    if(btn){
+        btn.innerText = "📲 Installer";
+    }
+});
+
+window.addEventListener("appinstalled", () => {
+    localStorage.setItem("novaArcadeInstalled","yes");
+    deferredInstallPrompt = null;
+    const widget = document.getElementById("installAppWidget");
+    if(widget){
+        widget.style.display = "none";
+    }
+});
+
+async function installApp(){
+    if(deferredInstallPrompt){
+        deferredInstallPrompt.prompt();
+        const result = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+
+        if(result.outcome === "accepted"){
+            localStorage.setItem("novaArcadeInstalled","yes");
+        }
+
+        return;
+    }
+
+    openInstallHelp();
+}
+
+function openInstallHelp(){
+    const modal = document.getElementById("installHelpModal");
+    if(modal) modal.classList.add("open");
+}
+
+function closeInstallHelp(){
+    const modal = document.getElementById("installHelpModal");
+    if(modal) modal.classList.remove("open");
+}
+
+window.installApp = installApp;
+window.closeInstallHelp = closeInstallHelp;
+
+if("serviceWorker" in navigator){
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+    });
+}
+
+
+
 function cleanupDobbleData(){
     let favs = JSON.parse(localStorage.getItem("favorites") || "[]");
     favs = favs.filter(f => f.name !== "Dobble Online" && f.page !== "dobble_online.html");
@@ -2257,6 +2409,21 @@ cleanupDobbleData();
 
 const input = document.getElementById("pseudo");
 input.value = localStorage.getItem("pseudo") || "";
+
+
+function getAllHomeWidgetIds(){
+    return Array.from(document.querySelectorAll("[data-widget]"))
+        .map(w=>w.dataset.widget)
+        .filter(w=>w && w !== "welcome");
+}
+
+function ensureInstallWidgetSetting(){
+    const saved = JSON.parse(localStorage.getItem("homeWidgets") || "null");
+    if(saved === null){
+        const defaults = getAllHomeWidgetIds();
+        localStorage.setItem("homeWidgets", JSON.stringify(defaults));
+    }
+}
 
 function savePseudo(){
     let p = input.value.trim();
@@ -2605,6 +2772,7 @@ function updateFavoriteStars(){
 }
 
 function renderHomeDashboard(){
+    ensureInstallWidgetSetting();
     const pseudo = localStorage.getItem("pseudo") || "Joueur";
     const mode = localStorage.getItem("playMode") === "online" ? "En ligne" : "Hors ligne";
     const avatar = localStorage.getItem("profileAvatar") || pseudo[0] || "?";
@@ -2869,7 +3037,7 @@ function hideHomeWidget(key){
 function saveHomeWidgetSettings(){
     const settings = getHomeWidgetSettings();
 
-    ["favorites","continue","friendsOnline","quickStats"].forEach(key=>{
+    ["install","install","favorites","continue","friendsOnline","quickStats"].forEach(key=>{
         const input = document.getElementById("widget_" + key);
         if(input){
             settings[key] = input.checked;
@@ -2884,7 +3052,7 @@ function syncHomeWidgetSettingsUI(){
     const settings = getHomeWidgetSettings();
     let visible = 0;
 
-    ["favorites","continue","friendsOnline","quickStats"].forEach(key=>{
+    ["install","install","favorites","continue","friendsOnline","quickStats"].forEach(key=>{
         const input = document.getElementById("widget_" + key);
 
         if(input){
