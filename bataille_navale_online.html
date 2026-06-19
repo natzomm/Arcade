@@ -872,6 +872,33 @@ body.hideFleetOnMobile #myFleetBox{
     }
 }
 
+
+/* ================= BATTLESHIP V3 ================= */
+body.screenShake{animation:screenShake .35s ease}
+@keyframes screenShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,3px)}40%{transform:translate(6px,-3px)}60%{transform:translate(-4px,-2px)}80%{transform:translate(4px,2px)}}
+#battleToastCard.sunkBig{border-color:#ef4444;box-shadow:0 25px 70px rgba(0,0,0,.65),0 0 55px rgba(239,68,68,.75)}
+#battleToastCard.sunkBig #battleToastText{color:#ef4444;text-transform:uppercase;letter-spacing:1px}
+.coordWrap{display:grid;grid-template-columns:24px 1fr;grid-template-rows:24px 1fr;width:min(470px,100%);margin:0 auto}
+.coordTop{grid-column:2;display:grid;grid-template-columns:repeat(10,1fr);color:#facc15;font-weight:bold;font-size:13px;align-items:center}
+.coordLeft{grid-row:2;display:grid;grid-template-rows:repeat(10,1fr);color:#facc15;font-weight:bold;font-size:13px;align-items:center}
+.coordCorner{grid-column:1;grid-row:1}.coordGrid{grid-column:2;grid-row:2}
+.ship.segmentStart::before,.ship.segmentMid::before,.ship.segmentEnd::before,.ship.segmentSingle::before{content:"";position:absolute;inset:18%;background:linear-gradient(145deg,#94a3b8,#475569);border-radius:999px;box-shadow:inset -3px -3px 6px rgba(0,0,0,.35), inset 3px 3px 6px rgba(255,255,255,.22)}
+.ship.segmentMid::after{content:"";position:absolute;width:35%;height:35%;left:32%;top:32%;background:#0f172a;border-radius:50%;opacity:.8}
+.ship.segmentStart::after{content:"";position:absolute;inset:28% 20% 28% 54%;background:#cbd5e1;border-radius:999px}
+.ship.segmentEnd::after{content:"";position:absolute;inset:30% 54% 30% 20%;background:#cbd5e1;clip-path:polygon(0 50%,100% 0,100% 100%)}
+.ship.vertical.segmentStart::after{inset:54% 28% 20% 28%}.ship.vertical.segmentEnd::after{inset:20% 30% 54% 30%;clip-path:polygon(50% 0,0 100%,100% 100%)}
+#chatPanel{margin-top:16px}#battleChatBox{background:#020617;border-radius:14px;padding:10px;max-height:160px;overflow:auto;color:#cbd5e1;font-size:14px}
+.battleMsg{background:#1e293b;border-radius:12px;padding:8px;margin:6px 0}.battleMsg.mine{background:#14532d;color:white;text-align:right}
+#battleChatInput{width:100%;margin:8px 0;padding:10px;border:none;border-radius:10px;background:#020617;color:white}
+.quickChat{display:flex;flex-wrap:wrap;gap:6px}.quickChat button{padding:7px 9px;font-size:12px;background:#334155;color:white}
+#timerBox{font-size:22px;font-weight:900;color:#facc15}.timerDanger{color:#ef4444!important;animation:timerPulse .55s infinite alternate}
+@keyframes timerPulse{from{transform:scale(1)}to{transform:scale(1.08)}}
+#achievementsBox{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.achievement{background:#020617;border:1px solid rgba(250,204,21,.35);color:#facc15;border-radius:999px;padding:7px 9px;font-size:12px}.achievement.locked{color:#64748b;border-color:#334155}
+#profileStatsBox{background:#020617;border-radius:14px;padding:11px;margin-top:12px;color:#cbd5e1;line-height:1.45}
+.fogCell:not(.hit):not(.miss):not(.sunk)::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 35% 40%,rgba(255,255,255,.16),transparent 38%),linear-gradient(135deg,rgba(148,163,184,.12),rgba(15,23,42,.05));opacity:.6;animation:fogFloat 2.6s ease-in-out infinite alternate}
+@keyframes fogFloat{from{transform:translateX(-2px);opacity:.45}to{transform:translateX(2px);opacity:.72}}
+@media(max-width:700px){.coordWrap{grid-template-columns:18px 1fr;grid-template-rows:18px 1fr;width:98vw}.coordTop,.coordLeft{font-size:11px}#battleChatBox{max-height:100px}#timerBox{font-size:18px}}
+
 </style>
 </head>
 
@@ -933,7 +960,7 @@ body.hideFleetOnMobile #myFleetBox{
             <div class="battleStat"><strong id="statAccuracy">0%</strong> précision</div>
         </div>
 
-        <div id="lastShotBox">Dernier tir : <span id="lastShotText">aucun</span></div>
+        <div id="lastShotBox">Dernier tir : <span id="lastShotText">aucun</span> — Temps : <span id="timerBox">30</span>s</div>
         <button class="hideFleetMobileBtn" onclick="toggleFleetMobile()">Masquer / afficher ma flotte</button>
 
         <div id="status">Crée un salon ou accepte une invitation.</div>
@@ -946,12 +973,12 @@ body.hideFleetOnMobile #myFleetBox{
         <div id="boards">
             <div class="boardBox" id="myFleetBox">
                 <div class="boardTitle">🛡️ Ta flotte</div>
-                <div class="grid" id="myBoard"></div>
+                <div class="coordWrap"><div class="coordCorner"></div><div class="coordTop"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>I</span><span>J</span></div><div class="coordLeft"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div><div class="grid coordGrid" id="myBoard"></div></div>
             </div>
 
             <div class="boardBox">
                 <div class="boardTitle">🎯 Grille ennemie</div>
-                <div class="grid" id="enemyBoard"></div>
+                <div class="coordWrap"><div class="coordCorner"></div><div class="coordTop"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>I</span><span>J</span></div><div class="coordLeft"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div><div class="grid coordGrid" id="enemyBoard"></div></div>
             </div>
         </div>
     </main>
@@ -1235,30 +1262,183 @@ function listenRoom(id){
 
 let lastAnimatedShotKey = "";
 
+
+let timerInterval = null;
+const TURN_SECONDS = 30;
+
+function startTurnTimer(){
+    stopTurnTimer();
+    if(!room || room.phase !== "battle"){
+        updateTimerDisplay(TURN_SECONDS);
+        return;
+    }
+    function tick(){
+        const start = room.turnStartedAt && room.turnStartedAt.toDate ? room.turnStartedAt.toDate().getTime() : Date.now();
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        const left = Math.max(0, TURN_SECONDS - elapsed);
+        updateTimerDisplay(left);
+        if(left <= 0 && room.turnUid === user?.uid){
+            autoRandomShot();
+        }
+    }
+    tick();
+    timerInterval = setInterval(tick,1000);
+}
+
+function stopTurnTimer(){
+    if(timerInterval){
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+function updateTimerDisplay(sec){
+    const el = document.getElementById("timerBox");
+    if(!el) return;
+    el.innerText = sec;
+    el.classList.toggle("timerDanger", sec <= 8);
+}
+
+async function autoRandomShot(){
+    if(!room || room.phase !== "battle" || room.turnUid !== user?.uid) return;
+    const me = getMe();
+    const shots = normalizeShots(me?.shots || emptyShots());
+    const choices = [];
+    for(let r=0;r<SIZE;r++){
+        for(let c=0;c<SIZE;c++){
+            if(!getShot(shots,r,c)) choices.push({r,c});
+        }
+    }
+    if(!choices.length) return;
+    const pick = choices[Math.floor(Math.random()*choices.length)];
+    await fireAt(pick.r,pick.c);
+}
+
+function getNavalStats(){
+    return JSON.parse(localStorage.getItem("navalStats") || '{"games":0,"wins":0,"sunk":0,"shots":0,"hits":0}');
+}
+
+function saveNavalStats(stats){
+    localStorage.setItem("navalStats", JSON.stringify(stats));
+    renderNavalStats();
+    renderAchievements();
+}
+
+function renderNavalStats(){
+    const s = getNavalStats();
+    const acc = s.shots === 0 ? 0 : Math.round((s.hits/s.shots)*100);
+    if(document.getElementById("navalGames")) document.getElementById("navalGames").innerText = s.games;
+    if(document.getElementById("navalWins")) document.getElementById("navalWins").innerText = s.wins;
+    if(document.getElementById("navalSunk")) document.getElementById("navalSunk").innerText = s.sunk;
+    if(document.getElementById("navalAccuracy")) document.getElementById("navalAccuracy").innerText = acc + "%";
+}
+
+function getUnlockedAchievements(){
+    const s = getNavalStats();
+    const list = [];
+    if(s.games >= 1) list.push("first_game");
+    if(s.wins >= 1) list.push("first_win");
+    if(s.sunk >= 1) list.push("first_sunk");
+    if(s.sunk >= 5) list.push("admiral");
+    if(s.shots >= 10 && Math.round((s.hits/s.shots)*100) >= 70) list.push("sniper");
+    return list;
+}
+
+function renderAchievements(){
+    const unlocked = getUnlockedAchievements();
+    const all = [["first_game","⚓ Première bataille"],["first_win","🏆 Première victoire"],["first_sunk","🔥 Premier navire coulé"],["admiral","👑 Amiral"],["sniper","🎯 Tireur précis"]];
+    const box = document.getElementById("achievementsBox");
+    if(!box) return;
+    box.innerHTML = all.map(([id,label])=>`<span class="achievement ${unlocked.includes(id) ? "" : "locked"}">${label}</span>`).join("");
+}
+
+function updateStatsFromShot(result){
+    const s = getNavalStats();
+    s.shots++;
+    if(result === "hit" || result === "sunk") s.hits++;
+    if(result === "sunk") s.sunk++;
+    saveNavalStats(s);
+}
+
+function updateStatsEnd(won){
+    if(!room) return;
+    const key = "navalLastEnded_" + room.id + "_" + room.winnerUid;
+    if(localStorage.getItem(key)) return;
+    localStorage.setItem(key,"1");
+    const s = getNavalStats();
+    s.games++;
+    if(won) s.wins++;
+    saveNavalStats(s);
+}
+
 function showBattleToast(icon,text,sub,type=""){
     const overlay = document.getElementById("battleToast");
+    const card = document.getElementById("battleToastCard");
     const iconEl = document.getElementById("battleToastIcon");
     const textEl = document.getElementById("battleToastText");
     const subEl = document.getElementById("battleToastSub");
-
     if(!overlay || !iconEl || !textEl || !subEl) return;
-
     iconEl.innerText = icon;
     textEl.innerText = text;
     subEl.innerText = sub || "";
-
+    if(card) card.classList.toggle("sunkBig", type === "sunk");
     overlay.classList.remove("show");
     void overlay.offsetWidth;
     overlay.classList.add("show");
-
+    if(type === "sunk"){
+        document.body.classList.remove("screenShake");
+        void document.body.offsetWidth;
+        document.body.classList.add("screenShake");
+        setTimeout(()=>document.body.classList.remove("screenShake"),400);
+    }
     if(navigator.vibrate){
-        if(type === "sunk") navigator.vibrate([120,60,120]);
+        if(type === "sunk") navigator.vibrate([140,60,140]);
         else if(type === "hit") navigator.vibrate(90);
         else if(type === "miss") navigator.vibrate(35);
     }
-
-    setTimeout(()=>overlay.classList.remove("show"), 1200);
+    setTimeout(()=>overlay.classList.remove("show"), 1400);
 }
+
+function renderChat(){
+    const box = document.getElementById("battleChatBox");
+    if(!box) return;
+    const messages = room && room.chat ? room.chat : [];
+    if(!messages.length){
+        box.innerHTML = "Aucun message.";
+        return;
+    }
+    box.innerHTML = messages.slice(-30).map(m=>{
+        const mine = m.uid === user?.uid;
+        return `<div class="battleMsg ${mine ? "mine" : ""}"><strong>${mine ? "Moi" : m.pseudo}</strong><br>${escapeHTML(m.text)}</div>`;
+    }).join("");
+    box.scrollTop = box.scrollHeight;
+}
+
+function escapeHTML(str){
+    return String(str).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
+}
+
+async function sendBattleMessage(){
+    const input = document.getElementById("battleChatInput");
+    if(!input || !room) return;
+    const text = input.value.trim();
+    if(!text) return;
+    const chat = room.chat || [];
+    chat.push({uid:user.uid,pseudo:getMyPseudo(),text,time:Date.now()});
+    await updateDoc(doc(db,"battleshipRooms",roomId),{chat:chat.slice(-50)});
+    input.value = "";
+}
+window.sendBattleMessage = sendBattleMessage;
+
+function sendQuickBattleMsg(text){
+    const input = document.getElementById("battleChatInput");
+    if(input){
+        input.value = text;
+        sendBattleMessage();
+    }
+}
+window.sendQuickBattleMsg = sendQuickBattleMsg;
+
 
 function animateCell(boardId,r,c,cls){
     const cell = document.querySelector(`#${boardId} [data-r="${r}"][data-c="${c}"]`);
@@ -1408,6 +1588,10 @@ function applyRoom(){
     renderBoards();
     renderLog(room.log || []);
     updateBattleUI();
+    renderChat();
+    renderNavalStats();
+    renderAchievements();
+    startTurnTimer();
     playShotFeedback(room);
 
     document.getElementById("phaseText").innerText =
@@ -1441,6 +1625,8 @@ function applyRoom(){
         document.getElementById("endTitle").innerText = winner;
         document.getElementById("endText").innerText = "La flotte ennemie a été coulée.";
         renderEndSummary();
+        updateStatsEnd(room.winnerUid === user.uid);
+        stopTurnTimer();
         document.getElementById("endOverlay").style.display = "flex";
         document.getElementById("status").innerText = "Partie terminée.";
     }
@@ -1526,7 +1712,11 @@ function renderMyBoard(){
             cell.dataset.c = c;
 
             const hasShip = shipAt(myShips,r,c);
-            if(hasShip) cell.classList.add("ship");
+            if(hasShip){
+                cell.classList.add("ship");
+                const seg = shipSegmentClass(myShips,r,c);
+                seg.split(" ").forEach(cls=>cell.classList.add(cls));
+            }
 
             const enemyShot = getShot(enemy?.shots,r,c);
             if(enemyShot === "hit") cell.classList.add("hit");
@@ -1552,7 +1742,7 @@ function renderEnemyBoard(){
     for(let r=0;r<SIZE;r++){
         for(let c=0;c<SIZE;c++){
             const cell = document.createElement("div");
-            cell.className = "cell";
+            cell.className = "cell fogCell";
             cell.dataset.r = r;
             cell.dataset.c = c;
 
@@ -1707,6 +1897,23 @@ window.rotateShip = rotateShip;
 function shipAt(ships,r,c){
     return ships.some(ship => ship.cells.some(cell => cell.r===r && cell.c===c));
 }
+
+
+function shipSegmentClass(ships,r,c){
+    const ship = ships.find(s => s.cells.some(cell => cell.r===r && cell.c===c));
+    if(!ship) return "";
+    if(ship.cells.length === 1) return "segmentSingle";
+    const rows = ship.cells.map(x=>x.r);
+    const vertical = Math.max(...rows) !== Math.min(...rows);
+    const sorted = [...ship.cells].sort((a,b)=> vertical ? a.r-b.r : a.c-b.c);
+    const idx = sorted.findIndex(x=>x.r===r && x.c===c);
+    let cls = vertical ? "vertical " : "";
+    if(idx === 0) cls += "segmentStart";
+    else if(idx === sorted.length - 1) cls += "segmentEnd";
+    else cls += "segmentMid";
+    return cls;
+}
+
 
 function canPlace(index,r,c,ships=localShips){
     const ship = SHIPS[index];
@@ -1903,6 +2110,7 @@ async function setReady(){
         updates.phase = "battle";
         updates.status = "playing";
         updates.turnUid = room.hostUid;
+        updates.turnStartedAt = serverTimestamp();
         updates.log = addLog("⚔️ Combat lancé ! " + room.hostPseudo + " commence.");
     }
 
@@ -1968,8 +2176,11 @@ async function fireAt(r,c){
             result:shotResult,
             shipName:sunkShip ? sunkShip.name : ""
         },
-        log:addLog(hit ? (getMyPseudo() + " touche !") : (getMyPseudo() + " rate."))
+        log:addLog(hit ? (getMyPseudo() + " touche !") : (getMyPseudo() + " rate.")),
+        turnStartedAt:serverTimestamp()
     };
+
+    updateStatsFromShot(shotResult);
 
     if(sunkShip){
         updates.log = addLog("💥 " + getMyPseudo() + " coule : " + sunkShip.name + " !");
@@ -2242,6 +2453,8 @@ async function restartGame(){
         turnUid:"",
         players,
         lastShot:null,
+        turnStartedAt:null,
+        chat:[],
         log:["🔁 Nouvelle bataille !"]
     });
 
