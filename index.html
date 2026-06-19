@@ -2271,10 +2271,10 @@ body::before{
         </div>
 
         <div class="card" onclick="openEchecs()">
-            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Échecs Online','echecs_online.html','♟️')">☆</button>
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Échecs','echecs.html','♟️')">☆</button>
             <div class="icon">♟️</div>
-            <div class="title">Échecs Online</div>
-            <div class="desc">Affronte un ami aux échecs en ligne !</div>
+            <div class="title">Échecs</div>
+            <div class="desc">Joue contre le bot ou affronte un ami en ligne !</div>
         </div>
 
 
@@ -2698,13 +2698,13 @@ function openBattleship(){
 function openEchecs(){
     const mode = localStorage.getItem("playMode");
 
-    if(mode !== "online"){
-        alert("🔒 Tu dois être connecté en ligne pour jouer aux Échecs.");
-        return;
+    if(mode === "online"){
+        trackGame("Échecs Online","echecs_online.html");
+        window.location.href = "echecs_online.html";
+    }else{
+        trackGame("Échecs","echecs.html");
+        window.location.href = "echecs.html";
     }
-
-    trackGame("Échecs Online","echecs_online.html");
-    window.location.href = "echecs_online.html";
 }
 
 function openDames(){
