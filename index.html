@@ -2264,10 +2264,10 @@ body::before{
         </div>
 
         <div class="card" onclick="openDames()">
-            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Dames Online','dames_online.html','⚫')">☆</button>
+            <button class="favoriteStar" onclick="event.stopPropagation();toggleFavorite('Dames','dames.html','⚫')">☆</button>
             <div class="icon">⚫</div>
-            <div class="title">Dames Online</div>
-            <div class="desc">Affronte un ami aux dames en ligne !</div>
+            <div class="title">Dames</div>
+            <div class="desc">Joue contre le bot ou affronte un ami en ligne !</div>
         </div>
 
         <div class="card" onclick="openEchecs()">
@@ -2710,13 +2710,13 @@ function openEchecs(){
 function openDames(){
     const mode = localStorage.getItem("playMode");
 
-    if(mode !== "online"){
-        alert("🔒 Tu dois être connecté en ligne pour jouer aux Dames.");
-        return;
+    if(mode === "online"){
+        trackGame("Dames Online","dames_online.html");
+        window.location.href = "dames_online.html";
+    }else{
+        trackGame("Dames","dames.html");
+        window.location.href = "dames.html";
     }
-
-    trackGame("Dames Online","dames_online.html");
-    window.location.href = "dames_online.html";
 }
 
 function openUno(){
