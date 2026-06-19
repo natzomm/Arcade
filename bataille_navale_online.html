@@ -899,10 +899,201 @@ body.screenShake{animation:screenShake .35s ease}
 @keyframes fogFloat{from{transform:translateX(-2px);opacity:.45}to{transform:translateX(2px);opacity:.72}}
 @media(max-width:700px){.coordWrap{grid-template-columns:18px 1fr;grid-template-rows:18px 1fr;width:98vw}.coordTop,.coordLeft{font-size:11px}#battleChatBox{max-height:100px}#timerBox{font-size:18px}}
 
+
+/* ================= BATTLESHIP V4 FINAL POLISH ================= */
+#versionBadge{
+    display:inline-block;
+    margin-top:6px;
+    background:#facc15;
+    color:#422006;
+    padding:5px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:13px;
+}
+
+#rulesBtn,#soundToggleBtn{
+    width:100%;
+    padding:11px;
+    margin:6px 0;
+    background:#334155;
+    color:white;
+}
+
+#rulesOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.88);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:10020;
+    backdrop-filter:blur(6px);
+}
+
+#rulesOverlay.open{
+    display:flex;
+}
+
+#rulesCard{
+    width:min(520px,92%);
+    background:#0f172a;
+    border:2px solid #38bdf8;
+    border-radius:26px;
+    padding:24px;
+    box-shadow:0 25px 70px rgba(0,0,0,.55);
+}
+
+#rulesCard h2{
+    margin-bottom:12px;
+    font-size:30px;
+}
+
+#rulesCard p{
+    color:#cbd5e1;
+    line-height:1.5;
+    margin:8px 0;
+}
+
+#rulesCard button{
+    width:100%;
+    padding:12px;
+    margin-top:12px;
+    background:#22c55e;
+    color:#052e16;
+}
+
+#cinematicOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.92);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:10010;
+    backdrop-filter:blur(4px);
+    pointer-events:none;
+}
+
+#cinematicOverlay.show{
+    display:flex;
+}
+
+#cinematicText{
+    font-size:clamp(34px,7vw,72px);
+    font-weight:1000;
+    color:#facc15;
+    text-align:center;
+    animation:cinematicPop 1.1s ease-out;
+    text-shadow:0 0 35px rgba(250,204,21,.55);
+}
+
+@keyframes cinematicPop{
+    0%{transform:scale(.55);opacity:0}
+    35%{transform:scale(1.12);opacity:1}
+    100%{transform:scale(1)}
+}
+
+#endOverlay .modalCard{
+    border-color:#facc15;
+    box-shadow:0 25px 80px rgba(0,0,0,.65),0 0 35px rgba(250,204,21,.35);
+}
+
+#endTitle{
+    font-size:42px!important;
+    text-transform:uppercase;
+}
+
+#endTitle.win{
+    color:#22c55e;
+}
+
+#endTitle.lose{
+    color:#ef4444;
+}
+
+#finalButtons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:10px;
+}
+
+#finalButtons button{
+    margin:0!important;
+}
+
+#recordsBox{
+    background:#020617;
+    border-radius:16px;
+    padding:12px;
+    margin-top:12px;
+    color:#cbd5e1;
+    line-height:1.55;
+    border:1px solid rgba(148,163,184,.18);
+}
+
+#captainLine{
+    background:rgba(250,204,21,.12);
+    border:1px solid rgba(250,204,21,.25);
+    color:#fde68a;
+    border-radius:14px;
+    padding:10px;
+    margin:8px 0;
+    font-weight:bold;
+    text-align:center;
+}
+
+.logLine{
+    display:flex;
+    gap:6px;
+    align-items:center;
+}
+
+@media(max-width:700px){
+    body.battleMode #myFleetBox{
+        display:none;
+    }
+
+    body.battleMode #enemyBoard{
+        width:98vw!important;
+        max-width:98vw!important;
+    }
+
+    body.battleMode #battleStatsBar{
+        grid-template-columns:repeat(2,1fr)!important;
+    }
+
+    body.battleMode aside.panel{
+        margin-bottom:10px;
+    }
+
+    #finalButtons{
+        grid-template-columns:1fr;
+    }
+
+    #endTitle{
+        font-size:32px!important;
+    }
+}
+
 </style>
 </head>
 
 <body>
+<div id="cinematicOverlay"><div id="cinematicText">⚓ Préparez vos flottes...</div></div>
+
+<div id="rulesOverlay">
+    <div id="rulesCard">
+        <h2>❓ Comment jouer ?</h2>
+        <p><strong>1.</strong> Crée un salon et invite un ami.</p>
+        <p><strong>2.</strong> Place tes 5 bateaux sur ta grille. Tu peux choisir un bateau en bas sur téléphone.</p>
+        <p><strong>3.</strong> Clique sur “Je suis prêt”. Quand les deux joueurs sont prêts, le combat commence.</p>
+        <p><strong>4.</strong> Tire sur la grille ennemie. Le premier qui coule toute la flotte adverse gagne.</p>
+        <p><strong>5.</strong> Si le timer arrive à 0, un tir automatique est lancé.</p>
+        <button onclick="closeRules()">Compris</button>
+    </div>
+</div>
 <div id="battleToast">
     <div id="battleToastCard">
         <div id="battleToastIcon">💥</div>
@@ -915,6 +1106,7 @@ body.screenShake{animation:screenShake .35s ease}
 <header>
     <div>
         <h1>⚓ Bataille Navale Online</h1>
+        <div id="versionBadge">V4 Finale</div>
         <div>👤 Joueur : <span id="playerName">Joueur</span></div>
     </div>
     <button class="homeBtn" onclick="goHome()">🏠 Accueil</button>
@@ -931,6 +1123,8 @@ body.screenShake{animation:screenShake .35s ease}
         <button class="actionBtn greenBtn" onclick="createRoom()">➕ Créer un salon</button>
         <button class="actionBtn" onclick="loadFriends()">👥 Charger mes amis</button>
         <button class="actionBtn redBtn" onclick="leaveRoom()">🚪 Quitter le salon</button>
+        <button id="soundToggleBtn" onclick="toggleBattleSound()">🔊 Sons : activés</button>
+        <button id="rulesBtn" onclick="openRules()">❓ Comment jouer ?</button>
 
         <div id="friendsList"></div>
 
@@ -961,6 +1155,7 @@ body.screenShake{animation:screenShake .35s ease}
         </div>
 
         <div id="lastShotBox">Dernier tir : <span id="lastShotText">aucun</span> — Temps : <span id="timerBox">30</span>s</div>
+        <div id="captainLine">Capitaine, en attente des ordres.</div>
         <button class="hideFleetMobileBtn" onclick="toggleFleetMobile()">Masquer / afficher ma flotte</button>
 
         <div id="status">Crée un salon ou accepte une invitation.</div>
@@ -998,7 +1193,11 @@ body.screenShake{animation:screenShake .35s ease}
         <h2 id="endTitle">Fin</h2>
         <p id="endText"></p>
         <div id="endSummary"></div>
-        <button class="greenBtn" onclick="restartGame()">🔁 Revanche</button>
+        <div id="recordsBox"></div>
+        <div id="finalButtons">
+            <button class="greenBtn" onclick="restartGame()">🔁 Revanche</button>
+            <button onclick="goHome()">🏠 Accueil</button>
+        </div>
         <button onclick="document.getElementById('endOverlay').style.display='none'">Continuer</button>
     </div>
 </div>
@@ -1121,6 +1320,7 @@ function renderEmpty(){
     renderShipList();
     renderLog([]);
     updateBattleUI();
+    updateSoundButton();
 }
 
 async function createRoom(){
@@ -1263,6 +1463,173 @@ function listenRoom(id){
 let lastAnimatedShotKey = "";
 
 
+
+function battleSoundEnabled(){
+    return localStorage.getItem("battleSound") !== "off";
+}
+
+function toggleBattleSound(){
+    const enabled = battleSoundEnabled();
+
+    if(enabled){
+        localStorage.setItem("battleSound","off");
+    }else{
+        localStorage.setItem("battleSound","on");
+    }
+
+    updateSoundButton();
+}
+window.toggleBattleSound = toggleBattleSound;
+
+function updateSoundButton(){
+    const btn = document.getElementById("soundToggleBtn");
+    if(!btn) return;
+
+    btn.innerText = battleSoundEnabled() ? "🔊 Sons : activés" : "🔇 Sons : désactivés";
+}
+
+function playBattleSound(type){
+    if(!battleSoundEnabled()) return;
+
+    try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        let freq = 300;
+        let duration = 0.12;
+
+        if(type === "miss"){ freq = 180; duration = 0.10; }
+        if(type === "hit"){ freq = 520; duration = 0.16; }
+        if(type === "sunk"){ freq = 90; duration = 0.35; }
+        if(type === "win"){ freq = 660; duration = 0.45; }
+        if(type === "lose"){ freq = 120; duration = 0.35; }
+        if(type === "start"){ freq = 440; duration = 0.22; }
+
+        osc.type = type === "sunk" ? "sawtooth" : "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+    }catch(e){}
+}
+
+function openRules(){
+    document.getElementById("rulesOverlay").classList.add("open");
+}
+window.openRules = openRules;
+
+function closeRules(){
+    document.getElementById("rulesOverlay").classList.remove("open");
+}
+window.closeRules = closeRules;
+
+let lastCinematicKey = "";
+
+function showCinematic(text,key=""){
+    if(key && key === lastCinematicKey) return;
+    if(key) lastCinematicKey = key;
+
+    const overlay = document.getElementById("cinematicOverlay");
+    const textEl = document.getElementById("cinematicText");
+    if(!overlay || !textEl) return;
+
+    textEl.innerText = text;
+    overlay.classList.remove("show");
+    void overlay.offsetWidth;
+    overlay.classList.add("show");
+    playBattleSound("start");
+
+    setTimeout(()=>overlay.classList.remove("show"),1100);
+}
+
+function updateCaptainLine(text){
+    const el = document.getElementById("captainLine");
+    if(el) el.innerText = text;
+}
+
+function captainRandom(type){
+    const lines = {
+        start:[
+            "⚓ Capitaine, les canons sont prêts.",
+            "🚢 Flotte en position, ordre d'attaque reçu.",
+            "🔥 Combat lancé, bonne chance capitaine."
+        ],
+        hit:[
+            "💥 Impact confirmé !",
+            "🎯 Belle frappe capitaine !",
+            "🔥 L’ennemi est touché !"
+        ],
+        miss:[
+            "💦 Tir dans l’eau, on ajuste la trajectoire.",
+            "🌊 Raté, l’ennemi a eu chaud.",
+            "⚓ Recalculez le tir capitaine."
+        ],
+        sunk:[
+            "🔥 Navire ennemi détruit !",
+            "💀 Cible coulée, excellent tir.",
+            "🏴‍☠️ L’ennemi perd un bâtiment !"
+        ],
+        enemy:[
+            "🛡️ L’ennemi riposte.",
+            "⚠️ Reste concentré capitaine.",
+            "🌊 Les obus adverses arrivent."
+        ]
+    };
+
+    const arr = lines[type] || ["Capitaine, en attente des ordres."];
+    return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function getBattleRecords(){
+    return JSON.parse(localStorage.getItem("battleRecords") || '{"bestAccuracy":0,"fastestWin":0,"maxSunk":0}');
+}
+
+function saveBattleRecords(records){
+    localStorage.setItem("battleRecords", JSON.stringify(records));
+}
+
+function updateBattleRecords(won){
+    const me = getMe();
+    const stats = countShotStats(me);
+    const naval = getNavalStats();
+    const records = getBattleRecords();
+
+    if(stats.accuracy > records.bestAccuracy){
+        records.bestAccuracy = stats.accuracy;
+    }
+
+    if(won && stats.total > 0 && (records.fastestWin === 0 || stats.total < records.fastestWin)){
+        records.fastestWin = stats.total;
+    }
+
+    if(naval.sunk > records.maxSunk){
+        records.maxSunk = naval.sunk;
+    }
+
+    saveBattleRecords(records);
+    renderRecords();
+}
+
+function renderRecords(){
+    const box = document.getElementById("recordsBox");
+    if(!box) return;
+
+    const r = getBattleRecords();
+
+    box.innerHTML = `
+        <strong>⭐ Records personnels</strong><br>
+        🎯 Meilleure précision : ${r.bestAccuracy || 0}%<br>
+        ⚡ Victoire la plus rapide : ${r.fastestWin ? r.fastestWin + " tirs" : "—"}<br>
+        🔥 Navires coulés au total : ${r.maxSunk || 0}
+    `;
+}
+
+
 let timerInterval = null;
 const TURN_SECONDS = 30;
 
@@ -1385,6 +1752,8 @@ function showBattleToast(icon,text,sub,type=""){
     overlay.classList.remove("show");
     void overlay.offsetWidth;
     overlay.classList.add("show");
+    playBattleSound(type);
+
     if(type === "sunk"){
         document.body.classList.remove("screenShake");
         void document.body.offsetWidth;
@@ -1476,6 +1845,7 @@ function countShotStats(player){
 
 function updateBattleUI(){
     document.body.classList.toggle("placingMode", !!room && room.phase === "placing");
+    document.body.classList.toggle("battleMode", !!room && room.phase === "battle");
 
     const me = getMe();
     const enemy = getEnemy();
@@ -1505,9 +1875,11 @@ function updateBattleUI(){
         if(room.turnUid === user?.uid){
             banner.innerText = "🟢 À toi de jouer !";
             banner.classList.add("mine");
+            updateCaptainLine("🎯 Capitaine, choisissez une cible.");
         }else{
             banner.innerText = "🟠 Tour adverse";
             banner.classList.add("enemy");
+            updateCaptainLine(captainRandom("enemy"));
         }
     }else if(room.phase === "ended"){
         banner.innerText = "🏁 Partie terminée";
@@ -1555,18 +1927,21 @@ function playShotFeedback(data){
     if(s.result === "miss"){
         animateCell(boardId,s.r,s.c,"splashAnim");
         setLastShotText((mine ? "Tu rates" : "L'adversaire rate") + " en " + coordName(s.r,s.c));
+        updateCaptainLine(mine ? captainRandom("miss") : captainRandom("enemy"));
         showBattleToast("💦","Raté !",coordName(s.r,s.c),"miss");
     }
 
     if(s.result === "hit"){
         animateCell(boardId,s.r,s.c,"explosionAnim");
         setLastShotText((mine ? "Tu touches" : "L'adversaire touche") + " en " + coordName(s.r,s.c));
+        updateCaptainLine(mine ? captainRandom("hit") : "⚠️ Notre flotte est touchée !");
         showBattleToast("💥","Touché !",coordName(s.r,s.c),"hit");
     }
 
     if(s.result === "sunk"){
         animateCell(boardId,s.r,s.c,"explosionAnim");
         setLastShotText((mine ? "Tu coules " : "L'adversaire coule ") + (s.shipName || "un navire"));
+        updateCaptainLine(mine ? captainRandom("sunk") : "💀 Un de nos navires a été coulé !");
         showBattleToast("🔥",(s.shipName || "Navire") + " coulé !", mine ? "Bien joué capitaine." : "Ta flotte prend cher.","sunk");
     }
 }
@@ -1621,11 +1996,17 @@ function applyRoom(){
     }
 
     if(room.phase === "ended"){
-        const winner = room.winnerUid === user.uid ? "🏆 Tu as gagné !" : "💀 Tu as perdu.";
-        document.getElementById("endTitle").innerText = winner;
+        const won = room.winnerUid === user.uid;
+        const winner = won ? "🏆 VICTOIRE !" : "💀 DÉFAITE";
+        const title = document.getElementById("endTitle");
+        title.innerText = winner;
+        title.classList.toggle("win", won);
+        title.classList.toggle("lose", !won);
+        playBattleSound(won ? "win" : "lose");
         document.getElementById("endText").innerText = "La flotte ennemie a été coulée.";
         renderEndSummary();
         updateStatsEnd(room.winnerUid === user.uid);
+        updateBattleRecords(room.winnerUid === user.uid);
         stopTurnTimer();
         document.getElementById("endOverlay").style.display = "flex";
         document.getElementById("status").innerText = "Partie terminée.";
@@ -2111,7 +2492,8 @@ async function setReady(){
         updates.status = "playing";
         updates.turnUid = room.hostUid;
         updates.turnStartedAt = serverTimestamp();
-        updates.log = addLog("⚔️ Combat lancé ! " + room.hostPseudo + " commence.");
+        updates.log = addLog("🔥 ⚔️ Combat lancé ! " + room.hostPseudo + " commence.");
+        showCinematic("🔥 COMBAT !","start_" + roomId);
     }
 
     await updateDoc(doc(db,"battleshipRooms",roomId), updates);
@@ -2176,21 +2558,21 @@ async function fireAt(r,c){
             result:shotResult,
             shipName:sunkShip ? sunkShip.name : ""
         },
-        log:addLog(hit ? (getMyPseudo() + " touche !") : (getMyPseudo() + " rate.")),
+        log:addLog(hit ? ("💥 " + getMyPseudo() + " touche en " + coordName(r,c)) : ("💦 " + getMyPseudo() + " rate en " + coordName(r,c))),
         turnStartedAt:serverTimestamp()
     };
 
     updateStatsFromShot(shotResult);
 
     if(sunkShip){
-        updates.log = addLog("💥 " + getMyPseudo() + " coule : " + sunkShip.name + " !");
+        updates.log = addLog("🔥 " + getMyPseudo() + " coule : " + sunkShip.name + " !");
     }
 
     if(allSunk){
         updates.phase = "ended";
         updates.status = "ended";
         updates.winnerUid = user.uid;
-        updates.log = addLog("🏆 " + getMyPseudo() + " gagne la bataille !");
+        updates.log = addLog("🏆 " + getMyPseudo() + " remporte la bataille !");
     }
 
     await updateDoc(doc(db,"battleshipRooms",roomId), updates);
@@ -2391,6 +2773,10 @@ async function refuseInvite(){
 window.refuseInvite = refuseInvite;
 
 async function leaveRoom(){
+    if(roomId && room && room.phase !== "ended"){
+        if(!confirm("Quitter la bataille ? Si tu es l'hôte, le salon sera fermé.")) return;
+    }
+
     if(!roomId){
         goHome();
         return;
@@ -2465,6 +2851,10 @@ window.restartGame = restartGame;
 
 renderBoards();
 renderShipList();
+renderNavalStats();
+renderAchievements();
+renderRecords();
+updateSoundButton();
 </script>
 
 </body>
